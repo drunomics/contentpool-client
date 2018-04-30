@@ -12,8 +12,7 @@ for details.
 
 ## Installation
 
-* 
-TODO.
+* composer require drunomics/contentpool_client
 
 ## Development
 
