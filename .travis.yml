@@ -42,7 +42,7 @@ install:
   - ./scripts/create-project.sh
   - ./scripts/run-server.sh
   - ./scripts/init-project.sh
-  - # ./scripts/create-server.sh
+  - ./scripts/launch-contentpool.sh
 
 script:
   - curl -N http://localhost:80 | grep  "Drupal 8" -q
