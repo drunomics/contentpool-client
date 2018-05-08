@@ -17,7 +17,7 @@ fi
 
 [ ! -d ../contentpool ] || (echo "Old install profile is still existing, please remove ../contentpool." && exit 1)
 
-git clone git@github.com:drunomics/contentpool.git contentpool
+git clone https://github.com/drunomics/contentpool.git contentpool
 
 ./contentpool/scripts/create-project.sh
 
