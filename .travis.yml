@@ -1,0 +1,51 @@
+language: php
+sudo: required
+
+php:
+  - 7.1
+
+git:
+  depth: 5
+
+env:
+  global:
+    - DOCKER_COMPOSE_VERSION=1.19.0
+addons:
+  apt:
+    packages:
+      - docker-ce
+
+mysql:
+  database: drupal
+  username: root
+  encoding: utf8
+
+# Cache Composer, NPM & Drush directories.
+cache:
+  directories:
+    - $HOME/.cache/composer
+    - $HOME/.npm
+    - $HOME/.drush/cache
+
+# Setup the environment.
+before_install:
+  # Be sure no mails are going out by disabling sendmail.
+  - echo sendmail_path=`which true` >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+
+  # Upgrade docker compose.
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+install:
+  - ./scripts/create-project.sh
+  - ./scripts/run-server.sh
+  - ./scripts/init-project.sh
+  - # ./scripts/create-server.sh
+
+script:
+  - curl -N http://localhost:80 | grep  "Drupal 8" -q
+
+after_success:
+  - echo "SUCCESS!"
