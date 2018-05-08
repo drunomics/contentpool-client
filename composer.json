@@ -1,0 +1,21 @@
+{
+  "name": "drunomics/contentpool-client",
+  "description": "Connects the site to a contentpool.",
+  "type": "drupal-module",
+  "authors": [
+    {
+      "name": "drunomics GmbH",
+      "email": "hello@drunomics.com"
+    }
+  ],
+  "license": "GPL-2.0-or-later",
+  "extra": {
+    "branch-alias": {
+      "dev-8.x-1.x": "1.0.x-dev"
+    }
+  },
+  "require": {
+  },
+  "require-dev": {
+  }
+}
