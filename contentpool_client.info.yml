@@ -1,5 +1,9 @@
-name: 'Contentpool client'
+name: 'Contentpool Client'
 type: module
-description: 'Connects the site to a contentpool.'
+description: 'Connects the site to a remote contentpool.'
 package: Contentpool
 core: 8.x
+
+dependencies:
+  - relaxed
+  - workspace
