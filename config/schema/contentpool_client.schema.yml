@@ -1,0 +1,13 @@
+relaxed.remote.*.third_party.contentpool_client:
+  type: mapping
+  label: 'Contentpool client settings'
+  mapping:
+    autoregister:
+      type: integer
+      label: 'Register to this remote automatically.'
+    autopull:
+      type: integer
+      label: 'Pull data from this remote automatically.'
+    autopull_interval:
+      type: string
+      label: 'Interval to use for pulling automatically.'

@@ -61,10 +61,21 @@ Class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
   public function execute(RemoteInterface $remote) {
     $url = (string) $remote->uri();
 
+    if(!$remote->getThirdPartySetting('contentpool_client', 'autoregister', 0)) {
+      $this->result = TRUE;
+      $this->message = t('Autoregister inactive.');
+      return;
+    }
+
     // As the remote targets the relaxed endpoint we have to parse the url
     // to get the base host.
     $url_parts = parse_url($url);
-    $base_url = $url_parts['scheme'] . '://' . $url_parts['user'] . ':' . $url_parts['pass'] . '@' . $url_parts['host'];
+    $credentials = '';
+    if (isset($url_parts['user']) && isset($url_parts['pass'])) {
+      $credentials = $url_parts['user'] . ':' . $url_parts['pass'] . '@';
+    }
+
+    $base_url = $url_parts['scheme'] . '://' . $credentials . $url_parts['host'];
 
     /** @var \GuzzleHttp\Client $client */
     $client = \Drupal::httpClient();

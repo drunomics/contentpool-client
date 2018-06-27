@@ -1,0 +1,4 @@
+services:
+  contentpool_client.remote_autopull_manager:
+    class: Drupal\contentpool_client\RemoteAutopullManager
+    arguments: ['@entity_type.manager', '@workspace.replicator_manager', '@workspace.conflict_tracker']
