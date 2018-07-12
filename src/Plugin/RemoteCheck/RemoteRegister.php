@@ -3,7 +3,9 @@
 namespace Drupal\contentpool_client\Plugin\RemoteCheck;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\relaxed\Entity\RemoteInterface;
 use Drupal\relaxed\Plugin\RemoteCheckBase;
 use Drupal\relaxed\SensitiveDataTransformer;
@@ -21,6 +23,8 @@ use Symfony\Component\Serializer\Serializer;
  * )
  */
 class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginInterface {
+
+  use StringTranslationTrait;
 
   /**
    * The config factory service.
@@ -58,6 +62,13 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
   protected $sensitiveDataTransformer;
 
   /**
+   * The Messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * RemoteRegister constructor.
    *
    * @param array $configuration
@@ -69,13 +80,14 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    * @param \Drupal\relaxed\SensitiveDataTransformer $sensitive_data_transformer
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory, Serializer $serializer, ClientInterface $http_client, RequestStack $request_stack, SensitiveDataTransformer $sensitive_data_transformer) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory, Serializer $serializer, ClientInterface $http_client, RequestStack $request_stack, SensitiveDataTransformer $sensitive_data_transformer, MessengerInterface $messenger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->configFactory = $config_factory;
     $this->serializer = $serializer;
     $this->httpClient = $http_client;
     $this->requestStack = $request_stack;
     $this->sensitiveDataTransformer = $sensitive_data_transformer;
+    $this->messenger = $messenger;
   }
 
   /**
@@ -95,7 +107,8 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       $container->get('serializer'),
       $container->get('http_client'),
       $container->get('request_stack'),
-      $container->get('relaxed.sensitive_data.transformer')
+      $container->get('relaxed.sensitive_data.transformer'),
+      $container->get('messenger')
     );
   }
 
@@ -107,7 +120,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
 
     if (!$remote->getThirdPartySetting('contentpool_client', 'autoregister', 0)) {
       $this->result = TRUE;
-      $this->message = t('Autoregister inactive.');
+      $this->message = $this->t('Autoregister inactive.');
       return;
     }
 
@@ -121,15 +134,19 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
 
     $base_url = $url_parts['scheme'] . '://' . $credentials . $url_parts['host'];
 
+    if ($url_parts['scheme'] != 'https') {
+      $this->messenger->addWarning($this->t('Warning: Insecure connection used for remote.'));
+    }
+
     try {
       $response = $this->httpClient->post($base_url . '/_remote-registration?_format=json', $this->generateRegistrationPayload());
 
       if ($response->getStatusCode() === 200) {
         $this->result = TRUE;
-        $this->message = t('Registration on remote is valid.');
+        $this->message = $this->t('Registration on remote is valid.');
       }
       else {
-        $this->message = t('Remote returns status code @status.', ['@status' => $response->getStatusCode()]);
+        $this->message = $this->t('Remote returns status code @status.', ['@status' => $response->getStatusCode()]);
       }
     }
     catch (\Exception $e) {
@@ -165,8 +182,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       $relaxed_config->get('username'),
       $relaxed_password
     );
-    $encoded = $this->sensitiveDataTransformer->set((string) $uri);
-    $body['endpoint_uri'] = $encoded;
+    $body['endpoint_uri'] = (string) $uri;
 
     $serialized_body = $this->serializer->serialize($body, 'json');
 
