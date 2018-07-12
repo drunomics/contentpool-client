@@ -1,0 +1,5 @@
+services:
+  contentpool_client.commands:
+    class: \Drupal\contentpool_client\Commands\ContentpoolClientCommands
+    tags:
+      - { name: drush.command }

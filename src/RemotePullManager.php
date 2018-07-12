@@ -64,6 +64,7 @@ class RemotePullManager implements RemotePullManagerInterface {
     foreach ($remotes as $remote) {
       // We try to do a pull from the remote.
       $this->doPull($remote);
+      $counter++;
     }
 
     return $counter;

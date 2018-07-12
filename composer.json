@@ -20,5 +20,12 @@
     "drupal/workspace": "^1.0@beta"
   },
   "require-dev": {
+  },
+  "extra": {
+    "drush": {
+      "services": {
+        "drush.services.yml": "^9"
+      }
+    }
   }
 }
