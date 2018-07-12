@@ -18,7 +18,18 @@ for details.
 
 * composer require drunomics/contentpool-client
 
+## Usage
 
+### Triggering updates from remote contentpool server
+
+The contentpool client can be configured to update content from configured contentpool remote servers.
+
+#### Automatically with cron
+In the configuration for a remote a pull interval can be specified. On a cron run the interval will be checked
+and a pull scheduled if necessary.
+
+#### Manually with drush
+The scheduling can be triggered manully for all remotes using the ```contentpool-client:pull-content``` command.
 
 ## Development
 
