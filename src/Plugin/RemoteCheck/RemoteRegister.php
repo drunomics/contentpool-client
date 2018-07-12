@@ -2,12 +2,16 @@
 
 namespace Drupal\contentpool_client\Plugin\RemoteCheck;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\relaxed\Entity\RemoteInterface;
 use Drupal\relaxed\Plugin\RemoteCheckBase;
+use Drupal\relaxed\SensitiveDataTransformer;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Serializer\Serializer;
 
 /**
@@ -19,6 +23,13 @@ use Symfony\Component\Serializer\Serializer;
 class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginInterface {
 
   /**
+   * The config factory service.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * The serializer.
    *
    * @var \Symfony\Component\Serializer\Serializer
@@ -26,16 +37,45 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
   protected $serializer;
 
   /**
+   * The Guzzle HTTP client.
+   *
+   * @var \GuzzleHttp\Client
+   */
+  protected $httpClient;
+
+  /**
+   * The related request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
+   * The sensitive data transformer.
+   *
+   * @var \Drupal\relaxed\SensitiveDataTransformer
+   */
+  protected $sensitiveDataTransformer;
+
+  /**
    * RemoteRegister constructor.
    *
    * @param array $configuration
    * @param $plugin_id
    * @param $plugin_definition
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    * @param \Symfony\Component\Serializer\Serializer $serializer
+   * @param \GuzzleHttp\ClientInterface $http_client
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   * @param \Drupal\relaxed\SensitiveDataTransformer $sensitive_data_transformer
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Serializer $serializer) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory, Serializer $serializer, ClientInterface $http_client, RequestStack $request_stack, SensitiveDataTransformer $sensitive_data_transformer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->configFactory = $config_factory;
     $this->serializer = $serializer;
+    $this->httpClient = $http_client;
+    $this->requestStack = $request_stack;
+    $this->sensitiveDataTransformer = $sensitive_data_transformer;
   }
 
   /**
@@ -51,7 +91,11 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('serializer')
+      $container->get('config.factory'),
+      $container->get('serializer'),
+      $container->get('http_client'),
+      $container->get('request_stack'),
+      $container->get('relaxed.sensitive_data.transformer')
     );
   }
 
@@ -77,11 +121,8 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
 
     $base_url = $url_parts['scheme'] . '://' . $credentials . $url_parts['host'];
 
-    /** @var \GuzzleHttp\Client $client */
-    $client = \Drupal::httpClient();
-
     try {
-      $response = $client->post($base_url . '/_remote-registration?_format=json', $this->generateRegistrationPayload());
+      $response = $this->httpClient->post($base_url . '/_remote-registration?_format=json', $this->generateRegistrationPayload());
 
       if ($response->getStatusCode() === 200) {
         $this->result = TRUE;
@@ -102,10 +143,10 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
    */
   private function generateRegistrationPayload() {
     // Basic Site information.
-    $config = \Drupal::config('system.site');
+    $config = $this->configFactory->get('system.site');
     $site_name = $config->get('name');
     $site_uuid = $config->get('uuid');
-    $site_host = \Drupal::request()->getSchemeAndHttpHost();
+    $site_host = $this->requestStack->getCurrentRequest()->getSchemeAndHttpHost();
 
     $body = [
       'site_name' => $site_name,
@@ -114,9 +155,9 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     ];
 
     // Additional information about the relaxed endpoint.
-    $relaxed_config = \Drupal::config('relaxed.settings');
+    $relaxed_config = $this->configFactory->get('relaxed.settings');
     $relaxed_root = $relaxed_config->get('api_root');
-    $relaxed_password = \Drupal::service('relaxed.sensitive_data.transformer')->get($relaxed_config->get('password'));
+    $relaxed_password = $this->sensitiveDataTransformer->get($relaxed_config->get('password'));
 
     // We create an encoded uri for this site.
     $uri = new Uri($site_host . $relaxed_root);
@@ -124,7 +165,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       $relaxed_config->get('username'),
       $relaxed_password
     );
-    $encoded = \Drupal::service('relaxed.sensitive_data.transformer')->set((string) $uri);
+    $encoded = $this->sensitiveDataTransformer->set((string) $uri);
     $body['endpoint_uri'] = $encoded;
 
     $serialized_body = $this->serializer->serialize($body, 'json');
