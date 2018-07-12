@@ -16,7 +16,7 @@ use Symfony\Component\Serializer\Serializer;
  *   label = "Register on remote",
  * )
  */
-Class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginInterface {
+class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginInterface {
 
   /**
    * The serializer.
@@ -61,7 +61,7 @@ Class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
   public function execute(RemoteInterface $remote) {
     $url = (string) $remote->uri();
 
-    if(!$remote->getThirdPartySetting('contentpool_client', 'autoregister', 0)) {
+    if (!$remote->getThirdPartySetting('contentpool_client', 'autoregister', 0)) {
       $this->result = TRUE;
       $this->message = t('Autoregister inactive.');
       return;
@@ -131,9 +131,10 @@ Class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
 
     return [
       RequestOptions::HEADERS => [
-        'Content-Type' => 'application/json'
+        'Content-Type' => 'application/json',
       ],
       RequestOptions::BODY => $serialized_body,
     ];
   }
+
 }

@@ -1,14 +1,14 @@
 <?php
 
-use Drupal\Core\Form\FormStateInterface;
-
 /**
  * @file
  * Module file.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+
 /**
- * Implements HOOK_form_FORM_ID_alter.
+ * Implements hook_form_FORM_ID_alter().
  */
 function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $remote = $form_state->getFormObject()->getEntity();
@@ -25,41 +25,44 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
     '#type' => 'checkbox',
     '#title' => t('Autoregister this site to remote site (if supported)'),
     '#description' => t('If the remote site is a contentpool server, the site can be autoregistered remotely.'),
-    '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'autoregister', 0)
+    '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'autoregister', 0),
   ];
 
   $form['contentpool_client_settings']['autopull'] = [
     '#type' => 'checkbox',
     '#title' => t('Automatically pull content from remote contentpool server regularly.'),
     '#description' => t('Regularly triggers a content pull from remote site.'),
-    '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'autopull', 0)
+    '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'autopull', 0),
   ];
 
   $form['contentpool_client_settings']['autopull_interval'] = [
     '#type' => 'select',
-    '#title' => t('Automatic pull interval'),
-    '#description' => t('The automatic pull is triggerd by cron. Your cron interval is the lower limit.'),
+    '#title' => t('Automatic pull interval via cron'),
+    '#description' => t('If set to "Never" the automatic pull has to be triggered manually via the provided drush command. Automatic pulls are triggerd by cron, thus your cron interval is the lower limit.'),
     '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 3600),
     '#options' => [
+      'never' => t('Never (manual)'),
       3600 => t('Hourly'),
       86400 => t('Daily'),
-      604800 => t('Weekly')
+      604800 => t('Weekly'),
     ],
-    '#states' => array(
-      'visible' => array(
-        ':input[name="autopull"]' => array('checked' => TRUE),
-      ),
-    ),
+    '#states' => [
+      'visible' => [
+        ':input[name="autopull"]' => ['checked' => TRUE],
+      ],
+    ],
   ];
 }
 
 /**
  * Submit function to save third party settings.
  *
- * @param $form
+ * @param array $form
+ *   The form object.
  * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
  */
-function contentpool_client_form_remote_edit_form_submit(&$form, FormStateInterface $form_state) {
+function contentpool_client_form_remote_edit_form_submit(array &$form, FormStateInterface $form_state) {
   $remote = $form_state->getFormObject()->getEntity();
   $remote->setThirdPartySetting('contentpool_client', 'autoregister', $form_state->getValue('autoregister'));
   $remote->setThirdPartySetting('contentpool_client', 'autopull', $form_state->getValue('autopull'));
@@ -67,11 +70,11 @@ function contentpool_client_form_remote_edit_form_submit(&$form, FormStateInterf
 }
 
 /**
- * Implements hook_cron.
+ * Implements hook_cron().
  */
 function contentpool_client_cron() {
-  $remote_autopull_manager = \Drupal::service('contentpool_client.remote_autopull_manager');
-  $autopull_count = $remote_autopull_manager->checkAndDoAutopulls();
+  $remote_pull_manager = \Drupal::service('contentpool_client.remote_pull_manager');
+  $autopull_count = $remote_pull_manager->checkAndDoAutopulls();
 
   if ($autopull_count) {
     \Drupal::logger('contentpool client')->info('Autopull for @count remotes triggered.', ['@count' => $autopull_count]);
