@@ -3,6 +3,7 @@
 namespace Drupal\contentpool_client\Plugin\RemoteCheck;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -69,6 +70,13 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
   protected $messenger;
 
   /**
+   * The Entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * RemoteRegister constructor.
    *
    * @param array $configuration
@@ -80,7 +88,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    * @param \Drupal\relaxed\SensitiveDataTransformer $sensitive_data_transformer
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory, Serializer $serializer, ClientInterface $http_client, RequestStack $request_stack, SensitiveDataTransformer $sensitive_data_transformer, MessengerInterface $messenger) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory, Serializer $serializer, ClientInterface $http_client, RequestStack $request_stack, SensitiveDataTransformer $sensitive_data_transformer, MessengerInterface $messenger, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->configFactory = $config_factory;
     $this->serializer = $serializer;
@@ -88,6 +96,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     $this->requestStack = $request_stack;
     $this->sensitiveDataTransformer = $sensitive_data_transformer;
     $this->messenger = $messenger;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -108,7 +117,8 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       $container->get('http_client'),
       $container->get('request_stack'),
       $container->get('relaxed.sensitive_data.transformer'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -139,7 +149,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     }
 
     try {
-      $response = $this->httpClient->post($base_url . '/_remote-registration?_format=json', $this->generateRegistrationPayload());
+      $response = $this->httpClient->post($base_url . '/_remote-registration?_format=json', $this->generateRegistrationPayload($remote));
 
       if ($response->getStatusCode() === 200) {
         $this->result = TRUE;
@@ -158,17 +168,25 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
   /**
    * Collects the data necessary for registration on remote.
    */
-  private function generateRegistrationPayload() {
+  private function generateRegistrationPayload(RemoteInterface $remote) {
     // Basic Site information.
     $config = $this->configFactory->get('system.site');
     $site_name = $config->get('name');
     $site_uuid = $config->get('uuid');
     $site_host = $this->requestStack->getCurrentRequest()->getSchemeAndHttpHost();
 
+    // Remote configuration
+    $workspace_id = $remote->getThirdPartySetting('contentpool_client', 'workspace');
+    if (!$workspace_id) {
+      return;
+    }
+    $workspace = $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
+
     $body = [
       'site_name' => $site_name,
       'site_domain' => $site_host,
       'site_uuid' => $site_uuid,
+      'database_id' => $workspace->machine_name->value,
     ];
 
     // Additional information about the relaxed endpoint.
