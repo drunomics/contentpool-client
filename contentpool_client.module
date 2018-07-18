@@ -23,8 +23,8 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
 
   $form['contentpool_client_settings']['autoregister'] = [
     '#type' => 'checkbox',
-    '#title' => t('Autoregister this site to remote site (if supported)'),
-    '#description' => t('If the remote site is a contentpool server, the site can be autoregistered remotely.'),
+    '#title' => t('Is contentpool'),
+    '#description' => t('Whether the remote site is an instance of the contentpool distribution.'),
     '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'autoregister', 0),
   ];
 
@@ -38,7 +38,7 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
   $form['contentpool_client_settings']['autopull_interval'] = [
     '#type' => 'select',
     '#title' => t('Automatic pull interval via cron'),
-    '#description' => t('If set to "Never" the automatic pull has to be triggered manually via the provided drush command. Automatic pulls are triggerd by cron, thus your cron interval is the lower limit.'),
+    '#description' => t('If set to "Never" the automatic pull has to be triggered manually via the provided drush command. Automatic pulls are triggered by cron, thus your cron interval is the lower limit.'),
     '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 3600),
     '#options' => [
       'never' => t('Never (manual)'),

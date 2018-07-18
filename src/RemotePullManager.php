@@ -62,6 +62,11 @@ class RemotePullManager implements RemotePullManagerInterface {
 
     $counter = 0;
     foreach ($remotes as $remote) {
+      // We check if the remote is marked as a contentpool instance.
+      if (!$remote->getThirdPartySetting('contentpool_client', 'autoregister', 0)) {
+        return $counter;
+      }
+
       // We try to do a pull from the remote.
       $this->doPull($remote);
       $counter++;
@@ -89,7 +94,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function isAutopullNeeded(Remote $remote) {
     // Never needed if autopull is disabled.
@@ -111,7 +116,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function doPull(Remote $remote) {
     // Check for a workspace configuration whose upstream is this remote.
