@@ -1,4 +1,4 @@
 services:
   contentpool_client.remote_pull_manager:
     class: Drupal\contentpool_client\RemotePullManager
-    arguments: ['@entity_type.manager', '@state', '@workspace.replicator_manager', '@workspace.conflict_tracker']
+    arguments: ['@entity_type.manager', '@state', '@workspace.replicator_manager', '@workspace.conflict_tracker', '@queue', '@plugin.manager.queue_worker']

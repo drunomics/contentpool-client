@@ -141,7 +141,6 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     if (isset($url_parts['user']) && isset($url_parts['pass'])) {
       $credentials = $url_parts['user'] . ':' . $url_parts['pass'] . '@';
     }
-
     $base_url = $url_parts['scheme'] . '://' . $credentials . $url_parts['host'];
 
     if ($url_parts['scheme'] != 'https') {
@@ -154,9 +153,8 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       if ($response->getStatusCode() === 200) {
         $this->result = TRUE;
         $this->message = $this->t('Registration on remote is valid.');
-
-        $message_body = $response->getBody();
-        $remote->setThirdPartySetting('contentpool_client', 'remote_site_uuid', 'test');
+        $message_body = json_decode($response->getBody()->getContents());
+        $remote->setThirdPartySetting('contentpool_client', 'remote_site_uuid', $message_body->site_uuid);
       }
       else {
         $this->message = $this->t('Remote returns status code @status.', ['@status' => $response->getStatusCode()]);

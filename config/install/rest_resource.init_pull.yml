@@ -3,7 +3,7 @@ status: true
 dependencies:
   module:
     - basic_auth
-    - contentpool_remote_register
+    - contentpool_client
     - serialization
 id: contentpool_client.init_pull
 plugin_id: 'contentpool_client:init_pull'

@@ -1,11 +1,9 @@
 <?php
 
-namespace Drupal\contentpool_remote_register\Plugin\rest\resource;
+namespace Drupal\contentpool_client\Plugin\rest\resource;
 
-use Drupal\Component\Serialization\Json;
 use Drupal\contentpool_client\RemotePullManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\relaxed\SensitiveDataTransformer;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -17,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "contentpool_client:init_pull",
  *   label = "Init pull from contentpool",
  *   uri_paths = {
- *     "create" = "/_init-pull",
+ *     "canonical" = "/_init-pull",
  *   }
  * )
  */
@@ -76,9 +74,8 @@ class InitPullResource extends ResourceBase {
   }
 
   public function get($data) {
-    // @TODO: Check if there is already an active pull request.
+    $status_code = 404;
 
-    // @TODO: Process pull immediately.
     // We check for the site uuid and do a pull if found.
     $sent_site_uuid = $data['site_uuid'];
     $remotes = $this->entityTypeManager->getStorage('remote')->loadMultiple();
@@ -86,10 +83,13 @@ class InitPullResource extends ResourceBase {
     foreach ($remotes as $remote) {
       if ($remote_site_uuid = $remote->getThirdPartySetting('contentpool_client', 'remote_site_uuid')) {
         if ($remote_site_uuid == $sent_site_uuid) {
-          $this->remotePullManager->doPull($remote);
+          $this->remotePullManager->doPull($remote, TRUE);
+          $status_code = 200;
         }
       }
     }
+
+    return new ResourceResponse([], $status_code);
   }
 
 }

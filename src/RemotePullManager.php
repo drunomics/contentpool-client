@@ -3,7 +3,12 @@
 namespace Drupal\contentpool_client;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Queue\QueueFactory;
+use Drupal\Core\Queue\QueueWorkerManagerInterface;
+use Drupal\Core\Queue\RequeueException;
+use Drupal\Core\Queue\SuspendQueueException;
 use Drupal\Core\State\StateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\relaxed\Entity\Remote;
 use Drupal\replication\Entity\ReplicationLogInterface;
@@ -43,15 +48,31 @@ class RemotePullManager implements RemotePullManagerInterface {
   protected $conflictTracker;
 
   /**
+   * The queue service.
+   *
+   * @var \Drupal\Core\Queue\QueueFactory
+   */
+  protected $queueFactory;
+
+  /**
+   * The queue plugin manager.
+   *
+   * @var \Drupal\Core\Queue\QueueWorkerManagerInterface
+   */
+  protected $queueManager;
+
+  /**
    * Constructs a RemoteAutopullManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, ConflictTrackerInterface $conflict_tracker) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, ConflictTrackerInterface $conflict_tracker, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->state = $state;
     $this->replicatorManager = $replicator_manager;
     $this->conflictTracker = $conflict_tracker;
+    $this->queueFactory = $queue_factory;
+    $this->queueManager = $queue_manager;
   }
 
   /**
@@ -108,7 +129,7 @@ class RemotePullManager implements RemotePullManagerInterface {
 
     // If autopull was never run or the intervals has been reached, we pull.
     if (!$last_autopull || ($last_autopull + $autopull_interval) < time()) {
-      $this->doAutopull($remote);
+      $this->doPull($remote);
     }
 
     // Set the curent time as last pull time.
@@ -118,7 +139,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function doPull(Remote $remote) {
+  public function doPull(Remote $remote, $process_immediately = FALSE) {
     // Check for a workspace configuration whose upstream is this remote.
     $workspace_pointers = $this->entityTypeManager
       ->getStorage('workspace_pointer')
@@ -174,6 +195,45 @@ class RemotePullManager implements RemotePullManagerInterface {
       catch (\Exception $e) {
         watchdog_exception('Workspace', $e);
         drupal_set_message($e->getMessage(), 'error');
+      }
+    }
+
+    if ($process_immediately) {
+      $this->processReplicationQueue();
+    }
+  }
+
+  /**
+   * Process only the workflow_replication queue.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  protected function processReplicationQueue() {
+    $info = $this->queueManager->getDefinition('workspace_replication');
+    $this->queueFactory->get('workspace_replication')->createQueue();
+    $queue_worker = $this->queueManager->createInstance('workspace_replication');
+
+    $end = time() + (isset($info['cron']['time']) ? $info['cron']['time'] : 15);
+    $queue = $this->queueFactory->get('workspace_replication');
+    $lease_time = isset($info['cron']['time']) ?: NULL;
+
+    while (time() < $end && ($item = $queue->claimItem($lease_time))) {
+      try {
+        $queue_worker->processItem($item->data);
+        $queue->deleteItem($item);
+      }
+      catch (RequeueException $e) {
+        $queue->releaseItem($item);
+      }
+      catch (SuspendQueueException $e) {
+        $queue->releaseItem($item);
+        watchdog_exception('cron', $e);
+
+        return;
+      }
+      catch (\Exception $e) {
+        watchdog_exception('cron', $e);
       }
     }
   }

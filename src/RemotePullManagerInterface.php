@@ -33,6 +33,6 @@ interface RemotePullManagerInterface {
    * @param \Drupal\relaxed\Entity\Remote $remote
    *   The remote on the contentpool server.
    */
-  public function doPull(Remote $remote);
+  public function doPull(Remote $remote, $process_immediately = FALSE);
 
 }
