@@ -5,6 +5,7 @@ namespace Drupal\contentpool_client\Plugin\rest\resource;
 use Drupal\contentpool_client\RemotePullManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\relaxed\SensitiveDataTransformer;
+use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
@@ -81,15 +82,17 @@ class InitPullResource extends ResourceBase {
     $remotes = $this->entityTypeManager->getStorage('remote')->loadMultiple();
     /** @var \Drupal\relaxed\Entity\RemoteInterface $remote */
     foreach ($remotes as $remote) {
-      if ($remote_site_uuid = $remote->getThirdPartySetting('contentpool_client', 'remote_site_uuid')) {
-        if ($remote_site_uuid == $sent_site_uuid) {
+      //if ($remote_site_uuid = $remote->getThirdPartySetting('contentpool_client', 'remote_site_uuid')) {
+        //if ($remote_site_uuid == $sent_site_uuid) {
           $this->remotePullManager->doPull($remote, TRUE);
           $status_code = 200;
-        }
-      }
+        //}
+      //}
     }
 
-    return new ResourceResponse([], $status_code);
+    $this->logger->info('Remote contentpool server initiated pull.');
+
+    return new ModifiedResourceResponse([], $status_code);
   }
 
 }

@@ -194,7 +194,6 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       $relaxed_password
     );
     $body['endpoint_uri'] = (string) $uri;
-
     $serialized_body = $this->serializer->serialize($body, 'json');
 
     return [
