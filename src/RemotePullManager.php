@@ -88,7 +88,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function pullAllRemotes() {
     $remotes = $this->entityTypeManager->getStorage('remote')->loadMultiple();
@@ -109,7 +109,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function checkAndDoAutopulls() {
     $remotes = $this->entityTypeManager->getStorage('remote')->loadMultiple();
