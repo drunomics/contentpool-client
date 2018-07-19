@@ -1,0 +1,16 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - basic_auth
+    - contentpool_remote_register
+    - serialization
+id: contentpool_client.init_pull
+plugin_id: 'contentpool_client:init_pull'
+granularity: method
+configuration:
+  GET:
+    supported_formats:
+      - json
+    supported_auth:
+      - basic_auth

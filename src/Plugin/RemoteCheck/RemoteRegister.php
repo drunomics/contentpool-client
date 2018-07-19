@@ -154,6 +154,9 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       if ($response->getStatusCode() === 200) {
         $this->result = TRUE;
         $this->message = $this->t('Registration on remote is valid.');
+
+        $message_body = $response->getBody();
+        $remote->setThirdPartySetting('contentpool_client', 'remote_site_uuid', 'test');
       }
       else {
         $this->message = $this->t('Remote returns status code @status.', ['@status' => $response->getStatusCode()]);
@@ -175,18 +178,10 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     $site_uuid = $config->get('uuid');
     $site_host = $this->requestStack->getCurrentRequest()->getSchemeAndHttpHost();
 
-    // Remote configuration
-    $workspace_id = $remote->getThirdPartySetting('contentpool_client', 'workspace');
-    if (!$workspace_id) {
-      return;
-    }
-    $workspace = $this->entityTypeManager->getStorage('workspace')->load($workspace_id);
-
     $body = [
       'site_name' => $site_name,
       'site_domain' => $site_host,
-      'site_uuid' => $site_uuid,
-      'database_id' => $workspace->machine_name->value,
+      'site_uuid' => $site_uuid
     ];
 
     // Additional information about the relaxed endpoint.

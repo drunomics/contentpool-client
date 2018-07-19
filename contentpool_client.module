@@ -52,16 +52,6 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
       ],
     ],
   ];
-
-  $workspace_default_id = $remote->getThirdPartySetting('contentpool_client', 'workspace');
-  $form['contentpool_client_settings']['workspace'] = [
-    '#type' => 'entity_autocomplete',
-    '#title' => t('Local workspace'),
-    '#description' => t('The local workspace remote content should be pushed into'),
-    '#target_type' => 'workspace',
-    '#required' => TRUE,
-    '#default_value' => \Drupal::entityTypeManager()->getStorage('workspace')->load($workspace_default_id), // The #default_value can be either an entity object or an array of entity objects.
-  ];
 }
 
 /**
@@ -77,7 +67,6 @@ function contentpool_client_form_remote_edit_form_submit(array &$form, FormState
   $remote->setThirdPartySetting('contentpool_client', 'autoregister', $form_state->getValue('autoregister'));
   $remote->setThirdPartySetting('contentpool_client', 'autopull', $form_state->getValue('autopull'));
   $remote->setThirdPartySetting('contentpool_client', 'autopull_interval', $form_state->getValue('autopull_interval'));
-  $remote->setThirdPartySetting('contentpool_client', 'workspace', $form_state->getValue('workspace'));
 }
 
 /**

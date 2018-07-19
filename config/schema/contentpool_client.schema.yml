@@ -11,6 +11,6 @@ relaxed.remote.*.third_party.contentpool_client:
     autopull_interval:
       type: string
       label: 'Interval to use for pulling automatically.'
-    workspace:
-      type: integer
-      label: 'The workspace id.'
+    remote_site_uuid:
+      type: string
+      label: 'The uuid of the contentpool site.'
