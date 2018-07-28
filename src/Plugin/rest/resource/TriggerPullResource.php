@@ -13,14 +13,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @RestResource(
- *   id = "contentpool_client:init_pull",
- *   label = "Init pull from contentpool",
+ *   id = "contentpool_client:trigger_pull",
+ *   label = "Trigger pull from contentpool",
  *   uri_paths = {
- *     "canonical" = "/_init-pull",
+ *     "canonical" = "/_trigger-pull",
  *   }
  * )
  */
-class InitPullResource extends ResourceBase {
+class TriggerPullResource extends ResourceBase {
 
   /**
    * The sensitive data transformer.
@@ -82,12 +82,12 @@ class InitPullResource extends ResourceBase {
     $remotes = $this->entityTypeManager->getStorage('remote')->loadMultiple();
     /** @var \Drupal\relaxed\Entity\RemoteInterface $remote */
     foreach ($remotes as $remote) {
-      //if ($remote_site_uuid = $remote->getThirdPartySetting('contentpool_client', 'remote_site_uuid')) {
-        //if ($remote_site_uuid == $sent_site_uuid) {
+      if ($remote_site_uuid = $remote->getThirdPartySetting('contentpool_client', 'remote_site_uuid')) {
+        if ($remote_site_uuid == $sent_site_uuid) {
           $this->remotePullManager->doPull($remote, TRUE);
           $status_code = 200;
-        //}
-      //}
+        }
+      }
     }
 
     $this->logger->info('Remote contentpool server initiated pull.');
