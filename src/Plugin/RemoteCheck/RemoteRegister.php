@@ -128,9 +128,9 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
   public function execute(RemoteInterface $remote) {
     $url = (string) $remote->uri();
 
-    if (!$remote->getThirdPartySetting('contentpool_client', 'autoregister', 0)) {
+    if (!$remote->getThirdPartySetting('contentpool_client', 'is_contentpool', 0)) {
       $this->result = TRUE;
-      $this->message = $this->t('Autoregister inactive.');
+      $this->message = $this->t('Not marked as a contentpool server.');
       return;
     }
 

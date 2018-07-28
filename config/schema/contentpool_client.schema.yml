@@ -2,12 +2,9 @@ relaxed.remote.*.third_party.contentpool_client:
   type: mapping
   label: 'Contentpool client settings'
   mapping:
-    autoregister:
+    is_contentpool:
       type: integer
       label: 'Marks remote as a contentpool server.'
-    autopull:
-      type: integer
-      label: 'Pull data from this remote automatically.'
     autopull_interval:
       type: string
       label: 'Interval to use for pulling automatically.'

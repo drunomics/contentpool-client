@@ -21,18 +21,11 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
     '#open' => TRUE,
   ];
 
-  $form['contentpool_client_settings']['autoregister'] = [
+  $form['contentpool_client_settings']['is_contentpool'] = [
     '#type' => 'checkbox',
     '#title' => t('Is contentpool'),
     '#description' => t('Whether the remote site is an instance of the contentpool distribution.'),
-    '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'autoregister', 0),
-  ];
-
-  $form['contentpool_client_settings']['autopull'] = [
-    '#type' => 'checkbox',
-    '#title' => t('Automatically pull content from remote contentpool server regularly.'),
-    '#description' => t('Regularly triggers a content pull from remote site.'),
-    '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'autopull', 0),
+    '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'is_contentpool', 0),
   ];
 
   $form['contentpool_client_settings']['autopull_interval'] = [
@@ -64,8 +57,7 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
  */
 function contentpool_client_form_remote_edit_form_submit(array &$form, FormStateInterface $form_state) {
   $remote = $form_state->getFormObject()->getEntity();
-  $remote->setThirdPartySetting('contentpool_client', 'autoregister', $form_state->getValue('autoregister'));
-  $remote->setThirdPartySetting('contentpool_client', 'autopull', $form_state->getValue('autopull'));
+  $remote->setThirdPartySetting('contentpool_client', 'is_contentpool', $form_state->getValue('is_contentpool'));
   $remote->setThirdPartySetting('contentpool_client', 'autopull_interval', $form_state->getValue('autopull_interval'));
 }
 

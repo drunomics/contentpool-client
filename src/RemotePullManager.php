@@ -96,7 +96,7 @@ class RemotePullManager implements RemotePullManagerInterface {
     $counter = 0;
     foreach ($remotes as $remote) {
       // We check if the remote is marked as a contentpool instance.
-      if (!$remote->getThirdPartySetting('contentpool_client', 'autoregister', 0)) {
+      if (!$remote->getThirdPartySetting('contentpool_client', 'is_contentpool', 0)) {
         return $counter;
       }
 
@@ -131,7 +131,7 @@ class RemotePullManager implements RemotePullManagerInterface {
    */
   public function isAutopullNeeded(Remote $remote) {
     // Never needed if autopull is disabled.
-    if (!$remote->getThirdPartySetting('contentpool_client', 'autopull', 0)) {
+    if ($remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 'never') == 'never') {
       return;
     }
 
