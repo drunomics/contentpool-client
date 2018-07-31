@@ -170,11 +170,12 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     try {
       $response = $this->httpClient->post($base_url . '/_remote-registration?_format=json', $this->generateRegistrationPayload($remote));
 
-      if ($response->getStatusCode() === 200) {
+      if ($response->getStatusCode() == 200 || $response->getStatusCode() == 201) {
         $this->result = TRUE;
         $this->message = $this->t('Registration on remote is valid.');
         $message_body = json_decode($response->getBody()->getContents());
         $remote->setThirdPartySetting('contentpool_client', 'remote_site_uuid', $message_body->site_uuid);
+        $remote->save();
       }
       else {
         $this->message = $this->t('Remote returns status code @status.', ['@status' => $response->getStatusCode()]);
