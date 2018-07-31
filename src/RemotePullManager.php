@@ -76,6 +76,19 @@ class RemotePullManager implements RemotePullManagerInterface {
    * Constructs a RemoteAutopullManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state interface.
+   * @param \Drupal\workspace\ReplicatorInterface $replicator_manager
+   *   The replicator manager.
+   * @param \Drupal\multiversion\Workspace\ConflictTrackerInterface $conflict_tracker
+   *   The multiversion conflict tracker.
+   * @param \Drupal\Core\Queue\QueueFactory $queue_factory
+   *   The queue factory.
+   * @param \Drupal\Core\Queue\QueueWorkerManagerInterface $queue_manager
+   *   The queue manager.
+   * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
+   *   The multiversion workspace manager.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, ConflictTrackerInterface $conflict_tracker, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager, WorkspaceManagerInterface $workspace_manager) {
     $this->entityTypeManager = $entity_type_manager;
@@ -165,7 +178,7 @@ class RemotePullManager implements RemotePullManagerInterface {
       return;
     }
 
-    $upstream =  $workspace->upstream->entity;
+    $upstream = $workspace->upstream->entity;
 
     // Replication task creation and conflict handling, derived from workspace
     // update form.

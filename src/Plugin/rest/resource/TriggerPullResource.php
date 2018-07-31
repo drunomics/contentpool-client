@@ -7,11 +7,12 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\relaxed\SensitiveDataTransformer;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
+ * A rest resource that allows a remote to trigger a pull from a contentpool.
+ *
  * @RestResource(
  *   id = "contentpool_client:trigger_pull",
  *   label = "Trigger pull from contentpool",
@@ -37,6 +38,8 @@ class TriggerPullResource extends ResourceBase {
   protected $entityTypeManager;
 
   /**
+   * The remote pull manager.
+   *
    * @var \Drupal\contentpool_client\RemotePullManagerInterface
    */
   protected $remotePullManager;
@@ -45,11 +48,21 @@ class TriggerPullResource extends ResourceBase {
    * RemoteRegistrationResource constructor.
    *
    * @param array $configuration
+   *   The configuration array.
    * @param $plugin_id
+   *   The plugin id.
    * @param $plugin_definition
+   *   The plugin definition.
    * @param array $serializer_formats
+   *   An array of serializer formats.
    * @param \Psr\Log\LoggerInterface $logger
+   *   The logger service.
    * @param \Drupal\relaxed\SensitiveDataTransformer $sensitive_data_transformer
+   *   The relaxed sensitive data transformer.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\contentpool_client\RemotePullManagerInterface $remote_pull_manager
+   *   The remote pull manager.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, SensitiveDataTransformer $sensitive_data_transformer, EntityTypeManagerInterface $entity_type_manager, RemotePullManagerInterface $remote_pull_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
@@ -74,6 +87,16 @@ class TriggerPullResource extends ResourceBase {
     );
   }
 
+  /**
+   * Implements get resource callback.
+   *
+   * @param $data
+   *   Data provided from http request.
+   *
+   * @return \Drupal\rest\ModifiedResourceResponse
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   */
   public function get($data) {
     $status_code = 404;
 

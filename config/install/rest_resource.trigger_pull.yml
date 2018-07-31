@@ -5,8 +5,8 @@ dependencies:
     - basic_auth
     - contentpool_client
     - serialization
-id: contentpool_client.init_pull
-plugin_id: 'contentpool_client:init_pull'
+id: contentpool_client.trigger_pull
+plugin_id: 'contentpool_client:trigger_pull'
 granularity: method
 configuration:
   GET:

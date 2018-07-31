@@ -2,7 +2,6 @@
 
 namespace Drupal\contentpool_client\Commands;
 
-use Consolidation\OutputFormatters\StructuredData\RowsOfFields;
 use Drush\Commands\DrushCommands;
 
 /**

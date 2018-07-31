@@ -18,6 +18,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Serializer\Serializer;
 
 /**
+ * A remote check that auto-registers the site at the remote.
+ *
  * @RemoteCheck(
  *   id = "remote_register",
  *   label = "Register on remote",
@@ -80,13 +82,25 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
    * RemoteRegister constructor.
    *
    * @param array $configuration
+   *   The configuration array.
    * @param $plugin_id
+   *   The plugin id.
    * @param $plugin_definition
+   *   The plugin definition.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    * @param \Symfony\Component\Serializer\Serializer $serializer
+   *   The serializer.
    * @param \GuzzleHttp\ClientInterface $http_client
+   *   The guzzle http client.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *   The symfony request stack.
    * @param \Drupal\relaxed\SensitiveDataTransformer $sensitive_data_transformer
+   *   The relaxed sensitive data transformer.
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The core messenger service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory, Serializer $serializer, ClientInterface $http_client, RequestStack $request_stack, SensitiveDataTransformer $sensitive_data_transformer, MessengerInterface $messenger, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -100,10 +114,16 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
   }
 
   /**
+   * Creates an instance of the remote check.
+   *
    * @param \Drupal\contentpool_client\Plugin\RemoteCheck\ContainerInterface $container
+   *   The dependency injection container.
    * @param array $configuration
+   *   The configuration array.
    * @param $plugin_id
+   *   The plugin id.
    * @param $plugin_definition
+   *   The plugin definition.
    *
    * @return static
    */
@@ -179,7 +199,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     $body = [
       'site_name' => $site_name,
       'site_domain' => $site_host,
-      'site_uuid' => $site_uuid
+      'site_uuid' => $site_uuid,
     ];
 
     // Additional information about the relaxed endpoint.
