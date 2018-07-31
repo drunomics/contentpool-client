@@ -15,7 +15,17 @@
     }
   },
   "require": {
+    "drupal/replication": "^1.0@beta",
+    "drupal/relaxed": "^1.0@beta",
+    "drupal/workspace": "^1.0@beta"
   },
   "require-dev": {
+  },
+  "extra": {
+    "drush": {
+      "services": {
+        "drush.services.yml": "^9"
+      }
+    }
   }
 }
