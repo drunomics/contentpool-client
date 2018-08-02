@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies: {  }
+id: contentpool
+label: Replicate contentpool entities
+filter_id: contentpool
+parameters:
+  types:
+    - node.article
+    - taxonomy_term.channel

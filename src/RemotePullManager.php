@@ -119,14 +119,10 @@ class RemotePullManager implements RemotePullManagerInterface {
 
     $counter = 0;
     foreach ($remotes as $remote) {
-      // We check if the remote is marked as a contentpool instance.
-      if (!$remote->getThirdPartySetting('contentpool_client', 'is_contentpool', 0)) {
-        return $counter;
-      }
-
       // We try to do a pull from the remote.
-      $this->doPull($remote);
-      $counter++;
+      if ($this->doPull($remote)) {
+        $counter++;
+      }
     }
 
     return $counter;
@@ -176,6 +172,15 @@ class RemotePullManager implements RemotePullManagerInterface {
    * {@inheritdoc}
    */
   public function doPull(RemoteInterface $remote, $process_immediately = FALSE) {
+    // Don't process if the remote is not marked as a contentpool.
+    if (!$remote->getThirdPartySetting('contentpool_client', 'is_contentpool', 0)) {
+      return;
+    }
+    // Don't process if the remote has no defined channels.
+    if (empty($remote->getThirdPartySetting('contentpool_client', 'channels', []))) {
+      return;
+    }
+
     $workspace = $this->workspaceManager->getActiveWorkspace();
 
     // Check for a workspace configuration whose upstream is this remote.
@@ -238,6 +243,8 @@ class RemotePullManager implements RemotePullManagerInterface {
     if ($process_immediately) {
       $this->processReplicationQueue();
     }
+
+    return $remote;
   }
 
   /**
@@ -302,8 +309,8 @@ class RemotePullManager implements RemotePullManagerInterface {
       ]);
 
       if ($response->getStatusCode() == 200) {
-        $message_body = json_decode($response->getBody()->getContents());
-        return $message_body->contentpool_channels;
+        $message_body = json_decode($response->getBody()->getContents(), TRUE);
+        return $message_body['contentpool_channels'];
       }
     }
     catch (\Exception $e) {

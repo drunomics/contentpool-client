@@ -71,6 +71,8 @@ class ContentpoolChannelForm extends FormBase {
       $this->messenger->addWarning('No channels from contentpool server available.');
     }
 
+    $form_state->set('remote', $remote);
+
     $form['contentpool_channels'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Content channels'),
@@ -99,7 +101,8 @@ class ContentpoolChannelForm extends FormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state, RemoteInterface $remote = NULL) {
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $remote = $form_state->get('remote');
     $channels = $form_state->getValue('contentpool_channels');
     $remote->setThirdPartySetting('contentpool_client', 'channels', $channels);
     $remote->save();
