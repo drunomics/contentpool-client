@@ -1,0 +1,10 @@
+entity.remote.contentpool_channels:
+  path: '/admin/config/services/relaxed/{remote}/channels'
+  defaults:
+    _title: 'Channels'
+    _form: '\Drupal\contentpool_client\Form\ContentpoolChannelForm'
+  requirements:
+    _permission: 'access administration pages'
+    _custom_access: '\Drupal\contentpool_client\Form\ContentpoolChannelForm::access'
+  options:
+    _admin_route: TRUE

@@ -183,7 +183,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     }
     catch (\Exception $e) {
       $this->message = $e->getMessage();
-      watchdog_exception('relaxed', $e);
+      watchdog_exception('contentpool_client', $e);
     }
   }
 

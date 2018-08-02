@@ -2,7 +2,7 @@
 
 namespace Drupal\contentpool_client;
 
-use Drupal\relaxed\Entity\Remote;
+use Drupal\relaxed\Entity\RemoteInterface;
 
 /**
  * Interface for RemoteAutopullManager.
@@ -25,7 +25,7 @@ interface RemotePullManagerInterface {
    * @param \Drupal\relaxed\Entity\Remote $remote
    *   The remote on the contentpool server.
    */
-  public function isAutopullNeeded(Remote $remote);
+  public function isAutopullNeeded(RemoteInterface $remote);
 
   /**
    * Does a pull for a single remote.
@@ -35,6 +35,13 @@ interface RemotePullManagerInterface {
    * @param bool $process_immediately
    *   Forces the pull to happen immediately.
    */
-  public function doPull(Remote $remote, $process_immediately = FALSE);
+  public function doPull(RemoteInterface $remote, $process_immediately = FALSE);
+
+  /**
+   * Provides a list of channel options from the contentpool server.
+   *
+   * @param \Drupal\relaxed\Entity\Remote $remote
+   */
+  public function getChannelOptions(RemoteInterface $remote);
 
 }

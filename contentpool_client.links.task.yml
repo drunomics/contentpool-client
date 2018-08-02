@@ -1,0 +1,9 @@
+entity.remote.edit_form:
+  title: 'Edit'
+  route_name: entity.remote.edit_form
+  base_route: entity.remote.canonical
+
+entity.remote.contentpool_channels:
+  title: 'Contentpool channels'
+  route_name: entity.remote.contentpool_channels
+  base_route: entity.remote.canonical

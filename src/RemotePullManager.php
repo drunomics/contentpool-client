@@ -13,8 +13,11 @@ use Drupal\Core\Url;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\relaxed\Entity\Remote;
+use Drupal\relaxed\Entity\RemoteInterface;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\workspace\ReplicatorInterface;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\RequestOptions;
 
 /**
  * Helper class to get training references and backreferences.
@@ -73,6 +76,13 @@ class RemotePullManager implements RemotePullManagerInterface {
   protected $workspaceManager;
 
   /**
+   * The Guzzle HTTP client.
+   *
+   * @var \GuzzleHttp\Client
+   */
+  protected $httpClient;
+
+  /**
    * Constructs a RemoteAutopullManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -90,7 +100,7 @@ class RemotePullManager implements RemotePullManagerInterface {
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
    *   The multiversion workspace manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, ConflictTrackerInterface $conflict_tracker, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager, WorkspaceManagerInterface $workspace_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, ConflictTrackerInterface $conflict_tracker, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager, WorkspaceManagerInterface $workspace_manager, ClientInterface $http_client) {
     $this->entityTypeManager = $entity_type_manager;
     $this->state = $state;
     $this->replicatorManager = $replicator_manager;
@@ -98,6 +108,7 @@ class RemotePullManager implements RemotePullManagerInterface {
     $this->queueFactory = $queue_factory;
     $this->queueManager = $queue_manager;
     $this->workspaceManager = $workspace_manager;
+    $this->httpClient = $http_client;
   }
 
   /**
@@ -142,7 +153,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function isAutopullNeeded(Remote $remote) {
+  public function isAutopullNeeded(RemoteInterface $remote) {
     // Never needed if autopull is disabled.
     if ($remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 'never') == 'never') {
       return;
@@ -164,7 +175,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function doPull(Remote $remote, $process_immediately = FALSE) {
+  public function doPull(RemoteInterface $remote, $process_immediately = FALSE) {
     $workspace = $this->workspaceManager->getActiveWorkspace();
 
     // Check for a workspace configuration whose upstream is this remote.
@@ -261,6 +272,43 @@ class RemotePullManager implements RemotePullManagerInterface {
       catch (\Exception $e) {
         watchdog_exception('cron', $e);
       }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getChannelOptions(RemoteInterface $remote) {
+    if (!$remote->getThirdPartySetting('contentpool_client', 'is_contentpool', 0)) {
+      throw new \Exception('Remote entity is no contentpool server.');
+    }
+
+    $url = (string) $remote->uri();
+
+    // As the remote targets the relaxed endpoint we have to parse the url
+    // to get the base host.
+    $url_parts = parse_url($url);
+    $credentials = '';
+    if (isset($url_parts['user']) && isset($url_parts['pass'])) {
+      $credentials = $url_parts['user'] . ':' . $url_parts['pass'] . '@';
+    }
+    $base_url = $url_parts['scheme'] . '://' . $credentials . $url_parts['host'];
+
+    try {
+      $response = $this->httpClient->get($base_url . '/_contentpool-channels?_format=json', [
+        RequestOptions::HEADERS => [
+          'Content-Type' => 'application/json',
+        ],
+      ]);
+
+      if ($response->getStatusCode() == 200) {
+        $message_body = json_decode($response->getBody()->getContents());
+        return $message_body->contentpool_channels;
+      }
+    }
+    catch (\Exception $e) {
+      $this->message = $e->getMessage();
+      watchdog_exception('contentpool_client', $e);
     }
   }
 
