@@ -9,11 +9,6 @@
     }
   ],
   "license": "GPL-2.0-or-later",
-  "extra": {
-    "branch-alias": {
-      "dev-8.x-1.x": "1.0.x-dev"
-    }
-  },
   "require": {
     "drupal/replication": "^1.0@beta",
     "drupal/relaxed": "^1.0@beta",
@@ -22,9 +17,17 @@
   "require-dev": {
   },
   "extra": {
+    "branch-alias": {
+      "dev-8.x-1.x": "1.0.x-dev"
+    },
     "drush": {
       "services": {
         "drush.services.yml": "^9"
+      }
+    },
+    "patches": {
+      "drunomics/contentpool_replication": {
+        "#2989572: Refactor Changes class to be more modular": "https://www.drupal.org/files/issues/2018-07-31/refactor-changes-2989572-2.patch"
       }
     }
   }
