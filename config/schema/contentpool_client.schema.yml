@@ -1,0 +1,13 @@
+relaxed.remote.*.third_party.contentpool_client:
+  type: mapping
+  label: 'Contentpool client settings'
+  mapping:
+    is_contentpool:
+      type: integer
+      label: 'Marks remote as a contentpool server.'
+    autopull_interval:
+      type: string
+      label: 'Interval to use for pulling automatically.'
+    remote_site_uuid:
+      type: string
+      label: 'The uuid of the contentpool site.'
