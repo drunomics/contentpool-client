@@ -158,7 +158,11 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     // to get the base host.
     $url_parts = parse_url($url);
     $credentials = '';
+    $username = NULL;
+    $password = NULL;
     if (isset($url_parts['user']) && isset($url_parts['pass'])) {
+      $username = $url_parts['user'];
+      $password = $url_parts['pass'];
       $credentials = $url_parts['user'] . ':' . $url_parts['pass'] . '@';
     }
     $base_url = $url_parts['scheme'] . '://' . $credentials . $url_parts['host'];
@@ -168,7 +172,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     }
 
     try {
-      $response = $this->httpClient->post($base_url . '/_remote-registration?_format=json', $this->generateRegistrationPayload($remote));
+      $response = $this->httpClient->post($base_url . '/_remote-registration?_format=json', $this->generateRegistrationPayload($remote, $username, $password));
 
       if ($response->getStatusCode() == 200 || $response->getStatusCode() == 201) {
         $this->result = TRUE;
@@ -190,7 +194,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
   /**
    * Collects the data necessary for registration on remote.
    */
-  private function generateRegistrationPayload(RemoteInterface $remote) {
+  private function generateRegistrationPayload(RemoteInterface $remote, $username, $password) {
     // Basic Site information.
     $config = $this->configFactory->get('system.site');
     $site_name = $config->get('name');
@@ -217,9 +221,12 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     $body['endpoint_uri'] = (string) $uri;
     $serialized_body = $this->serializer->serialize($body, 'json');
 
+    $credentials = base64_encode($username . ':' . $password);
+
     return [
       RequestOptions::HEADERS => [
         'Content-Type' => 'application/json',
+        'Authorization' => 'Basic ' . $credentials,
       ],
       RequestOptions::BODY => $serialized_body,
     ];

@@ -21,11 +21,11 @@ class ChannelFilteredChanges extends Changes {
 
     $workspace = $this->entityTypeManager->getStorage('workspace')->load($this->workspaceId);
 
-    if ($workspace && !empty($workspace->upstream->isEmpty())) {
+    if ($workspace && !$workspace->upstream->isEmpty()) {
       $workspace_pointer = $workspace->upstream->entity;
 
-      if ($workspace_pointer && !empty($workspace_pointer->remote_pointer->isEmpty())) {
-        $settings['remote'] = $workspace->remote_pointer->entity;
+      if ($workspace_pointer && !$workspace_pointer->remote_pointer->isEmpty()) {
+        $settings['remote'] = $workspace_pointer->remote_pointer->entity;
       }
     }
 

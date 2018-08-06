@@ -59,6 +59,9 @@ function contentpool_client_form_remote_edit_form_submit(array &$form, FormState
   $remote = $form_state->getFormObject()->getEntity();
   $remote->setThirdPartySetting('contentpool_client', 'is_contentpool', $form_state->getValue('is_contentpool'));
   $remote->setThirdPartySetting('contentpool_client', 'autopull_interval', $form_state->getValue('autopull_interval'));
+
+  // We clear the render cache to possibly display the tab after save.
+  \Drupal::cache('render')->invalidateAll();
 }
 
 /**

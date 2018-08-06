@@ -1,9 +1,9 @@
 langcode: en
 status: true
 dependencies: {  }
-id: contentpool
+id: contentpool_client
 label: Replicate contentpool entities
-filter_id: contentpool
+filter_id: contentpool_client
 parameters:
   types:
     - node.article

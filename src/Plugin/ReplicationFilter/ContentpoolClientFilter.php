@@ -4,7 +4,6 @@ namespace Drupal\contentpool_client\Plugin\ReplicationFilter;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\replication\Plugin\ReplicationFilter\EntityTypeFilter;
-use Drupal\replication\Plugin\ReplicationFilter\ReplicationFilterBase;
 
 /**
  * Provides a filter based on entity type.

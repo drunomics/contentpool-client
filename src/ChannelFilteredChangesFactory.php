@@ -2,7 +2,7 @@
 
 namespace Drupal\contentpool_client;
 
-use Drupal\contentpool_replication\Changes\ResolvedChanges;
+use Drupal\contentpool_client\Changes\ChannelFilteredChanges;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\multiversion\Entity\Index\SequenceIndexInterface;
 use Drupal\multiversion\Entity\WorkspaceInterface;
