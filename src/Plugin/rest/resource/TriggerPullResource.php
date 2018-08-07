@@ -49,9 +49,9 @@ class TriggerPullResource extends ResourceBase {
    *
    * @param array $configuration
    *   The configuration array.
-   * @param $plugin_id
+   * @param string $plugin_id
    *   The plugin id.
-   * @param $plugin_definition
+   * @param mixed $plugin_definition
    *   The plugin definition.
    * @param array $serializer_formats
    *   An array of serializer formats.
@@ -90,10 +90,11 @@ class TriggerPullResource extends ResourceBase {
   /**
    * Implements get resource callback.
    *
-   * @param $data
+   * @param mixed $data
    *   Data provided from http request.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
+   *   The response.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */

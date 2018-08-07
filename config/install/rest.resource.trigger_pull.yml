@@ -2,15 +2,15 @@ langcode: en
 status: true
 dependencies:
   module:
-    - basic_auth
-    - contentpool_client
-    - serialization
+  - basic_auth
+  - contentpool_client
+  - serialization
 id: contentpool_client.trigger_pull
 plugin_id: 'contentpool_client:trigger_pull'
 granularity: method
 configuration:
   GET:
     supported_formats:
-      - json
+    - json
     supported_auth:
-      - basic_auth
+    - basic_auth
