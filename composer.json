@@ -12,20 +12,28 @@
   "extra": {
     "branch-alias": {
       "dev-8.x-1.x": "1.0.x-dev"
+    },
+    "drush": {
+      "services": {
+        "drush.services.yml": "^9"
+      }
     }
   },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "require": {
     "drupal/replication": "^1.0@beta",
     "drupal/relaxed": "^1.0@beta",
     "drupal/workspace": "^1.0@beta"
   },
   "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
+    "drupal/coder": "^8.2"
   },
-  "extra": {
-    "drush": {
-      "services": {
-        "drush.services.yml": "^9"
-      }
+  "repositories": [
+    {
+       "type": "composer",
+       "url": "https://packages.drupal.org/8"
     }
-  }
+  ]
 }
