@@ -22,7 +22,7 @@ interface RemotePullManagerInterface {
   /**
    * Checks the remote if an autopull is needed.
    *
-   * @param \Drupal\relaxed\Entity\Remote $remote
+   * @param \Drupal\relaxed\Entity\RemoteInterface $remote
    *   The remote on the contentpool server.
    */
   public function isAutopullNeeded(RemoteInterface $remote);
@@ -30,7 +30,7 @@ interface RemotePullManagerInterface {
   /**
    * Does a pull for a single remote.
    *
-   * @param \Drupal\relaxed\Entity\Remote $remote
+   * @param \Drupal\relaxed\Entity\RemoteInterface $remote
    *   The remote on the contentpool server.
    * @param bool $process_immediately
    *   Forces the pull to happen immediately.
@@ -40,7 +40,8 @@ interface RemotePullManagerInterface {
   /**
    * Provides a list of channel options from the contentpool server.
    *
-   * @param \Drupal\relaxed\Entity\Remote $remote
+   * @param \Drupal\relaxed\Entity\RemoteInterface $remote
+   *   The remote entity.
    */
   public function getChannelOptions(RemoteInterface $remote);
 

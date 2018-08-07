@@ -2,17 +2,17 @@
 
 namespace Drupal\contentpool_client\Form;
 
+use Drupal\contentpool_client\RemotePullManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\relaxed\Entity\RemoteInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class RemoteForm.
+ * Class ContentpoolChannelForm.
  */
 class ContentpoolChannelForm extends FormBase {
 
@@ -24,10 +24,18 @@ class ContentpoolChannelForm extends FormBase {
   protected $messenger;
 
   /**
+   * The remote pull manager.
+   *
+   * @var \Drupal\contentpool_client\RemotePullManagerInterface
+   */
+  protected $remotePullManager;
+
+  /**
    * Constructs the object.
    */
-  public function __construct(MessengerInterface $messenger) {
+  public function __construct(MessengerInterface $messenger, RemotePullManagerInterface $remote_pull_manager) {
     $this->messenger = $messenger;
+    $this->remotePullManager = $remote_pull_manager;
   }
 
   /**
@@ -35,7 +43,8 @@ class ContentpoolChannelForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('contentpool_client.remote_pull_manager')
     );
   }
 
@@ -56,15 +65,16 @@ class ContentpoolChannelForm extends FormBase {
    *   An associative array containing the structure of the form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
+   * @param \Drupal\relaxed\Entity\RemoteInterface|null $remote
+   *   The remote entity.
    *
    * @return array
    *   The form structure.
    */
   public function buildForm(array $form, FormStateInterface $form_state, RemoteInterface $remote = NULL) {
     // Verify the connection to the remote.
-
     // Add channel subscription settings.
-    list($channels, $topics) = \Drupal::service('contentpool_client.remote_pull_manager')->getChannelOptions($remote);
+    list($channels, $topics) = $this->remotePullManager->getChannelOptions($remote);
     $channel_uuids = $remote->getThirdPartySetting('contentpool_client', 'channels', []);
 
     if (empty($channels)) {
@@ -114,11 +124,11 @@ class ContentpoolChannelForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $remote = $form_state->get('remote');
-    $selected_channels = array_filter($form_state->getValue('contentpool_channels'), function($value) {
+    $selected_channels = array_filter($form_state->getValue('contentpool_channels'), function ($value) {
       return $value !== 0;
     });
 
-    $selected_topics = array_filter($form_state->getValue('contentpool_topics'), function($value) {
+    $selected_topics = array_filter($form_state->getValue('contentpool_topics'), function ($value) {
       return $value !== 0;
     });
 

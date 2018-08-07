@@ -12,7 +12,6 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
-use Drupal\relaxed\Entity\Remote;
 use Drupal\relaxed\Entity\RemoteInterface;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\workspace\ReplicatorInterface;
@@ -99,6 +98,8 @@ class RemotePullManager implements RemotePullManagerInterface {
    *   The queue manager.
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
    *   The multiversion workspace manager.
+   * @param \GuzzleHttp\ClientInterface $http_client
+   *   The guzzle http client.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, ConflictTrackerInterface $conflict_tracker, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager, WorkspaceManagerInterface $workspace_manager, ClientInterface $http_client) {
     $this->entityTypeManager = $entity_type_manager;
