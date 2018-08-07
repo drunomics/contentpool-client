@@ -38,6 +38,11 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
 
+  # Verify coding style first. Clean-up the vendor directory afterwards, so
+  # any drupal modules in there are not accidentally used.
+  - composer install
+  - ./vendor/bin/phpcs --colors --report-width=130 && rm -rf vendor
+
 install:
   - ./scripts/create-project.sh
   - ./scripts/run-server.sh
