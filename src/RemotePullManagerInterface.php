@@ -15,7 +15,7 @@ interface RemotePullManagerInterface {
   public function pullAllRemotes();
 
   /**
-   * Checks all remotes with enabled autopull if a new autopull has to be created.
+   * Checks which remotes need autopulls and invokes them.
    */
   public function checkAndDoAutopulls();
 

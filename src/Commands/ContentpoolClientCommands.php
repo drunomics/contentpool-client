@@ -2,6 +2,7 @@
 
 namespace Drupal\contentpool_client\Commands;
 
+use Drupal\contentpool_client\RemotePullManagerTrait;
 use Drush\Commands\DrushCommands;
 
 /**
@@ -17,6 +18,8 @@ use Drush\Commands\DrushCommands;
  */
 class ContentpoolClientCommands extends DrushCommands {
 
+  use RemotePullManagerTrait;
+
   /**
    * Command description here.
    *
@@ -27,9 +30,7 @@ class ContentpoolClientCommands extends DrushCommands {
    * @aliases cpc
    */
   public function pullContent() {
-    /** @var \Drupal\contentpool_client\RemotePullManagerInterface $remote_pull_manager */
-    $remote_pull_manager = \Drupal::service('contentpool_client.remote_pull_manager');
-    $pull_count = $remote_pull_manager->pullAllRemotes();
+    $pull_count = $this->getRemotePullManager()->pullAllRemotes();
 
     drush_print("Tried to pull from {$pull_count} remotes");
   }

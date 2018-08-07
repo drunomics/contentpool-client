@@ -83,9 +83,9 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
    *
    * @param array $configuration
    *   The configuration array.
-   * @param $plugin_id
+   * @param string $plugin_id
    *   The plugin id.
-   * @param $plugin_definition
+   * @param mixed $plugin_definition
    *   The plugin definition.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
@@ -120,9 +120,9 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
    *   The dependency injection container.
    * @param array $configuration
    *   The configuration array.
-   * @param $plugin_id
+   * @param string $plugin_id
    *   The plugin id.
-   * @param $plugin_definition
+   * @param mixed $plugin_definition
    *   The plugin definition.
    *
    * @return static
