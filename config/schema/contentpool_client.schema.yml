@@ -16,3 +16,8 @@ relaxed.remote.*.third_party.contentpool_client:
       label: 'Channels'
       sequence:
         type: string
+    topics:
+      type: sequence
+      label: 'Topics'
+      sequence:
+        type: string

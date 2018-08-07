@@ -64,7 +64,7 @@ class ContentpoolChannelForm extends FormBase {
     // Verify the connection to the remote.
 
     // Add channel subscription settings.
-    $channels = \Drupal::service('contentpool_client.remote_pull_manager')->getChannelOptions($remote);
+    list($channels, $topics) = \Drupal::service('contentpool_client.remote_pull_manager')->getChannelOptions($remote);
     $channel_uuids = $remote->getThirdPartySetting('contentpool_client', 'channels', []);
 
     if (empty($channels)) {
@@ -80,6 +80,17 @@ class ContentpoolChannelForm extends FormBase {
       '#options' => $channels,
       '#default_value' => $channel_uuids,
       '#required' => TRUE,
+    ];
+
+    // Add topic subscription settings.
+    $topic_uuids = $remote->getThirdPartySetting('contentpool_client', 'topics', []);
+
+    $form['contentpool_topics'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Content topics'),
+      '#description' => $this->t('If no topic is selected all topics will be pulled.'),
+      '#options' => $topics,
+      '#default_value' => $topic_uuids,
     ];
 
     $form['actions'] = [
@@ -103,8 +114,16 @@ class ContentpoolChannelForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $remote = $form_state->get('remote');
-    $channels = $form_state->getValue('contentpool_channels');
-    $remote->setThirdPartySetting('contentpool_client', 'channels', $channels);
+    $selected_channels = array_filter($form_state->getValue('contentpool_channels'), function($value) {
+      return $value !== 0;
+    });
+
+    $selected_topics = array_filter($form_state->getValue('contentpool_topics'), function($value) {
+      return $value !== 0;
+    });
+
+    $remote->setThirdPartySetting('contentpool_client', 'channels', $selected_channels);
+    $remote->setThirdPartySetting('contentpool_client', 'topics', $selected_topics);
     $remote->save();
   }
 

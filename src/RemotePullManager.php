@@ -137,10 +137,10 @@ class RemotePullManager implements RemotePullManagerInterface {
     $counter = 0;
     foreach ($remotes as $remote) {
       // We check if an autopull is needed based on settings and interval.
-      //if ($this->isAutopullNeeded($remote)) {
+      if ($this->isAutopullNeeded($remote)) {
         $this->doPull($remote);
         $counter++;
-      //}
+      }
     }
 
     return $counter;
@@ -205,6 +205,8 @@ class RemotePullManager implements RemotePullManagerInterface {
       if ($task->getFilter() == 'contentpool_channels') {
         $channel_uuids = $remote->getThirdPartySetting('contentpool_client', 'channels', []);
         $task->setParameter('channels', $channel_uuids);
+        $topic_uuids = $remote->getThirdPartySetting('contentpool_client', 'topics', []);
+        $task->setParameter('topics', $topic_uuids);
       }
 
       $response = $this->replicatorManager->update($upstream, $target, $task);
@@ -316,7 +318,10 @@ class RemotePullManager implements RemotePullManagerInterface {
 
       if ($response->getStatusCode() == 200) {
         $message_body = json_decode($response->getBody()->getContents(), TRUE);
-        return $message_body['contentpool_channels'];
+        return [
+          $message_body['contentpool_channels'],
+          $message_body['contentpool_topics'],
+        ];
       }
     }
     catch (\Exception $e) {
