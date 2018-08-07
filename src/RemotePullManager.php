@@ -137,10 +137,10 @@ class RemotePullManager implements RemotePullManagerInterface {
     $counter = 0;
     foreach ($remotes as $remote) {
       // We check if an autopull is needed based on settings and interval.
-      if ($this->isAutopullNeeded($remote)) {
+      //if ($this->isAutopullNeeded($remote)) {
         $this->doPull($remote);
         $counter++;
-      }
+      //}
     }
 
     return $counter;
@@ -200,7 +200,13 @@ class RemotePullManager implements RemotePullManagerInterface {
     // update form.
     try {
       // Derive a replication task from the Workspace we are acting on.
+      /** @var \Drupal\replication\ReplicationTask\ReplicationTask $task */
       $task = $this->replicatorManager->getTask($target->getWorkspace(), 'pull_replication_settings');
+      if ($task->getFilter() == 'contentpool_channels') {
+        $channel_uuids = $remote->getThirdPartySetting('contentpool_client', 'channels', []);
+        $task->setParameter('channels', $channel_uuids);
+      }
+
       $response = $this->replicatorManager->update($upstream, $target, $task);
 
       if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
