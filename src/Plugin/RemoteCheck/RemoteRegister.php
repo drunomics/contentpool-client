@@ -154,6 +154,8 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       return;
     }
 
+    return;
+
     // As the remote targets the relaxed endpoint we have to parse the url
     // to get the base host.
     $url_parts = parse_url($url);
