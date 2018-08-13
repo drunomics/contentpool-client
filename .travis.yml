@@ -40,9 +40,9 @@ before_install:
 
 install:
   - ./scripts/create-project.sh
+  - ./scripts/launch-contentpool.sh
   - ./scripts/run-server.sh
   - ./scripts/init-project.sh
-  - ./scripts/launch-contentpool.sh
   - ./scripts/run-tests.sh
 
 script:
