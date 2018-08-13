@@ -51,7 +51,8 @@ There are no tests to run yet. The setup for runnign tests is there and working 
      ./scripts/create-project.sh
      ./scripts/run-server.sh
      ./scripts/init-project.sh
-     ./scripts/launch-contentpoo.sh
+     ./scripts/launch-contentpool.sh
+     ./scripts/run-tests.sh
 
 ## Credits
 

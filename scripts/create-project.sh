@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PHAPP_VERSION=0.6.2
+PHAPP_VERSION=0.6.7
 
 set -e
 set -x
@@ -15,18 +15,23 @@ else
   echo Phapp version `phapp --version` found.
 fi
 
-[ ! -d ../contentpool-project ] || (echo "Old project is still existing, please remove ../contentpool-project." && exit 1)
+[ ! -d ../satellite-project ] || (echo "Old project is still existing, please remove ../satellite-project." && exit 1)
 
 phapp create --template=drunomics/drupal-project satellite-project ../satellite-project --no-interaction
 
 MODULE_DIR=`basename $PWD`
 cd ../satellite-project
 
-echo "Adding distribution..."
+echo "Adding module..."
 composer config repositories.self path ../$MODULE_DIR
 composer require drunomics/contentpool-client
 
 echo Project created.
 
+echo "Adding custom environment variables..."
+cat - >> .defaults.env <<END
+  INSTALL_PROFILE=standard
+END
+
 echo "Setting up project..."
-phapp setup travis
+phapp setup localdev
