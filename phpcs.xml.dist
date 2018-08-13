@@ -14,11 +14,6 @@
     <exclude-pattern>src/Annotation</exclude-pattern>
   </rule>
 
-  <!--Blacklist of coding standard rules that are not yet fixed. -->
-  <rule ref="Drupal">
-    <exclude name="Drupal.Commenting.DocComment.MissingShort"/>
-  </rule>
-
   <rule ref="DrupalPractice">
     <!-- Allow empty lines after comments, we don't care. -->
     <exclude name="DrupalPractice.Commenting.CommentEmptyLine"/>
@@ -29,5 +24,14 @@
 
   <rule ref="Drupal.Files.TxtFileLineLength.TooLong">
     <exclude-pattern>README.md</exclude-pattern>
+  </rule>
+
+  <rule ref="Drupal.Commenting.DocComment.MissingShort">
+    <!-- Behat step definitions have different comments. -->
+    <exclude-pattern>./tests/behat/behat-features</exclude-pattern>
+  </rule>
+  <rule ref="DrupalPractice.General.ClassName.ClassPrefix">
+    <!-- Behat has fixed class names. -->
+    <exclude-pattern>./tests/behat/behat-features</exclude-pattern>
   </rule>
 </ruleset>
