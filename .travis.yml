@@ -41,6 +41,7 @@ before_install:
 install:
   - ./scripts/create-project.sh
   - ./scripts/launch-contentpool.sh
+  - docker network ls
   - ./scripts/run-server.sh
   - ./scripts/init-project.sh
   - ./scripts/run-tests.sh
