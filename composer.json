@@ -22,6 +22,8 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
+    "drunomics/contentpool_data_model": "^1.0.2",
+    "drunomics/contentpool_replication": "^1.0@dev",
     "drupal/replication": "^1.0@beta",
     "drupal/relaxed": "^1.0@beta",
     "drupal/workspace": "^1.0@beta"
