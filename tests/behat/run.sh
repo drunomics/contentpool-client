@@ -18,7 +18,7 @@ fi
 # Build up BEHAT_PARAMS for running behat.
 # Note that everything set via BEHAT_PARAMS must be excluded in behat.yml as
 # BEHAT_PARAMS serves as default fallback only.
-CHROME_URL=http://${BEHAT_CHROME_HOST:-localhost}:${BEHAT_CHROME_PORT:-9222}
+CHROME_URL=http://${BEHAT_CHROME_HOST:-chrome}:${BEHAT_CHROME_PORT:-9222}
 BASE_URL=${BEHAT_BASE_URL:-$PHAPP_BASE_URL}
 
 BEHAT_PARAMS='{"extensions" : {"Behat\\MinkExtension" : {'
