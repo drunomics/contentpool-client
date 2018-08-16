@@ -16,4 +16,6 @@ Feature: Contentpool client-side replication works.
     And I run drush cron
     And I am logged in as a user with the "administrator" role
     And I am on "/admin/content"
-    Then the response should contain "Da schau her!"
+    Then I should see the text "Cultured meat"
+    And I should see the text "First quantum byte created"
+    And I should see the text "U.S. Congress considers lifting Cuba travel ban"
