@@ -26,7 +26,9 @@
     "drunomics/contentpool_replication": "^1.0@dev",
     "drupal/replication": "^1.0@beta",
     "drupal/relaxed": "^1.0@beta",
-    "drupal/workspace": "^1.0@beta"
+    "drupal/workspace": "^1.0@beta",
+    "relaxedws/couchdb":"dev-master#648d6ef",
+    "relaxedws/replicator":"dev-master#3b04a9f"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
