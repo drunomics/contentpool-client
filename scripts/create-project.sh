@@ -26,6 +26,8 @@ cd ../satellite-project
 echo "Adding module..."
 composer config repositories.self path ../$MODULE_DIR
 # Ensure it picks up the local repository.
+# Travis does not want to use a symlink, so help by creatint it first.
+ln -sf ../$MODULE_DIR web/modules/contrib/contentpool-client
 composer require drunomics/contentpool-client:"dev-8.x-1.x#$GIT_COMMIT"
 
 echo Project created.
