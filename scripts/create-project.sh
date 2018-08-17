@@ -19,16 +19,15 @@ fi
 
 phapp create --template=drunomics/drupal-project satellite-project ../satellite-project --no-interaction
 
-GIT_COMMIT=$(git rev-parse HEAD)
 MODULE_DIR=`basename $PWD`
 cd ../satellite-project
 
 echo "Adding module..."
 composer config repositories.self path ../$MODULE_DIR
 # Ensure it picks up the local repository.
-# Travis does not want to use a symlink, so help by creatint it first.
+# Travis does not want to use a symlink, so help by creating it first.
 ln -sf ../$MODULE_DIR web/modules/contrib/contentpool-client
-composer require drunomics/contentpool-client:"dev-8.x-1.x#$GIT_COMMIT"
+composer require drunomics/contentpool-client
 
 echo Project created.
 
