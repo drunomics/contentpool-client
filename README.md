@@ -35,7 +35,18 @@ for details.
 * Set the "replicator" user and its password `admin/config/relaxed/settings`.
   Do not change the API root.
 
-* Add a new remote service at `admin/config/services/relaxed/add`
+* Add a new remote service "Contentpool" at `admin/config/services/relaxed/add`
+  and enter the remote URL, including the /relaxedws suffix. After submitting
+  the form, the connection will be checked. If there are no inidicated problems,
+  it worked fine.
+
+* Configure the live workspace at `admin/structure/workspace/` as follows:
+  
+  * Set "Assign default target workspace" to "Contentpool - Live".
+  * Set "Replication settings on update" to "Replicate contentpool entities" 
+  * Set "Replication settings on update" to "None"
+  
+That's it, you can give it a try now.
 
 ### Automated setup
 
@@ -88,6 +99,13 @@ For example:
 
     drush cpc && drush queue-run workspace_replication
 
+### Troubleshooting
+
+When there are replication problems, be sure to:
+ 
+* check status report. If there is an connection issues with the contentpool or
+  replication errors it will be reported there.
+* check the recent log messages (watchdog) for errors. 
 
 ## Development
 
