@@ -154,10 +154,6 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       return;
     }
 
-    $this->result = TRUE;
-    $this->message = $this->t('Not marked as a contentpool server.');
-    return;
-
     // As the remote targets the relaxed endpoint we have to parse the url
     // to get the base host.
     $url_parts = parse_url($url);
