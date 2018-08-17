@@ -7,32 +7,79 @@
 
  [![Build Status](https://travis-ci.org/drunomics/contentpool-client.svg?branch=8.x-1.x)](https://travis-ci.org/drunomics/contentpool-client)
 
- 
+
 ## Overview
 
 This repository is a Drupal client module that can connect to a contentpool
 server. You'll need a drupal project for installing it. Refer to "Installation"
 for details.
 
-## Installation
+## Installation instructions
 
-* composer require drunomics/contentpool-client
+*  Install the module and it's dependencies as usual. It's recommended to do
+   so via composer. This requires a composer-enabled Drupal projects, e.g. as
+   provided by http://github.com/drunomics/drupal-project.
+
+        composer require drunomics/contentpool-client
+        drush en contentpool_client -y
+
+* Configure the module as necessary. This can be done with the provided drush
+  command or manually.
+
+### Manual setup
+
+* Add a new "replicator" user for replication and grant it the "replicator"
+  role. It will be used by the replication process to create the data via the
+  CouchDB compatible /relaxedws API endpoint.
+
+* Set the "replicator" user and its password `admin/config/relaxed/settings`.
+  Do not change the API root.
+
+* Add a new remote service at `admin/config/services/relaxed/add`
+
+### Automated setup
+
+ TODO
 
 ## Usage
 
-### Triggering updates from remote contentpool server
+The module configures all dependencies needed to replicate content from the
+contentpool. That is, the necessary data model and the modules needed for the
+replication. See http://www.drupaldeploy.org/ for more info about this modules.
+
+The client can pull data automatically on a regular basis, or one can initiate
+the data replication process manually. Finally, the client provides an API
+endpoint which allows the contentpool to initiate an update instantly after
+changes occurred.
+
+### Pull data via the drush command
+
+Just run the following command (requires Drush 9):
+
+    drush cpc && drush queue-run workspace_replication
+
+### Pull data via the UI
+
+ * As admin you should see an "Update" button in the top right corner of the
+   toolbar. Use it to initiate an update.
+
+ * Once done so, cron must be invoked to actually perform the replication. Do
+   so; e.g. via the "Run cron" button at admin/reports/status.
+
+
+### Automatic updates
 
 The contentpool client can be configured to update content from configured
 contentpool remote servers. The following options are possible:
 
-#### Automatically with cron
+#### Automatic pulls via Drupal's cron
 
 In the configuration for a remote a pull interval can be specified. On a cron
 run the interval will be checked and a pull scheduled if necessary. The pull
 will run automatically at the end of cron execution, when Drupal processes
 the workspace replication queue.
 
-#### Manually with drush
+#### Automatic pulls via a manual cron entry
 
 The update can be triggered manually using the ```contentpool-client:pull-content```
 command. It will pull from all remote servers that are marked as a Contentpool.
