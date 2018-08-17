@@ -103,7 +103,7 @@ class ContentpoolClientCommands extends DrushCommands {
 
       $config = $this->getConfigFactory()->getEditable('relaxed.settings');
       $config->set('username', 'replicator');
-      $config->set('password', $pass);
+      $config->set('password', base64_encode($pass));
       $config->save();
       $this->io()->writeln(dt('Configured replicator user to be used for replication.'));
     }
