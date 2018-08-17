@@ -97,6 +97,7 @@ class ContentpoolClientCommands extends DrushCommands {
         'roles' => ['replicator'],
         'pass' => $pass,
       ]);
+      $user->activate();
       $user->save();
       $this->io()->writeln(dt('Replicator user created with password "@pass".', ['@pass' => $pass]));
 
