@@ -19,12 +19,15 @@ fi
 
 phapp create --template=drunomics/drupal-project satellite-project ../satellite-project --no-interaction
 
+GIT_COMMIT=$(git rev-parse HEAD)
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 MODULE_DIR=`basename $PWD`
 cd ../satellite-project
 
 echo "Adding module..."
 composer config repositories.self path ../$MODULE_DIR
-composer require drunomics/contentpool-client
+# Ensure it picks up the local repository.
+composer require drunomics/contentpool-client:"dev-$GIT_BRANCH#$GIT_COMMIT"
 
 echo Project created.
 
