@@ -27,6 +27,7 @@
     "drunomics/service-utils": "*",
     "drupal/replication": "^1.0@beta",
     "drupal/relaxed": "^1.0@beta",
+    "drupal/scheduler": "*",
     "drupal/workspace": "^1.0@beta",
     "relaxedws/couchdb":"dev-master#648d6ef",
     "relaxedws/replicator":"dev-master#3b04a9f"
