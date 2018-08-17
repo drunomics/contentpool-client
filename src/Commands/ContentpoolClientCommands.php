@@ -47,7 +47,7 @@ class ContentpoolClientCommands extends DrushCommands {
    * workspace to replicate data with the contentpool.
    *
    * @usage contentpool-client:setup
-   *   drush cpc https://replicator:PASS@example.com/relaxed'
+   *   drush cps https://replicator:PASS@example.com/relaxed
    *
    * @command contentpool-client:setup
    * @aliases cps
