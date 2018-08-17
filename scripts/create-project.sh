@@ -37,6 +37,9 @@ echo "Adding module..."
 composer config repositories.self vcs ../$MODULE_DIR
 composer require drunomics/contentpool-client:"dev-$GIT_BRANCH"
 
+# For some reason this is not picked up automatically, for now do it manually.
+composer require relaxedws/couchdb:dev-master#648d6ef relaxedws/replicator:dev-master#3b04a9f
+
 echo Project created.
 
 echo "Adding custom environment variables..."
