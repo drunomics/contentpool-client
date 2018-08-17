@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PHAPP_VERSION=0.6.2
+PHAPP_VERSION=0.6.7
 
 set -e
 set -x
@@ -15,18 +15,40 @@ else
   echo Phapp version `phapp --version` found.
 fi
 
-[ ! -d ../contentpool-project ] || (echo "Old project is still existing, please remove ../contentpool-project." && exit 1)
+[ ! -d ../satellite-project ] || (echo "Old project is still existing, please remove ../satellite-project." && exit 1)
 
 phapp create --template=drunomics/drupal-project satellite-project ../satellite-project --no-interaction
 
 MODULE_DIR=`basename $PWD`
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Support detached HEADs.
+# If a detached HEAD is found, we must give it a branch name. This is necessary
+# as composer does not update metadata when dependencies are added in via Git
+# commits, thus we need a branch.
+if [[ $GIT_BRANCH = "HEAD" ]]; then
+  GIT_BRANCH=tmp/$(date +%s)
+  git checkout -b $GIT_BRANCH
+fi
+
 cd ../satellite-project
 
-echo "Adding distribution..."
-composer config repositories.self path ../$MODULE_DIR
-composer require drunomics/contentpool-client
+echo "Adding module..."
+composer config repositories.self vcs ../$MODULE_DIR
+composer require drunomics/contentpool-client:"dev-$GIT_BRANCH"
+
+# For some reason this is not picked up automatically, for now do it manually.
+composer require relaxedws/couchdb:dev-master#648d6ef relaxedws/replicator:dev-master#3b04a9f
 
 echo Project created.
 
+echo "Adding custom environment variables..."
+cat - >> .defaults.env <<END
+  INSTALL_PROFILE=standard
+END
+
 echo "Setting up project..."
-phapp setup travis
+phapp setup localdev
+
+echo "Installed project with the following vendors:"
+composer show

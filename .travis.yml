@@ -5,11 +5,12 @@ php:
   - 7.1
 
 git:
-  depth: 5
+  # Parsing composer metadata does not work with shallow clones.
+  depth: false
 
 env:
   global:
-    - DOCKER_COMPOSE_VERSION=1.19.0
+    - DOCKER_COMPOSE_VERSION=1.22.0
 addons:
   apt:
     packages:
@@ -38,19 +39,16 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
 
-  # Verify coding style first. Clean-up the vendor directory afterwards, so
-  # any drupal modules in there are not accidentally used.
-  - composer install
-  - ./vendor/bin/phpcs --colors --report-width=130 && rm -rf vendor
-
 install:
   - ./scripts/create-project.sh
+  - ./scripts/launch-contentpool.sh
+  - docker network ls
   - ./scripts/run-server.sh
   - ./scripts/init-project.sh
-  - ./scripts/launch-contentpool.sh
+  - ./scripts/run-tests.sh
 
 script:
-  - curl -N http://localhost:80 | grep  "Drupal 8" -q
+  - curl -N http://satellite-project.localdev.space | grep  "Drupal 8" -q
 
 after_success:
   - echo "SUCCESS!"

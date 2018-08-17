@@ -7,33 +7,134 @@
 
  [![Build Status](https://travis-ci.org/drunomics/contentpool-client.svg?branch=8.x-1.x)](https://travis-ci.org/drunomics/contentpool-client)
 
- 
+
 ## Overview
 
 This repository is a Drupal client module that can connect to a contentpool
 server. You'll need a drupal project for installing it. Refer to "Installation"
 for details.
 
-## Installation
+## Installation instructions
 
-* composer require drunomics/contentpool-client
+*  Install the module and it's dependencies as usual. It's recommended to do
+   so via composer. This requires a composer-enabled Drupal projects, e.g. as
+   provided by http://github.com/drunomics/drupal-project.
+
+        composer require drunomics/contentpool-client
+        drush en contentpool_client -y
+
+* Configure the module as necessary. This can be done with the provided drush
+  command or manually.
+
+### Manual setup
+
+* Add a new "replicator" user for replication and grant it the "replicator"
+  role. It will be used by the replication process to create the data via the
+  CouchDB compatible /relaxedws API endpoint.
+
+* Set the "replicator" user and its password `admin/config/relaxed/settings`.
+  Do not change the API root.
+
+* Add a new remote service "Contentpool" at `admin/config/services/relaxed/add`
+  and enter the remote URL, including the /relaxedws suffix. After submitting
+  the form, the connection will be checked. If there are no inidicated problems,
+  it worked fine.
+
+* Configure the live workspace at `admin/structure/workspace/` as follows:
+  
+  * Set "Assign default target workspace" to "Contentpool - Live".
+  * Set "Replication settings on update" to "Replicate contentpool entities" 
+  * Set "Replication settings on update" to "None"
+  
+That's it, you can give it a try now.
+
+### Automated setup
+
+Just run the provided drush command:
+
+    drush cps http://replicator:YOURPASS@contentpool-project.localdev.space/relaxed
 
 ## Usage
 
-### Triggering updates from remote contentpool server
+The module configures all dependencies needed to replicate content from the
+contentpool. That is, the necessary data model and the modules needed for the
+replication. See http://www.drupaldeploy.org/ for more info about this modules.
 
-The contentpool client can be configured to update content from configured contentpool remote servers.
+The client can pull data automatically on a regular basis, or one can initiate
+the data replication process manually. Finally, the client provides an API
+endpoint which allows the contentpool to initiate an update instantly after
+changes occurred.
 
-#### Automatically with cron
-In the configuration for a remote a pull interval can be specified. On a cron run the interval will be checked
-and a pull scheduled if necessary.
+### Pull data via the drush command
 
-#### Manually with drush
-The scheduling can be triggered manully for all remotes using the ```contentpool-client:pull-content``` command.
+Just run the following command (requires Drush 9):
+
+    drush cpc && drush queue-run workspace_replication
+
+### Pull data via the UI
+
+ * As admin you should see an "Update" button in the top right corner of the
+   toolbar. Use it to initiate an update.
+
+ * Once done so, cron must be invoked to actually perform the replication. Do
+   so; e.g. via the "Run cron" button at admin/reports/status.
+
+
+### Automatic updates
+
+The contentpool client can be configured to update content from configured
+contentpool remote servers. The following options are possible:
+
+#### Automatic pulls via Drupal's cron
+
+In the configuration for a remote a pull interval can be specified. On a cron
+run the interval will be checked and a pull scheduled if necessary. The pull
+will run automatically at the end of cron execution, when Drupal processes
+the workspace replication queue.
+
+#### Automatic pulls via a manual cron entry
+
+The update can be triggered manually using the ```contentpool-client:pull-content```
+command. It will pull from all remote servers that are marked as a Contentpool.
+
+For example:
+
+    drush cpc && drush queue-run workspace_replication
+
+### Troubleshooting
+
+When there are replication problems, be sure to:
+ 
+* check status report. If there is an connection issues with the contentpool or
+  replication errors it will be reported there.
+* to clear the flood history on the contentpool when you have
+  authentication troubles; e.g. run the query `DELETE FROM flood;`.
+* check the recent log messages (watchdog) for replication errors.
 
 ## Development
 
-  Just follow the above setup instructions and edit the module
+### Via the provided development setup
+
+  For development purposes one can use the provided docker-compose setup. This
+  is exactly the same setup as it's used by automated tests.
+
+  First, ensure do you do not use docker-composer version 1.21, as it contains
+  this regression: https://github.com/docker/compose/issues/5874
+
+      docker-compose --version
+
+  If so, update to version 1.22 which is known to work. See
+  https://github.com/docker/compose/releases/tag/1.22.0
+  
+       ./scripts/create-project.sh
+       ./scripts/run-server.sh
+       ./scripts/init-project.sh
+       # Optionally, launch a pool instance.
+       ./scripts/launch-contentpool.sh
+  
+### On a custom site
+
+  Just follow the above installation instructions and edit the module
   content at web/modules/contrib/contentpool-client. You can make sure it's a Git
   checkout by doing:
       
@@ -42,16 +143,26 @@ The scheduling can be triggered manully for all remotes using the ```contentpool
 
 ## Running tests
 
-There are no tests to run yet. The setup for runnign tests is there and working though.
-
-### Locally, via travis scripts
-    
- You can just launch the provided scripts in the same order as travis:
+### Locally, via provided scripts
+  
+ After installation with the provided scripts (see above) you can just launch
+ the tests as the following:
  
      ./scripts/create-project.sh
      ./scripts/run-server.sh
      ./scripts/init-project.sh
-     ./scripts/launch-contentpoo.sh
+     ./scripts/launch-contentpool.sh
+     ./scripts/run-tests.sh
+
+### Manually
+
+Based upon the manual installation instructions you can launch tests with the
+following helper script:
+
+    ./web/modules/contrib/contentpool-client/tests/behat/run.sh
+
+You might have to set some environment variables for it to work. It needs a
+running a chrome with remote debugging enabled. Set the CHROME_URL variable.
 
 ## Credits
 
