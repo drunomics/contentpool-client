@@ -20,14 +20,22 @@ fi
 phapp create --template=drunomics/drupal-project satellite-project ../satellite-project --no-interaction
 
 MODULE_DIR=`basename $PWD`
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Support detached HEADs.
+# If a detached HEAD is found, we must give it a branch name. This is necessary
+# as composer does not update metadata when dependencies are added in via Git
+# commits, thus we need a branch.
+if [[ $GIT_BRANCH = "HEAD" ]]; then
+  GIT_BRANCH=tmp/$(date +%s)
+  git checkout -b $GIT_BRANCH
+fi
+
 cd ../satellite-project
 
 echo "Adding module..."
-composer config repositories.self path ../$MODULE_DIR
-# Ensure it picks up the local repository.
-# Travis does not want to use a symlink, so help by creating it first.
-ln -sf ../$MODULE_DIR web/modules/contrib/contentpool-client
-composer require drunomics/contentpool-client
+composer config repositories.self vcs ../$MODULE_DIR
+composer require drunomics/contentpool-client:"dev-$GIT_BRANCH"
 
 echo Project created.
 
