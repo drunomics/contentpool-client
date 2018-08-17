@@ -50,7 +50,9 @@ That's it, you can give it a try now.
 
 ### Automated setup
 
- TODO
+Just run the provided drush command:
+
+    drush cps http://replicator:YOURPASS@contentpool-project.localdev.space/relaxed
 
 ## Usage
 
@@ -105,7 +107,9 @@ When there are replication problems, be sure to:
  
 * check status report. If there is an connection issues with the contentpool or
   replication errors it will be reported there.
-* check the recent log messages (watchdog) for errors. 
+* to clear the flood history on the contentpool when you have
+  authentication troubles; e.g. run the query `DELETE FROM flood;`.
+* check the recent log messages (watchdog) for replication errors.
 
 ## Development
 
