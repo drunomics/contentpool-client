@@ -98,7 +98,7 @@ class TriggerPullResource extends ResourceBase {
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  public function get($data) {
+  public function post($data) {
     $status_code = 404;
 
     // We check for the site uuid and do a pull if found.

@@ -9,7 +9,7 @@ id: contentpool_client.trigger_pull
 plugin_id: 'contentpool_client:trigger_pull'
 granularity: method
 configuration:
-  GET:
+  POST:
     supported_formats:
     - json
     supported_auth:
