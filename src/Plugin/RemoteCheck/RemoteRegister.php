@@ -168,7 +168,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     }
 
     try {
-      $response = $this->httpClient->post($base_url . '/_remote-registration?_format=json', $this->generateRegistrationPayload($remote));
+      $response = $this->httpClient->post($base_url . '/api/remote-registration?_format=json', $this->generateRegistrationPayload($remote));
 
       if ($response->getStatusCode() == 200 || $response->getStatusCode() == 201) {
         $this->result = TRUE;
@@ -182,8 +182,9 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       }
     }
     catch (\Exception $e) {
+      $this->result = FALSE;
       $this->message = $e->getMessage();
-      watchdog_exception('relaxed', $e);
+      watchdog_exception('contentpool', $e);
     }
   }
 
