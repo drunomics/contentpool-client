@@ -20,22 +20,13 @@ fi
 phapp create --template=drunomics/drupal-project satellite-project ../satellite-project --no-interaction
 
 MODULE_DIR=`basename $PWD`
-GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-# Support detached HEADs.
-# If a detached HEAD is found, we must give it a branch name. This is necessary
-# as composer does not update metadata when dependencies are added in via Git
-# commits, thus we need a branch.
-if [[ $GIT_BRANCH = "HEAD" ]]; then
-  GIT_BRANCH=tmp/$(date +%s)
-  git checkout -b $GIT_BRANCH
-fi
+source scripts/util/get-branch.sh
 
 cd ../satellite-project
 
 echo "Adding module..."
 composer config repositories.self vcs ../$MODULE_DIR
-composer require drunomics/contentpool-client:"dev-$GIT_BRANCH"
+composer require drunomics/contentpool-client:"dev-$GIT_CURRENT_BRANCH"
 
 # For some reason this is not picked up automatically, for now do it manually.
 composer require relaxedws/couchdb:dev-master#648d6ef relaxedws/replicator:dev-master#3b04a9f
@@ -49,6 +40,14 @@ END
 
 echo "Setting up project..."
 phapp setup localdev
+
+if [[ -f ../$MODULE_DIR/scripts/per-branch-pre-build-hook/${GIT_BRANCH/\//--}.sh ]]; then
+  echo "Executing pre-build hook for branch $GIT_BRANCH"
+  ../$MODULE_DIR/scripts/per-branch-pre-build-hook/${GIT_BRANCH/\//--}.sh
+fi
+
+# Run build on the host so we can leverage build caches.
+phapp build
 
 echo "Installed project with the following vendors:"
 composer show
