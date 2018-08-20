@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "contentpool_client:trigger_pull",
  *   label = "Trigger pull from contentpool",
  *   uri_paths = {
- *     "canonical" = "/_trigger-pull",
+ *     "create" = "/api/trigger-pull"
  *   }
  * )
  */
@@ -98,7 +98,7 @@ class TriggerPullResource extends ResourceBase {
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
-  public function get($data) {
+  public function post($data) {
     $status_code = 404;
 
     // We check for the site uuid and do a pull if found.

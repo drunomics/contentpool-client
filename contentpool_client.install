@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Install file.
+ */
+
+use Drupal\user\Entity\Role;
+
+/**
+ * Install the contentpool client module.
+ */
+function contentpool_client_install() {
+  // Extend the replicator role permissions as needed.
+  $replicator = Role::load('replicator');
+  $replicator->grantPermission('restful post contentpool_client:trigger_pull');
+  $replicator->save();
+}

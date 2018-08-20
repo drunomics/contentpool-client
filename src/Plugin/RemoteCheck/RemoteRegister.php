@@ -154,10 +154,6 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       return;
     }
 
-    $this->result = TRUE;
-    $this->message = $this->t('Not marked as a contentpool server.');
-    return;
-
     // As the remote targets the relaxed endpoint we have to parse the url
     // to get the base host.
     $url_parts = parse_url($url);
@@ -172,7 +168,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     }
 
     try {
-      $response = $this->httpClient->post($base_url . '/_remote-registration?_format=json', $this->generateRegistrationPayload($remote));
+      $response = $this->httpClient->post($base_url . '/api/remote-registration?_format=json', $this->generateRegistrationPayload($remote));
 
       if ($response->getStatusCode() == 200 || $response->getStatusCode() == 201) {
         $this->result = TRUE;
@@ -186,8 +182,9 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
       }
     }
     catch (\Exception $e) {
+      $this->result = FALSE;
       $this->message = $e->getMessage();
-      watchdog_exception('relaxed', $e);
+      watchdog_exception('contentpool', $e);
     }
   }
 

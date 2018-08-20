@@ -111,4 +111,5 @@ class ContentpoolClientCommands extends DrushCommands {
       $this->io()->warning(dt('The "replicator" user exists, skipping user configuration.'));
     }
   }
+
 }
