@@ -11,4 +11,3 @@ dependencies:
   - contentpool:contentpool_data_model
   - contentpool:contentpool_replication
   - scheduler:scheduler
-

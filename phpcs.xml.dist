@@ -8,15 +8,18 @@
 
   <arg name="extensions" value="inc,install,module,php,profile,test,theme,yml"/>
   <arg value="s"/>
-  
-  <rule ref="Drupal.NamingConventions.ValidVariableName.LowerCamelName">
-    <!-- Annotations must use the same property names as in the configuration. -->
-    <exclude-pattern>src/Annotation</exclude-pattern>
+
+  <rule ref="Drupal">
   </rule>
 
   <rule ref="DrupalPractice">
     <!-- Allow empty lines after comments, we don't care. -->
     <exclude name="DrupalPractice.Commenting.CommentEmptyLine"/>
+  </rule>
+
+  <rule ref="Drupal.NamingConventions.ValidVariableName.LowerCamelName">
+    <!-- Annotations must use the same property names as in the configuration. -->
+    <exclude-pattern>src/Annotation</exclude-pattern>
   </rule>
 
   <!-- We always want short array syntax only. -->
