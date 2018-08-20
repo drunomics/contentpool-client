@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "contentpool_client:trigger_pull",
  *   label = "Trigger pull from contentpool",
  *   uri_paths = {
- *     "canonical" = "/_trigger-pull",
+ *     "create" = "/api/trigger-pull"
  *   }
  * )
  */

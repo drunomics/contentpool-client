@@ -4,7 +4,7 @@ dependencies:
   module:
   - basic_auth
   - contentpool_client
-  - serialization
+  - rest
 id: contentpool_client.trigger_pull
 plugin_id: 'contentpool_client:trigger_pull'
 granularity: method
