@@ -10,10 +10,7 @@
 
 # Determine current branch.
 GIT_CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-if [[ -z "$GIT_BRANCH" ]]; then
-  GIT_BRANCH=$GIT_CURRENT_BRANCH
-fi
+GIT_BRANCH=$GIT_CURRENT_BRANCH
 
 # Support detached HEADs.
 # If a detached HEAD is found, we must give it a branch name. This is necessary
