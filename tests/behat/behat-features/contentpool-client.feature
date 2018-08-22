@@ -19,3 +19,19 @@ Feature: Contentpool client-side replication works.
     Then I should see the text "Cultured meat"
     And I should see the text "First quantum byte created"
     And I should see the text "U.S. Congress considers lifting Cuba travel ban"
+
+    # Ensure referenced tags got auto-added to the replicated entities.
+    When I click "Cultured meat"
+    Then I should see "In-vitro meat"
+    And I should not see "science"
+    And I should not see "cuba"
+    When I move backward one page
+    And I click "First quantum byte created"
+    Then I should see "science"
+    And I should not see "In-vitro meat"
+    And I should not see "cuba"
+    When I move backward one page
+    And I click "U.S. Congress considers lifting Cuba travel ban"
+    Then I should see "cuba"
+    And I should not see "In-vitro meat"
+    And I should not see "science"
