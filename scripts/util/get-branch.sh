@@ -8,10 +8,6 @@
 #
 # Usage: eval scripts/util/get-branch.sh
 
-if [[ ! -z "$TRAVIS" ]]; then
-  GIT_BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
-fi
-
 # Determine current branch.
 GIT_CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
@@ -24,6 +20,11 @@ fi
 # as composer does not update metadata when dependencies are added in via Git
 # commits, thus we need a branch.
 if [[ $GIT_CURRENT_BRANCH = "HEAD" ]]; then
+  # On travis, fall back to the the travis branch for GIT_BRANCH.
+  if [[ ! -z "$TRAVIS" ]]; then
+    GIT_BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+  fi
+
   GIT_CURRENT_BRANCH=tmp/$(date +%s)
   git checkout -b $GIT_CURRENT_BRANCH
 fi
