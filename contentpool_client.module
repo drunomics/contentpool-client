@@ -6,11 +6,13 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\relaxed\Entity\RemoteInterface;
 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
 function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /** @var \Drupal\relaxed\Entity\RemoteInterface $remote */
   $remote = $form_state->getFormObject()->getEntity();
 
   $form['actions']['submit']['#submit'] = array_merge(['contentpool_client_form_remote_edit_form_submit'], $form['actions']['submit']['#submit']);
@@ -45,6 +47,120 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
       ],
     ],
   ];
+
+  $filter_fields = [];
+  $treeselect_filters = contentpool_client_get_treeselect_filters($remote);
+  $current_filter = $remote->getThirdPartySetting('contentpool_client', 'filter', []);
+  foreach ($treeselect_filters as $field => $filter) {
+    $filter_field = 'filter-' . $field;
+    $filter_fields[] = $filter_field;
+    $form['contentpool_client_settings']['treeselect-' . $field] = $filter;
+    $form['contentpool_client_settings'][$filter_field] = [
+      '#type' => 'hidden',
+      '#default_value' => isset($current_filter[$field]) ? implode(",", $current_filter[$field]) : '',
+    ];
+  }
+  $form_state->set('contentpool_client.filter_fields', $filter_fields);
+}
+
+/**
+ * Get options for the termreference filter.
+ *
+ * @param \Drupal\relaxed\Entity\RemoteInterface $remote
+ *  Remote interface.
+ *
+ * @return string[]
+ */
+function contentpool_client_get_treeselect_filters(RemoteInterface $remote) {
+  if (!$remote->getThirdPartySetting('contentpool_client', 'is_contentpool', 0)) {
+    return [];
+  }
+
+  $termreference_fields = [];
+
+  $url = (string) $remote->uri();
+  // As the remote targets the relaxed endpoint we have to parse the url
+  // to get the base host.
+  $url_parts = parse_url($url);
+  $auth = [];
+  if (isset($url_parts['user']) && isset($url_parts['pass'])) {
+    $auth[] = $url_parts['user'];
+    $auth[] =$url_parts['pass'];
+  }
+  $base_url = $url_parts['scheme'] . '://' . $url_parts['host'];
+
+  try {
+    $response = (new \GuzzleHttp\Client())->get($base_url . '/api/contentpool-term-reference-fields?entity_type=node&bundle=article', [
+      'auth' => $auth,
+    ]);
+    if ($response->getStatusCode() == 200) {
+      $termreference_fields = json_decode($response->getBody()->getContents(), TRUE);
+    }
+  }
+  catch (\Exception $e) {
+    watchdog_exception('contentpool_client', $e);
+  }
+
+  if (empty($termreference_fields)) {
+    return [];
+  }
+
+  /**
+   * Generate treeselect options array from the terms of the reference field.
+   *
+   * @param array $data
+   *   API result data of a reference field.
+   *
+   * @return array
+   *   Data array which is understood by the treeselect filter plugin.
+   */
+  $treeselect_options = function (array $data) use (&$treeselect_options) {
+    $options = [];
+    foreach ($data as $key => $item) {
+      $option = [
+        'id' => $item['id'],
+        'label' => $item['label'],
+      ];
+      if (!empty($item['children'])) {
+        $option['children'] = $treeselect_options($item['children']);
+      }
+      $options[] = $option;
+    }
+    return $options;
+  };
+
+  $treeselect_filters = [];
+  $current_filter = $remote->getThirdPartySetting('contentpool_client', 'filter', []);
+  foreach ($termreference_fields as $field => $field_data) {
+    $renderable = [
+      '#theme' => 'treeselect_filter',
+      '#field' => $field,
+      '#label' => $field_data['label'],
+      '#description' => t('Term reference filter: only sync content with selected %term.', ['%term' => $field_data['label']]),
+      '#attached' => [
+        'library' => [
+          'contentpool_client/treeselect_filter',
+        ],
+        'drupalSettings' => [
+          'contentpoolClient' => [
+            'filterData' => [
+              $field => [
+                'value' => isset($current_filter[$field]) ? implode(",", $current_filter[$field]) : '',
+                'options' => $treeselect_options($field_data['terms']),
+              ],
+            ],
+          ],
+        ],
+      ],
+    ];
+
+    $treeselect_filters[$field] = [
+      '#type' => 'markup',
+      '#markup' => \Drupal::service('renderer')->render($renderable),
+    ];
+  }
+
+  return $treeselect_filters;
 }
 
 /**
@@ -56,9 +172,21 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
  *   The form state.
  */
 function contentpool_client_form_remote_edit_form_submit(array &$form, FormStateInterface $form_state) {
+  /** @var \Drupal\relaxed\Entity\RemoteInterface $remote */
   $remote = $form_state->getFormObject()->getEntity();
+
+  $filter = [];
+  foreach ((array) $form_state->get('contentpool_client.filter_fields') as $form_field) {
+    list(, $field) = explode("-", $form_field);
+    $value = $form_state->getValue($form_field);
+    if (!empty($value)) {
+      $filter[$field] = array_map('trim', explode(",", $value));
+    }
+  }
+
   $remote->setThirdPartySetting('contentpool_client', 'is_contentpool', $form_state->getValue('is_contentpool'));
   $remote->setThirdPartySetting('contentpool_client', 'autopull_interval', $form_state->getValue('autopull_interval'));
+  $remote->setThirdPartySetting('contentpool_client', 'filter', $filter);
 }
 
 /**
@@ -74,4 +202,19 @@ function contentpool_client_cron() {
   else {
     \Drupal::logger('contentpool client')->info('No autopulls triggered.');
   }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function contentpool_client_theme($existing, $type, $theme, $path) {
+  return [
+    'treeselect_filter' => [
+      'variables' => [
+        'field' => '',
+        'label' => '',
+        'description' => '',
+      ],
+    ],
+  ];
 }

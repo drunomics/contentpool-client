@@ -11,3 +11,8 @@ relaxed.remote.*.third_party.contentpool_client:
     remote_site_uuid:
       type: string
       label: 'The uuid of the contentpool site.'
+    filter:
+      type: sequence
+      label: 'Filter content by term reference fields.'
+      sequence:
+        type: string
