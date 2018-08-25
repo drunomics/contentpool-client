@@ -16,9 +16,14 @@ Feature: Contentpool client-side replication works.
     And I run drush cron
     And I am logged in as a user with the "administrator" role
     And I am on "/admin/content"
+    # We subscribe to channel "Food", "Culutured meat" is in "Food/Barbequeue".
     Then I should see the text "Cultured meat"
+    # We subscribe to tag "quantum".
     And I should see the text "First quantum byte created"
+    # We subscribe to tag "cuba".
     And I should see the text "U.S. Congress considers lifting Cuba travel ban"
+    # We do not subscribe to "science".
+    And I should not see the text "Total lunar eclipse occurs in July 2018"
 
     # Ensure referenced tags got auto-added to the replicated entities.
     When I click "Cultured meat"
