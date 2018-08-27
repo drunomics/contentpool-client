@@ -1,8 +1,9 @@
 treeselect_filter:
   js:
-    js/treeselect_filter.js: { minified: true }
-    https://cdn.jsdelivr.net/npm/vue@^2: { type: external, minified: true }
     https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@0.0.36/dist/vue-treeselect.min.js: { type: external, minified: true }
+    js/treeselect_filter.js: { minified: true }
   css:
     base:
       https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@0.0.36/dist/vue-treeselect.min.css: { type: external, minified: true }
+  dependencies:
+    - vuejs/vue

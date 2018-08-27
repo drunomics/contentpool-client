@@ -7,6 +7,7 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\relaxed\Entity\RemoteInterface;
+use GuzzleHttp\Client;
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -57,7 +58,7 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
     $form['contentpool_client_settings']['treeselect-' . $field] = $filter;
     $form['contentpool_client_settings'][$filter_field] = [
       '#type' => 'hidden',
-      '#default_value' => isset($current_filter[$field]) ? implode(",", $current_filter[$field]) : '',
+      '#default_value' => isset($current_filter['node:article'][$field]) ? implode(",", $current_filter['node:article'][$field]) : '',
     ];
   }
   $form_state->set('contentpool_client.filter_fields', $filter_fields);
@@ -67,9 +68,10 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
  * Get options for the termreference filter.
  *
  * @param \Drupal\relaxed\Entity\RemoteInterface $remote
- *  Remote interface.
+ *   Remote interface.
  *
  * @return string[]
+ *   A list of render arrays which render treeselect filters.
  */
 function contentpool_client_get_treeselect_filters(RemoteInterface $remote) {
   if (!$remote->getThirdPartySetting('contentpool_client', 'is_contentpool', 0)) {
@@ -85,12 +87,12 @@ function contentpool_client_get_treeselect_filters(RemoteInterface $remote) {
   $auth = [];
   if (isset($url_parts['user']) && isset($url_parts['pass'])) {
     $auth[] = $url_parts['user'];
-    $auth[] =$url_parts['pass'];
+    $auth[] = $url_parts['pass'];
   }
   $base_url = $url_parts['scheme'] . '://' . $url_parts['host'];
 
   try {
-    $response = (new \GuzzleHttp\Client())->get($base_url . '/api/contentpool-term-reference-fields?entity_type=node&bundle=article', [
+    $response = (new Client())->get($base_url . '/api/contentpool-term-reference-fields?entity_type=node&bundle=article', [
       'auth' => $auth,
     ]);
     if ($response->getStatusCode() == 200) {
@@ -104,30 +106,6 @@ function contentpool_client_get_treeselect_filters(RemoteInterface $remote) {
   if (empty($termreference_fields)) {
     return [];
   }
-
-  /**
-   * Generate treeselect options array from the terms of the reference field.
-   *
-   * @param array $data
-   *   API result data of a reference field.
-   *
-   * @return array
-   *   Data array which is understood by the treeselect filter plugin.
-   */
-  $treeselect_options = function (array $data) use (&$treeselect_options) {
-    $options = [];
-    foreach ($data as $key => $item) {
-      $option = [
-        'id' => $item['id'],
-        'label' => $item['label'],
-      ];
-      if (!empty($item['children'])) {
-        $option['children'] = $treeselect_options($item['children']);
-      }
-      $options[] = $option;
-    }
-    return $options;
-  };
 
   $treeselect_filters = [];
   $current_filter = $remote->getThirdPartySetting('contentpool_client', 'filter', []);
@@ -145,8 +123,8 @@ function contentpool_client_get_treeselect_filters(RemoteInterface $remote) {
           'contentpoolClient' => [
             'filterData' => [
               $field => [
-                'value' => isset($current_filter[$field]) ? implode(",", $current_filter[$field]) : '',
-                'options' => $treeselect_options($field_data['terms']),
+                'value' => isset($current_filter['node:article'][$field]) ? $current_filter['node:article'][$field] : NULL,
+                'options' => contentpool_client_map_treeselect_options($field_data['terms']),
               ],
             ],
           ],
@@ -161,6 +139,30 @@ function contentpool_client_get_treeselect_filters(RemoteInterface $remote) {
   }
 
   return $treeselect_filters;
+}
+
+/**
+ * Generate treeselect options array from the terms of the reference field.
+ *
+ * @param array $data
+ *   API result data of a reference field.
+ *
+ * @return array
+ *   Data array which is understood by the treeselect filter plugin.
+ */
+function contentpool_client_map_treeselect_options($data) {
+  $options = [];
+  foreach ($data as $item) {
+    $option = [
+      'id' => $item['id'],
+      'label' => $item['label'],
+    ];
+    if (!empty($item['children'])) {
+      $option['children'] = contentpool_client_map_treeselect_options($item['children']);
+    }
+    $options[] = $option;
+  }
+  return $options;
 }
 
 /**
@@ -180,7 +182,7 @@ function contentpool_client_form_remote_edit_form_submit(array &$form, FormState
     list(, $field) = explode("-", $form_field);
     $value = $form_state->getValue($form_field);
     if (!empty($value)) {
-      $filter[$field] = array_map('trim', explode(",", $value));
+      $filter['node:article'][$field] = array_map('trim', explode(",", $value));
     }
   }
 
