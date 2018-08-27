@@ -1,6 +1,6 @@
 /**
  * @file
- * Defines Javascript behaviors for the swiper gallery module.
+ * Javascript behaviour for the treeselect filter.
  */
 
 (function ($, Drupal) {
@@ -8,7 +8,7 @@
   'use strict';
 
   /**
-   * Attaches the swiper gallery.
+   * Attaches treeselect filter for term reference fields.
    */
   Drupal.behaviors.treeselectFilter = {
     attach: function (context, settings) {
@@ -25,6 +25,7 @@
           data: data,
           watch: {
             value: function(newValue, oldValue) {
+              // Push values into the form field.
               $('input[name="filter-' + field + '"]').val(newValue.toString());
             },
           },
