@@ -150,7 +150,7 @@ function contentpool_client_get_treeselect_filters(RemoteInterface $remote) {
  * @return array
  *   Data array which is understood by the treeselect filter plugin.
  */
-function contentpool_client_map_treeselect_options($data) {
+function contentpool_client_map_treeselect_options(array $data) {
   $options = [];
   foreach ($data as $item) {
     $option = [
