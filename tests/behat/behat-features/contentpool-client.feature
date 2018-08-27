@@ -33,6 +33,7 @@ Feature: Contentpool client-side replication works.
     When I move backward one page
     And I click "First quantum byte created"
     Then I should see "science"
+    And I should see "quantum"
     And I should not see "In-vitro meat"
     And I should not see "cuba"
     When I move backward one page
