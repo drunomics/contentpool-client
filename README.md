@@ -27,7 +27,12 @@ libraries:
     minified: true
 ```
 
-## Installation instructions
+## Installation
+
+### Quick installation
+Please refer to the quick installation instructions of the distribution at https://github.com/drunomics/contentpool#quick-installation.
+
+### Regular installation
 
 *  Install the module and it's dependencies as usual. It's recommended to do
    so via composer. This requires a composer-enabled Drupal projects, e.g. as
@@ -36,10 +41,21 @@ libraries:
         composer require drunomics/contentpool-client
         drush en contentpool_client -y
 
-* Configure the module as necessary. This can be done with the provided drush
-  command or manually.
+* Configure the module to point to your contentpool instance. This can be done
+  via the automated configruation or manually as following.
 
-### Manual setup
+#### Automated configuration
+
+Just run the provided drush command and provide it with the contentpool URL.
+Be sure to provide correct authentication credentials of the replicator user
+and to append the path `/relaxed` to your contentpool's base URL:
+
+    drush cps http://replicator:YOURPASS@contentpool-project.localdev.space/relaxed
+ 
+The drush command will check the connection to the contentpool and output errors
+if there are connection issues.
+ 
+#### Manual configuration
 
 * Add a new "replicator" user for replication and grant it the "replicator"
   role. It will be used by the replication process to create the data via the
@@ -59,13 +75,7 @@ libraries:
   * Set "Replication settings on update" to "Replicate contentpool entities" 
   * Set "Replication settings on update" to "None"
   
-That's it, you can give it a try now.
-
-### Automated setup
-
-Just run the provided drush command:
-
-    drush cps http://replicator:YOURPASS@contentpool-project.localdev.space/relaxed
+That's it.
 
 ## Usage
 
