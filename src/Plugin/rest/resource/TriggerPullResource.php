@@ -5,7 +5,6 @@ namespace Drupal\contentpool_client\Plugin\rest\resource;
 use Drupal\contentpool_client\RemotePullManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\relaxed\SensitiveDataTransformer;
-use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -92,31 +91,53 @@ class TriggerPullResource extends ResourceBase {
    *
    * @param mixed $data
    *   Data provided from http request.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   public function post($data) {
-    $status_code = 404;
-
-    // We check for the site uuid and do a pull if found.
     $sent_site_uuid = $data['site_uuid'];
     $remotes = $this->entityTypeManager->getStorage('remote')->loadMultiple();
+    $this->logger->info('Remote contentpool server initiated pull.');
+
+    // Flush response, so that the remote is not blocked by the pulling process.
+    $this->sendResponseOk();
+
     /** @var \Drupal\relaxed\Entity\RemoteInterface $remote */
     foreach ($remotes as $remote) {
       if ($remote_site_uuid = $remote->getThirdPartySetting('contentpool_client', 'remote_site_uuid')) {
         if ($remote_site_uuid == $sent_site_uuid) {
           $this->remotePullManager->doPull($remote, TRUE);
-          $status_code = 200;
         }
       }
     }
 
-    $this->logger->info('Remote contentpool server initiated pull.');
+    // As the Response was already sent, @see sendResponseOk(), the session
+    // can't be accessed anymore and subsequent script execution will trigger a
+    // RuntimeException if we don't exit here.
+    exit();
+  }
 
-    return new ModifiedResourceResponse([], $status_code);
+  /**
+   * Send 200 ok response immediately.
+   */
+  protected function sendResponseOk() {
+    // Check if fastcgi_finish_request is callable if we run nginx/php-fpm.
+    if (is_callable('fastcgi_finish_request')) {
+      session_write_close();
+      fastcgi_finish_request();
+      return;
+    }
+
+    ignore_user_abort(TRUE);
+
+    ob_start();
+    $protocol = filter_input(INPUT_SERVER, 'SERVER_PROTOCOL', FILTER_SANITIZE_STRING);
+    header($protocol . ' 200 OK');
+    header('Content-Encoding: none');
+    header('Content-Length: ' . ob_get_length());
+    header('Connection: close');
+
+    ob_end_flush();
+    ob_flush();
+    flush();
   }
 
 }
