@@ -14,11 +14,6 @@ This repository is a Drupal client module that can connect to a contentpool
 server. You'll need a drupal project for installing it. Refer to "Installation"
 for details.
 
-## Dependencies
-
-For the contentpool filter selection, there is a dependency on Vue 2.5.17 which
-is delivered as default settings for vuejs (/config/install/vuejs.settings.yml).
-
 ## Installation
 
 ### Quick installation
@@ -68,6 +63,11 @@ if there are connection issues.
   * Set "Replication settings on update" to "None"
   
 That's it.
+
+## Vue.js
+
+For the contentpool filter selection, there is a dependency on Vue 2.5.17 or later.
+Vue.js is loaded automatically via the pre-configured library of the vuejs module.
 
 ## Usage
 

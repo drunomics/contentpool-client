@@ -5,6 +5,7 @@ package: Contentpool
 core: 8.x
 
 dependencies:
+  - vuejs:vuejs
   - relaxed:relaxed
   - workspace:workspace
   - rest:rest
