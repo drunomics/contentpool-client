@@ -186,15 +186,16 @@ class ContentpoolReplicationFilterForm extends FormBase {
         $termreference_fields = json_decode($response->getBody()->getContents(), TRUE);
       }
       else {
-        $this->messenger->addError('Error fetching reference fields from contentpool.');
+        $this->messenger->addError($this->t('Error fetching reference fields from contentpool.'));
       }
     }
     catch (\Exception $e) {
-      $this->messenger->addError('Error fetching reference fields from contentpool.');
+      $this->messenger->addError($this->t('Error fetching reference fields from contentpool.'));
       watchdog_exception('contentpool_client', $e);
     }
 
     if (empty($termreference_fields)) {
+      $this->messenger->addWarning($this->t('No filter options are available.'));
       return [];
     }
 
@@ -209,7 +210,7 @@ class ContentpoolReplicationFilterForm extends FormBase {
         '#description' => $this->t('Term reference filter: only sync content with selected %term.', ['%term' => $field_data['label']]),
         '#attached' => [
           'library' => [
-            'contentpool_client/treeselect_filter',
+            'contentpool_client/replication_filter_form',
           ],
           'drupalSettings' => [
             'contentpoolClient' => [
@@ -270,13 +271,6 @@ class ContentpoolReplicationFilterForm extends FormBase {
     if (!$is_contentpool) {
       $access_result = AccessResult::forbidden();
     }
-    else {
-      $treeselect_filters = $this->fetchTermReferenceFilter($remote);
-      if (empty($treeselect_filters)) {
-        $access_result = AccessResult::forbidden();
-      }
-    }
-
     // Changes in the remote should invoke new access checks.
     $access_result->addCacheableDependency($remote);
 
