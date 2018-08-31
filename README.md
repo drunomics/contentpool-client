@@ -16,16 +16,8 @@ for details.
 
 ## Dependencies
 
-For the contentpool filter selection, there is a dependency on Vue 2.0, the
-version is setup via /admin/config/development/vuejs or in the config file, eg.: 
-
-```yaml
-libraries:
-  vue:
-    installation: cdnjs
-    version: 2.5.17
-    minified: true
-```
+For the contentpool filter selection, there is a dependency on Vue 2.5.17 which
+is delivered as default settings for vuejs (/config/install/vuejs.settings.yml).
 
 ## Installation
 

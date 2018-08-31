@@ -1,0 +1,10 @@
+entity.remote.contentpool_replication_filter:
+  path: '/admin/config/services/relaxed/{remote}/replication_filter'
+  defaults:
+    _title: 'Replication filter'
+    _form: '\Drupal\contentpool_client\Form\ContentpoolReplicationFilterForm'
+  requirements:
+    _permission: 'administer site configuration'
+    _custom_access: '\Drupal\contentpool_client\Form\ContentpoolReplicationFilterForm::access'
+  options:
+    _admin_route: TRUE

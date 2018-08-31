@@ -1,7 +1,7 @@
-treeselect_filter:
+contentpool_client.replication_filter_form:
   js:
     https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@0.0.36/dist/vue-treeselect.min.js: { type: external, minified: true }
-    js/treeselect_filter.js: { minified: true }
+    js/replication_filter_form.js: { minified: true }
   css:
     base:
       https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@0.0.36/dist/vue-treeselect.min.css: { type: external, minified: true }
