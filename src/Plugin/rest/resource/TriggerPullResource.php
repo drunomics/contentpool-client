@@ -4,6 +4,7 @@ namespace Drupal\contentpool_client\Plugin\rest\resource;
 
 use Drupal\contentpool_client\RemotePullManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\relaxed\Entity\RemoteInterface;
 use Drupal\relaxed\SensitiveDataTransformer;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
@@ -90,33 +91,25 @@ class TriggerPullResource extends ResourceBase {
   /**
    * Implements get resource callback.
    *
-   * @param mixed $data
-   *   Data provided from http request.
-   *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   *   Response object.
    */
   public function post($data) {
-    $status_code = 404;
-
-    // We check for the site uuid and do a pull if found.
     $sent_site_uuid = $data['site_uuid'];
+    /** @var \Drupal\relaxed\Entity\RemoteInterface[] $remotes */
     $remotes = $this->entityTypeManager->getStorage('remote')->loadMultiple();
-    /** @var \Drupal\relaxed\Entity\RemoteInterface $remote */
-    foreach ($remotes as $remote) {
-      if ($remote_site_uuid = $remote->getThirdPartySetting('contentpool_client', 'remote_site_uuid')) {
-        if ($remote_site_uuid == $sent_site_uuid) {
-          $this->remotePullManager->doPull($remote, TRUE);
-          $status_code = 200;
-        }
-      }
-    }
-
     $this->logger->info('Remote contentpool server initiated pull.');
 
-    return new ModifiedResourceResponse([], $status_code);
+    // Filter valid remotes.
+    $remotes = array_filter($remotes, function (RemoteInterface $remote) use ($sent_site_uuid) {
+      return $sent_site_uuid == $remote->getThirdPartySetting('contentpool_client', 'remote_site_uuid');
+    });
+
+    foreach ($remotes as $remote) {
+      $this->remotePullManager->doPull($remote, TRUE);
+    }
+
+    return new ModifiedResourceResponse([], 200);
   }
 
 }
