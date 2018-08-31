@@ -179,7 +179,7 @@ class ContentpoolReplicationFilterForm extends FormBase {
     $base_url = $url_parts['scheme'] . '://' . $url_parts['host'];
 
     try {
-      $response = $this->httpClient->get($base_url . '/api/contentpool-term-reference-fields?entity_type=node&bundle=article', [
+      $response = $this->httpClient->get($base_url . '/api/contentpool-term-reference-fields?entity_type_id=node&bundle=article', [
         'auth' => $auth,
       ]);
       if ($response->getStatusCode() == 200) {
