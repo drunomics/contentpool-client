@@ -19,10 +19,6 @@ echo "Adding module..."
 composer config repositories.self vcs ../$MODULE_DIR
 composer require drunomics/contentpool-client:"dev-$GIT_BRANCH"
 
-# Add manual drush patch for fixing config:set --value_format=yaml for now.
-# See https://github.com/drush-ops/drush/pull/3664 and init-project.sh.
-(cd vendor/drush/drush && curl -L https://patch-diff.githubusercontent.com/raw/drush-ops/drush/pull/3664.patch | patch -p1)
-
 echo Project created.
 
 echo "Adding custom environment variables..."
