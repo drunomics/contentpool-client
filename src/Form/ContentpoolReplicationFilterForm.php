@@ -2,6 +2,7 @@
 
 namespace Drupal\contentpool_client\Form;
 
+use drunomics\ServiceUtils\Core\Entity\EntityTypeManagerTrait;
 use Drupal\contentpool_client\RemotePullManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Form\FormBase;
@@ -17,6 +18,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Form to setup additional content filters for the replication.
  */
 class ContentpoolReplicationFilterForm extends FormBase {
+
+  use EntityTypeManagerTrait;
 
   /**
    * The Messenger service.
@@ -147,8 +150,12 @@ class ContentpoolReplicationFilterForm extends FormBase {
       }
     }
 
-    $remote->setThirdPartySetting('contentpool_client', 'filter', $filter);
-    $remote->save();
+    $settings = $this->getReplicationSettings($remote);
+    $parameters = $settings->getParameters();
+    $parameters['filter'] = $filter;
+    $settings->set('parameters', $parameters);
+    $settings->save();
+    $this->messenger->addMessage($this->t('The configuration options have been saved.'));
   }
 
   /**
@@ -182,15 +189,10 @@ class ContentpoolReplicationFilterForm extends FormBase {
       $response = $this->httpClient->get($base_url . '/api/contentpool-term-reference-fields?entity_type_id=node&bundle=article', [
         'auth' => $auth,
       ]);
-      if ($response->getStatusCode() == 200) {
-        $termreference_fields = json_decode($response->getBody()->getContents(), TRUE);
-      }
-      else {
-        $this->messenger->addError($this->t('Error fetching reference fields from contentpool.'));
-      }
+      $termreference_fields = json_decode($response->getBody()->getContents(), TRUE);
     }
     catch (\Exception $e) {
-      $this->messenger->addError($this->t('Error fetching reference fields from contentpool.'));
+      $this->messenger->addError($this->t('Error fetching reference fields from contentpool. Error: %e', ['%e' => $e->getMessage()]));
       watchdog_exception('contentpool_client', $e);
     }
 
@@ -200,7 +202,11 @@ class ContentpoolReplicationFilterForm extends FormBase {
     }
 
     $treeselect_filters = [];
-    $current_filter = $remote->getThirdPartySetting('contentpool_client', 'filter', []);
+    // Determine current filter values.
+    $replication_settings = $this->getReplicationSettings($remote);
+    $parameters = $replication_settings->getParameters() + ['filter' => []];
+    $current_filter = $parameters['filter'];
+
     foreach ($termreference_fields as $field => $field_data) {
       $value = isset($current_filter['node:article'][$field]) ? $current_filter['node:article'][$field] : NULL;
       $renderable = [
@@ -234,6 +240,33 @@ class ContentpoolReplicationFilterForm extends FormBase {
     }
 
     return $treeselect_filters;
+  }
+
+  /**
+   * Gets the current replication settings for the given remote.
+   *
+   * @param \Drupal\relaxed\Entity\RemoteInterface $remote
+   *   The remote.
+   *
+   * @return \Drupal\replication\Entity\ReplicationSettingsInterface
+   *   The replication settings.
+   */
+  protected function getReplicationSettings(RemoteInterface $remote) {
+    // We keep one replicatoin_settings entity per remote.
+    $settings = $this->getEntityTypeManager()->getStorage('replication_settings')
+      ->load($remote->id());
+    if (!$settings) {
+      // Auto-create a settings config entity with the defaults.
+      $settings = $this->getEntityTypeManager()->getStorage('replication_settings')
+        ->create([
+          'id' => $remote->id(),
+          'filter_id' => 'contentpool',
+          'label' => 'Replicate ' . $remote->label() . ' entities',
+          'parameters' => ['types' => ['node.article', 'taxonomy_term.channel']]
+        ]);
+      $settings->save();
+    }
+    return $settings;
   }
 
   /**
