@@ -213,7 +213,11 @@ class ContentpoolReplicationFilterForm extends FormBase {
         '#theme' => 'treeselect_filter',
         '#field' => $field,
         '#label' => $field_data['label'],
-        '#description' => $this->t('Term reference filter: only sync content with selected %term.', ['%term' => $field_data['label']]),
+        '#description' => $this->t('Replicate content if it is associated with any of the selected terms.'),
+        // @see https://vue-treeselect.js.org/#props
+        '#attributes' => [
+          ':multiple' => 'true',
+        ],
         '#attached' => [
           'library' => [
             'contentpool_client/replication_filter_form',

@@ -88,6 +88,7 @@ function contentpool_client_theme($existing, $type, $theme, $path) {
         'field' => '',
         'label' => '',
         'description' => '',
+        'attributes' => [],
       ],
     ],
   ];

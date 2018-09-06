@@ -10,5 +10,6 @@ vue-treeselect:
   css:
     base:
       https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@0.0.36/dist/vue-treeselect.min.css: { type: external, minified: true }
+      css/replication_filter_form.css: { }
   dependencies:
     - vuejs/vue

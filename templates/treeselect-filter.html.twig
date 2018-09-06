@@ -4,6 +4,6 @@
     <treeselect
         v-model="treeselect_model_{{ field }}"
         :options="treeselect_options_{{ field }}"
-        :multiple="true"
+        {{ attributes }}
     ></treeselect>
 </div>
