@@ -20,7 +20,7 @@ docker-compose exec web drush contentpool-client:setup http://replicator:changem
 
 # Add some subscription filters for testing.
 docker-compose exec -T web drush config:set replication.replication_settings.contentpool parameters.filter \
- --value_format=yaml - <<END
+ --input-format=yaml - <<END
 'node:article':
   field_channel:
     # Food
