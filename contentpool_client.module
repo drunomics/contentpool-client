@@ -11,6 +11,7 @@ use Drupal\Core\Form\FormStateInterface;
  * Implements hook_form_FORM_ID_alter().
  */
 function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  /** @var \Drupal\relaxed\Entity\RemoteInterface $remote */
   $remote = $form_state->getFormObject()->getEntity();
 
   $form['actions']['submit']['#submit'] = array_merge(['contentpool_client_form_remote_edit_form_submit'], $form['actions']['submit']['#submit']);
@@ -56,6 +57,7 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
  *   The form state.
  */
 function contentpool_client_form_remote_edit_form_submit(array &$form, FormStateInterface $form_state) {
+  /** @var \Drupal\relaxed\Entity\RemoteInterface $remote */
   $remote = $form_state->getFormObject()->getEntity();
   $remote->setThirdPartySetting('contentpool_client', 'is_contentpool', $form_state->getValue('is_contentpool'));
   $remote->setThirdPartySetting('contentpool_client', 'autopull_interval', $form_state->getValue('autopull_interval'));
@@ -74,4 +76,20 @@ function contentpool_client_cron() {
   else {
     \Drupal::logger('contentpool client')->info('No autopulls triggered.');
   }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function contentpool_client_theme($existing, $type, $theme, $path) {
+  return [
+    'treeselect_filter' => [
+      'variables' => [
+        'field' => '',
+        'label' => '',
+        'description' => '',
+        'attributes' => [],
+      ],
+    ],
+  ];
 }

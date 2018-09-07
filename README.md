@@ -64,6 +64,11 @@ if there are connection issues.
   
 That's it.
 
+## Vue.js
+
+For the contentpool filter selection, there is a dependency on Vue 2.5.17 or later.
+Vue.js is loaded automatically via the pre-configured library of the vuejs module.
+
 ## Usage
 
 The module configures all dependencies needed to replicate content from the
