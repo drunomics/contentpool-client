@@ -5,23 +5,24 @@ cd `dirname $0`/..
 
 source scripts/util/per-branch-env.sh
 ./scripts/util/install-phapp.sh
+export COMPOSER_MEMORY_LIMIT=-1
 
 [ ! -d ../satellite-project ] || (echo "Old project is still existing, please remove ../satellite-project." && exit 1)
 
-phapp create --template=drunomics/drupal-project satellite-project ../satellite-project --no-interaction
+composer create-project drunomics/drupal-project:* --no-install --no-interaction ../satellite-project
 
 MODULE_DIR=`basename $PWD`
 source scripts/util/get-branch.sh
 
 cd ../satellite-project
 
+# Use 8.5 for now.
+composer require drupal/core:8.5.* --no-update
+composer require webflo/drupal-core-strict:8.5.*
+
 echo "Adding module..."
 composer config repositories.self vcs ../$MODULE_DIR
 composer require drunomics/contentpool-client:"dev-$GIT_BRANCH"
-
-# Add manual drush patch for fixing config:set --value_format=yaml for now.
-# See https://github.com/drush-ops/drush/pull/3664 and init-project.sh.
-(cd vendor/drush/drush && curl -L https://patch-diff.githubusercontent.com/raw/drush-ops/drush/pull/3664.patch | patch -p1)
 
 echo Project created.
 

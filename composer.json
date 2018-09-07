@@ -26,10 +26,13 @@
     "drunomics/contentpool_replication": "^1.0@dev",
     "drunomics/service-utils": "*",
     "drupal/entity_edit_redirect": "^1.2",
+    "webflo/drupal-core-strict": "8.5.*",
+    "drupal/core": "8.5.*",
     "drupal/replication": "^1.0@beta",
     "drupal/relaxed": "^1.0@beta",
     "drupal/scheduler": "*",
-    "drupal/workspace": "^1.0@beta"
+    "drupal/workspace": "^1.0@beta",
+    "drupal/vuejs": "^1.0@beta"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",

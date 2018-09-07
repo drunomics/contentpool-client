@@ -1,0 +1,9 @@
+<label for="treeselect_filter-{{ field }}">{{ label }}</label>
+<div class="description">{{ description }}</div>
+<div id="treeselect_filter-{{ field }}" class="treeselect_filter">
+    <treeselect
+        v-model="treeselect_model_{{ field }}"
+        :options="treeselect_options_{{ field }}"
+        {{ attributes }}
+    ></treeselect>
+</div>
