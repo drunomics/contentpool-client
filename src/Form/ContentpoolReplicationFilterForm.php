@@ -266,7 +266,7 @@ class ContentpoolReplicationFilterForm extends FormBase {
           'id' => $remote->id(),
           'filter_id' => 'contentpool',
           'label' => 'Replicate ' . $remote->label() . ' entities',
-          'parameters' => ['types' => ['node.article', 'taxonomy_term.channel']]
+          'parameters' => ['types' => ['node.article', 'taxonomy_term.channel']],
         ]);
       $settings->save();
     }

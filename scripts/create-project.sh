@@ -16,6 +16,10 @@ source scripts/util/get-branch.sh
 
 cd ../satellite-project
 
+# Use 8.5 for now.
+composer require drupal/core:8.5.* --no-update
+composer require webflo/drupal-core-strict:8.5.*
+
 echo "Adding module..."
 composer config repositories.self vcs ../$MODULE_DIR
 composer require drunomics/contentpool-client:"dev-$GIT_BRANCH"
