@@ -5,10 +5,11 @@ cd `dirname $0`/..
 
 source scripts/util/per-branch-env.sh
 ./scripts/util/install-phapp.sh
+export COMPOSER_MEMORY_LIMIT=-1
 
 [ ! -d ../satellite-project ] || (echo "Old project is still existing, please remove ../satellite-project." && exit 1)
 
-phapp create --template=drunomics/drupal-project satellite-project ../satellite-project --no-interaction
+composer create-project drunomics/drupal-project:* --no-install --no-interaction ../satellite-project
 
 MODULE_DIR=`basename $PWD`
 source scripts/util/get-branch.sh
