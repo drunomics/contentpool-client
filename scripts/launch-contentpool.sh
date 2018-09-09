@@ -12,6 +12,8 @@ export GIT_BRANCH=${LAUNCH_CONTENTPOOL_GIT_BRANCH:-8.x-1.x}
 
 cd ..
 git clone https://github.com/drunomics/contentpool.git --branch=$GIT_BRANCH contentpool
+# Show commit info.
+git --git-dir=./contentpool/.git show -s
 
 ./contentpool/scripts/create-project.sh
 ./contentpool/scripts/run-server.sh

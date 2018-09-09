@@ -110,6 +110,14 @@ class ContentpoolClientCommands extends DrushCommands {
     else {
       $this->io()->warning(dt('The "replicator" user exists, skipping user configuration.'));
     }
+
+    // Part three setup entity edit redirect.
+    $remote_url_parts = parse_url($remote_url);
+    $config = $this->getConfigFactory()->getEditable('entity_edit_redirect.settings');
+    $config->set('append_destination', 1);
+    $config->set('base_redirect_url', $remote_url_parts['scheme'] . '://' . $remote_url_parts['host']);
+    $config->set('entity_edit_path_patterns', ['node' => ['article' => '/entity/{uuid}/edit']]);
+    $config->save();
   }
 
 }
