@@ -43,8 +43,18 @@ before_install:
 install:
   - ./scripts/create-project.sh
   - ./scripts/launch-contentpool.sh
+  # Make sure we have proper file permissions for contentpool.
+  - mkdir -p ../satellite-project/web/sites/default/files-private
+  - sudo chgrp -R www-data ../contentpool-project/web/sites/default/files/
+  - sudo chgrp -R www-data ../contentpool-project/web/sites/default/files-private/
   - ./scripts/run-server.sh
   - ./scripts/init-project.sh
+    # Make sure we have proper file permissions for contentpool client.
+    - mkdir -p ../contentpool-project/web/sites/default/files-private
+    - sudo chgrp -R www-data ../satellite-project/web/sites/default/files/
+    - sudo chgrp -R www-data ../satellite-project/web/sites/default/files-private/
+    # Clear the so the resources (image styles, css, js) are rebuilt.
+    - source ../contentpool-project/dotenv/loader.sh && COMPOSE_FILE=./scripts/devsetup-docker/docker-compose.yml docker-compose exec web drush cr
   - ./scripts/run-tests.sh
 
 script:
