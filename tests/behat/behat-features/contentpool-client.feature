@@ -41,3 +41,37 @@ Feature: Contentpool client-side replication works.
     Then I should see "cuba"
     And I should not see "In-vitro meat"
     And I should not see "science"
+
+  @javascript
+  Scenario: Pushing notification works
+    Given I am logged in as a user with the "administrator" role
+    # Trigger auto remote registration.
+    And I visit path "/admin/reports/status" on contentpool
+    And I wait for the page to be loaded
+    When I am logged in to contentpool
+    And I visit path "admin/config/remote-registrations" on contentpool
+    Then I should see current site registered
+    When I click push notification link for current site
+    Then I press "Confirm"
+    When I visit path "node/add/article" on contentpool
+    And I fill in "title[0][value]" with "Replication behat test" and random suffix
+    And I fill in "field_seo_title[0][value]" with "Replication behat test" and last random suffix
+    And I select "-Bakery" from "edit-field-channel"
+    And I check the box "status[value]"
+    When I press "Save"
+    Then I wait for "has been created."
+    And I should get a 200 HTTP response
+    # Check on satellite if there is article already pushed.
+    And I should see in content overview article with "Replication behat test" and random suffix
+    # Make sure edit link on satellite redirects to content pool.
+    When I click first content edit link
+    And I wait for "Edit Article"
+    Then I am on contentpool
+    # Make sure we get back to satellite after saving edits.
+    When I fill in "title[0][value]" with "Replication behat edit" and random suffix
+    And I fill in "field_seo_title[0][value]" with "Replication behat edit" and last random suffix
+    And I press "Save"
+    And I wait for the page to be loaded
+    Then I am on satellite
+    # Make sure the article is changed.
+    And I should see in content overview article with "Replication behat edit" and random suffix
