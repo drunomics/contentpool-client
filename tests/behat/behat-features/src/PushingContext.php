@@ -5,6 +5,7 @@
  * The behat context for replication tests.
  */
 
+use Behat\Mink\Exception\ExpectationException;
 use Drupal\DrupalExtension\Context\RawDrupalContext;
 use GuzzleHttp\Client;
 
