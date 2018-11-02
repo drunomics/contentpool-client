@@ -71,6 +71,6 @@ Feature: Contentpool client-side replication works.
     And I fill in "field_seo_title[0][value]" with "Replication behat edit" and last random suffix
     And I press "Save"
     And I wait for the page to be loaded
-    Then I am on satellite
+#    Then I am on satellite
     # Make sure the article is changed.
     And I should see in content overview article with "Replication behat edit" and random suffix
