@@ -49,7 +49,6 @@ Feature: Contentpool client-side replication works.
     And I visit path "/admin/reports/status" on contentpool
     And I wait for the page to be loaded
     When I am logged in to contentpool
-    And I visit path "admin/config/remote-registrations" on contentpool
     Then I should see current site registered
     When I click push notification link for current site
     Then I press "Confirm"

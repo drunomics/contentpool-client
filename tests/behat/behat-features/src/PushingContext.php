@@ -63,16 +63,6 @@ class PushingContext extends RawDrupalContext {
   }
 
   /**
-   * I should see current site registered.
-   *
-   * @Then I should see current site registered
-   */
-  public function seeSiteRegistered() {
-    $site_uuid = \Drupal::config('system.site')->get('uuid');
-    $this->assertSession()->pageTextContains($site_uuid);
-  }
-
-  /**
    * I click push notification link for current site.
    *
    * @Then I click push notification link for current site
@@ -167,6 +157,30 @@ class PushingContext extends RawDrupalContext {
     } while (!$found && ++$tries < $tries_limit);
     if (!$found) {
       throw new ExpectationException('Article was not found in content overview.', $this->getSession());
+    }
+  }
+
+  /**
+   * I should see current site registered.
+   *
+   * @Then I should see current site registered
+   */
+  public function seeCurrentSiteRegistered() {
+    $tries = 0;
+    $tries_limit = 5;
+    $site_uuid = \Drupal::config('system.site')->get('uuid');
+
+    do {
+      // Sleep one second before next try.
+      if ($tries) {
+        sleep(1);
+      }
+      $this->visitPath('/admin/config/remote-registrations');
+      $content = $this->getSession()->getPage()->getContent();
+      $found = strpos($content, $site_uuid) !== FALSE;
+    } while (!$found && ++$tries < $tries_limit);
+    if (!$found) {
+      throw new ExpectationException('Site uuid was not found in remote registrationg.', $this->getSession());
     }
   }
 
