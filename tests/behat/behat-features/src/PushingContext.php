@@ -181,7 +181,7 @@ class PushingContext extends RawDrupalContext {
       $found = strpos($content, $site_uuid) !== FALSE;
     } while (!$found && ++$tries < $tries_limit);
     if (!$found) {
-      throw new ExpectationException('Site uuid was not found in remote registrationg.', $this->getSession());
+      throw new ExpectationException('Site uuid was not found in remote registration.', $this->getSession());
     }
   }
 

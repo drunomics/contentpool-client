@@ -46,7 +46,7 @@ Feature: Contentpool client-side replication works.
   Scenario: Pushing notification works
     Given I am logged in as a user with the "administrator" role
     # Trigger auto remote registration.
-    And I visit path "/admin/reports/status" on contentpool
+    And I visit "/admin/reports/status"
     And I wait for the page to be loaded
     When I am logged in to contentpool
     Then I should see current site registered
