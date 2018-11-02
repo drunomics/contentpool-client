@@ -22,6 +22,15 @@ class PushingContext extends RawDrupalContext {
   protected $randomSuffix;
 
   /**
+   * I open the contentpool.
+   *
+   * @Given I open the contentpool
+   */
+  public function openContentpool() {
+    $this->visitContentpoolPath('/');
+  }
+
+  /**
    * I visit path on contentpool.
    *
    * @param string $path
@@ -31,6 +40,28 @@ class PushingContext extends RawDrupalContext {
    */
   public function visitContentpoolPath($path) {
     $this->setMinkParameter('base_url', 'http://contentpool-project.localdev.space');
+    $this->visitPath($path);
+  }
+
+  /**
+   * I open the satellite.
+   *
+   * @Given I open the satellite
+   */
+  public function openSatellite() {
+    $this->visitSatellitePath('/');
+  }
+
+  /**
+   * I visit path on satellite.
+   *
+   * @param string $path
+   *   Given path.
+   *
+   * @Given I visit path :path on satellite
+   */
+  public function visitSatellitePath($path) {
+    $this->setMinkParameter('base_url', 'http://satellite-project.localdev.space');
     $this->visitPath($path);
   }
 
@@ -135,6 +166,16 @@ class PushingContext extends RawDrupalContext {
     if ($response_code != 204) {
       throw new ExpectationException('Expected response code 204 when running cron via link but got: ' . $response_code, $this->getSession());
     }
+  }
+
+  /**
+   * Waits for x milliseconds.
+   *
+   * @Given I wait for :milliseconds milliseconds
+   */
+  public function waitForSomeTime($milliseconds) {
+    echo $this->getSession()->getCurrentUrl();
+    $this->getSession()->wait((int) $milliseconds);
   }
 
   /**

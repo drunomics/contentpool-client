@@ -61,6 +61,7 @@ Feature: Contentpool client-side replication works.
     Then I wait for "has been created."
     And I should get a 200 HTTP response
     # Check on satellite if there is article already pushed.
+    When I open the satellite
     And I should see in content overview article with "Replication behat test" and random suffix
     # Make sure edit link on satellite redirects to content pool.
     When I click first content edit link
@@ -71,6 +72,6 @@ Feature: Contentpool client-side replication works.
     And I fill in "field_seo_title[0][value]" with "Replication behat edit" and last random suffix
     And I press "Save"
     And I wait for the page to be loaded
-#    Then I am on satellite
+    Then I am on satellite
     # Make sure the article is changed.
     And I should see in content overview article with "Replication behat edit" and random suffix
