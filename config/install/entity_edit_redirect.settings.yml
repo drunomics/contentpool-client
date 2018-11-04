@@ -1,4 +1,0 @@
-append_destination: 1
-base_redirect_url: ''
-entity_edit_path_patterns: {  }
-destination_querystring: 'trusted_destination'
