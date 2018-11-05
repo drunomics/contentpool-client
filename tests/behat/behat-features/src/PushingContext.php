@@ -22,6 +22,34 @@ class PushingContext extends RawDrupalContext {
   protected $randomSuffix;
 
   /**
+   * Satellite base url.
+   *
+   * @var string
+   */
+  protected $satelliteBaseUrl;
+
+  /**
+   * Contentpool base url.
+   *
+   * @var string
+   */
+  protected $contentpoolBaseUrl;
+
+  /**
+   * @BeforeScenario
+   */
+  public function before($scope) {
+    if (!getenv('PHAPP_BASE_URL')) {
+      throw new Exception('Missing satellite base URL.');
+    }
+    $this->satelliteBaseUrl = getenv('PHAPP_BASE_URL');
+    if (!getenv('CONTENTPOOL_BASE_URL')) {
+      throw new Exception('Missing contentpool base URL.');
+    }
+    $this->contentpoolBaseUrl = getenv('CONTENTPOOL_BASE_URL');
+  }
+
+  /**
    * I open the contentpool.
    *
    * @Given I open the contentpool
@@ -39,7 +67,7 @@ class PushingContext extends RawDrupalContext {
    * @Given I visit path :path on contentpool
    */
   public function visitContentpoolPath($path) {
-    $this->setMinkParameter('base_url', 'http://contentpool-project.localdev.space');
+    $this->setMinkParameter('base_url', $this->contentpoolBaseUrl);
     $this->visitPath($path);
   }
 
@@ -61,7 +89,7 @@ class PushingContext extends RawDrupalContext {
    * @Given I visit path :path on satellite
    */
   public function visitSatellitePath($path) {
-    $this->setMinkParameter('base_url', 'http://satellite-project.localdev.space');
+    $this->setMinkParameter('base_url', $this->satelliteBaseUrl);
     $this->visitPath($path);
   }
 
@@ -233,8 +261,7 @@ class PushingContext extends RawDrupalContext {
    */
   public function iAmOnContentpool() {
     $url = $this->getSession()->getCurrentUrl();
-    $url_parts = parse_url($url);
-    if (!isset($url_parts['host']) || strpos($url_parts['host'], 'contentpool') === FALSE) {
+    if (!strpos($url, $this->contentpoolBaseUrl) !== 0) {
       throw new ExpectationException('Expected contentpool url, got: ' . $url, $this->getSession());
     }
   }
@@ -246,8 +273,7 @@ class PushingContext extends RawDrupalContext {
    */
   public function iAmOnSatellite() {
     $url = $this->getSession()->getCurrentUrl();
-    $url_parts = parse_url($url);
-    if (!isset($url_parts['host']) || strpos($url_parts['host'], 'satellite') === FALSE) {
+    if (!strpos($url, $this->satelliteBaseUrl) !== 0) {
       throw new ExpectationException('Expected satellite url, got: ' . $url, $this->getSession());
     }
   }
