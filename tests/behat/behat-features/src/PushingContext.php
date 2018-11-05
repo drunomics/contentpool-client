@@ -261,7 +261,7 @@ class PushingContext extends RawDrupalContext {
    */
   public function iAmOnContentpool() {
     $url = $this->getSession()->getCurrentUrl();
-    if (!strpos($url, $this->contentpoolBaseUrl) !== 0) {
+    if (strpos($url, $this->contentpoolBaseUrl) !== 0) {
       throw new ExpectationException('Expected contentpool url, got: ' . $url, $this->getSession());
     }
   }
@@ -273,7 +273,7 @@ class PushingContext extends RawDrupalContext {
    */
   public function iAmOnSatellite() {
     $url = $this->getSession()->getCurrentUrl();
-    if (!strpos($url, $this->satelliteBaseUrl) !== 0) {
+    if (strpos($url, $this->satelliteBaseUrl) !== 0) {
       throw new ExpectationException('Expected satellite url, got: ' . $url, $this->getSession());
     }
   }
