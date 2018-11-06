@@ -200,12 +200,16 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     $site_uuid = $config->get('uuid');
     $site_host = $this->requestStack->getCurrentRequest()->getSchemeAndHttpHost();
     $replication_settings = $this->getReplicationSettings($remote);
+    $replication_filters = [
+      'filter_id' => $replication_settings->getFilterId(),
+      'parameters' => $replication_settings->getParameters(),
+    ];
 
     $body = [
       'site_name' => $site_name,
       'site_domain' => $site_host,
       'site_uuid' => $site_uuid,
-      'replication_filters' => $replication_settings->getParameters(),
+      'replication_filters' => $replication_filters,
     ];
 
     // Additional information about the relaxed endpoint.
