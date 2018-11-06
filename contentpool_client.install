@@ -21,6 +21,10 @@ function contentpool_client_install() {
     ->set('libraries.vue.installation', 'cdnjs')
     ->set('libraries.vue.version', '2.5.17')
     ->save();
+  // Configure custom entity edit redirect querystring.
+  \Drupal::configFactory()->getEditable('entity_edit_redirect.settings')
+    ->set('destination_querystring', 'trusted_destination')
+    ->save();
 }
 
 /**

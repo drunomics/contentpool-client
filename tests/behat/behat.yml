@@ -6,6 +6,7 @@ default:
         - %paths.base%/behat-features
       contexts:
         - FeatureContext
+        - PushingContext
         - drunomics\BehatDrupalUtils\Context\DrupalSmokeContext
         - Drupal\DrupalExtension\Context\MinkContext
         - Drupal\DrupalExtension\Context\MessageContext
