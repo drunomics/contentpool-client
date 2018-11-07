@@ -42,7 +42,7 @@ before_install:
 
 install:
   - ./scripts/create-project.sh
-  - ./scripts/launch-contentpool.sh
+  - LAUNCH_CONTENTPOOL_GIT_BRANCH="feature/WV-2497-2" ./scripts/launch-contentpool.sh
   - ./scripts/run-server.sh
   - ./scripts/init-project.sh
   - ./scripts/run-tests.sh
