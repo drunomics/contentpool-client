@@ -10,9 +10,9 @@ use Drupal\DrupalExtension\Context\RawDrupalContext;
 use GuzzleHttp\Client;
 
 /**
- * Defines features from the pushing context.
+ * Defines features from the contentpool context.
  */
-class PushingContext extends RawDrupalContext {
+class ContentPoolContext extends RawDrupalContext {
 
   /**
    * Random suffix to use in tests.
