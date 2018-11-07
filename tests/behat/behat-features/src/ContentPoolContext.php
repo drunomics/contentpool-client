@@ -10,9 +10,9 @@ use Drupal\DrupalExtension\Context\RawDrupalContext;
 use GuzzleHttp\Client;
 
 /**
- * Defines features from the pushing context.
+ * Defines features from the contentpool context.
  */
-class PushingContext extends RawDrupalContext {
+class ContentPoolContext extends RawDrupalContext {
 
   /**
    * Random suffix to use in tests.
@@ -168,15 +168,6 @@ class PushingContext extends RawDrupalContext {
   public function shouldSeeTextWithLastRandomSuffix($text) {
     $text .= $this->randomSuffix;
     $this->assertSession()->pageTextContains($text);
-  }
-
-  /**
-   * Wait for the page to be loaded.
-   *
-   * @When I wait for the page to be loaded
-   */
-  public function waitForThePageToBeLoaded() {
-    $this->getSession()->wait(30000, "document.readyState === 'complete'");
   }
 
   /**
