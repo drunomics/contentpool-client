@@ -171,15 +171,6 @@ class ContentPoolContext extends RawDrupalContext {
   }
 
   /**
-   * Wait for the page to be loaded.
-   *
-   * @When I wait for the page to be loaded
-   */
-  public function waitForThePageToBeLoaded() {
-    $this->getSession()->wait(30000, "document.readyState === 'complete'");
-  }
-
-  /**
    * Run cron via link.
    *
    * @When I run cron via link
