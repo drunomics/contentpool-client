@@ -28,6 +28,7 @@ echo Project created.
 echo "Adding custom environment variables..."
 cat - >> .defaults.env <<END
   INSTALL_PROFILE=standard
+  CONTENTPOOL_BASE_URL=http://contentpool-project.localdev.space
 END
 
 echo "Setting up project..."
