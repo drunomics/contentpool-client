@@ -45,7 +45,6 @@ install:
   - ./scripts/launch-contentpool.sh
   - ./scripts/run-server.sh
   - ./scripts/init-project.sh
-  - cd ../contentpool-project && source dotenv/loader.sh && docker-compose exec web drush upwd dru_admin changeme && cd -
   - ./scripts/run-tests.sh
 
 script:
