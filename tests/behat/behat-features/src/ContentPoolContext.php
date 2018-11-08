@@ -36,6 +36,18 @@ class ContentPoolContext extends RawDrupalContext {
   protected $contentpoolBaseUrl;
 
   /**
+   * List of push events for content created/edited during tests.
+   *
+   * For testing purposes of push event we track if push happened or not
+   * after article was created/edited on contentpool during the tests.
+   * Based on this we check later if articles were successfully replicated
+   * to satellite (in case of successful push) or not (in case of ignored push).
+   *
+   * @var array
+   */
+  protected $pushEvents;
+
+  /**
    * @BeforeScenario
    */
   public function before($scope) {
@@ -281,6 +293,32 @@ class ContentPoolContext extends RawDrupalContext {
       throw new Exception("Could not find edit link.");
     }
     $this->visitPath($edit_link_element->getAttribute('href'));
+  }
+
+  /**
+   * Remember last test article title.
+   *
+   * @When I remember that push for last test article was evaluated as :event_type
+   */
+  public function rememberLastTestArticlePushStatus($event_type) {
+    $article_title = 'Replication behat test' . $this->randomSuffix;
+    $this->pushEvents[$event_type][] = $article_title;
+  }
+
+  /**
+   * Check articles were replicated correctly to satellite based on push events.
+   *
+   * @When I should see test articles replicated based on push events
+   */
+  public function shouldSeeProperlyReplicatedArticles() {
+    // Check articles for which push event happened.
+    foreach ($this->pushEvents['approved'] as $approved_article) {
+      $this->assertSession()->pageTextContains($approved_article);
+    }
+    // Check articles for which push did not happen.
+    foreach ($this->pushEvents['ignored'] as $ignored_article) {
+      $this->assertSession()->pageTextNotContains($ignored_article);
+    }
   }
 
 }

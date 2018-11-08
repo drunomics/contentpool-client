@@ -75,3 +75,39 @@ Feature: Contentpool client-side replication works.
     Then I am on satellite
     # Make sure the article is changed.
     And I should see in content overview article with "Replication behat edit" and random suffix
+
+  @javascript
+  Scenario: Replication filter works
+    Given I am logged in to contentpool
+    When I visit path "node/add/article" on contentpool
+    And I fill in "title[0][value]" with "Replication behat test" and random suffix
+    And I fill in "field_seo_title[0][value]" with "Replication behat test" and last random suffix
+    # Choose Science, since satellite does not opt to replicate articles with this channel.
+    And I select "Science" from "edit-field-channel"
+    And I check the box "status[value]"
+    When I press "Save"
+    Then I wait for "has been created."
+    And I should get a 200 HTTP response
+    And I should see "Ignored push to remote"
+    # Article with Science channel must not be pushed.
+    And I remember that push for last test article was evaluated as "ignored"
+    When I visit path "node/add/article" on contentpool
+    And I fill in "title[0][value]" with "Replication behat test" and random suffix
+    And I fill in "field_seo_title[0][value]" with "Replication behat test" and last random suffix
+    # Choose Cooking, since satellite wants to replicate articles with Food channel and their descendants.
+    And I select "-Cooking" from "edit-field-channel"
+    And I check the box "status[value]"
+    When I press "Save"
+    Then I wait for "has been created."
+    And I should get a 200 HTTP response
+    And I should see "Successfully triggered push to remote"
+    # Article with Science channel must not be pushed.
+    And I remember that push for last test article was evaluated as "approved"
+    # Now check how articles were replicated to satellite.
+    When I am logged in as a user with the "administrator" role
+    Then I am on satellite
+    # We know last test article should be replicated so we use following behat step
+    # since it waits for article until replicated. Then we check rest of articles
+    # because we now know for assuer that replication must be over.
+    And I should see in content overview article with "Replication behat test" and random suffix
+    And I should see test articles replicated based on push events
