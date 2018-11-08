@@ -34,3 +34,6 @@ docker-compose exec -T web drush config:set replication.replication_settings.con
     # Cuba
     - 02c8cbd9-15b7-4231-b9ef-46c1ef37b233
 END
+
+# Add admin password for testing purposes.
+docker-compose exec web drush upwd dru_admin changeme
