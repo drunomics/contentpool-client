@@ -2,6 +2,7 @@
 
 namespace Drupal\contentpool_client\Plugin\RemoteCheck;
 
+use Drupal\contentpool_client\ReplicationSettingsTrait;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
@@ -28,6 +29,7 @@ use Symfony\Component\Serializer\Serializer;
 class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginInterface {
 
   use StringTranslationTrait;
+  use ReplicationSettingsTrait;
 
   /**
    * The config factory service.
@@ -197,11 +199,17 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     $site_name = $config->get('name');
     $site_uuid = $config->get('uuid');
     $site_host = $this->requestStack->getCurrentRequest()->getSchemeAndHttpHost();
+    $replication_settings = $this->getReplicationSettings($remote);
+    $replication_filters = [
+      'filter_id' => $replication_settings->getFilterId(),
+      'parameters' => $replication_settings->getParameters(),
+    ];
 
     $body = [
       'site_name' => $site_name,
       'site_domain' => $site_host,
       'site_uuid' => $site_uuid,
+      'replication_filters' => $replication_filters,
     ];
 
     // Additional information about the relaxed endpoint.
