@@ -18,6 +18,9 @@ docker-compose exec web drush en contentpool_client -y
 # see drunomics/contentpool:scripts/init-project.sh
 docker-compose exec web drush contentpool-client:setup http://replicator:changeme@contentpool-project.localdev.space/relaxed
 
+# Override config from data model.
+docker-compose exec web drush config-import --partial --source=modules/drunomics/contentpool_data_model/config/override -y
+
 # Add some subscription filters for testing.
 docker-compose exec -T web drush config:set replication.replication_settings.contentpool parameters.filter \
  --input-format=yaml - <<END
