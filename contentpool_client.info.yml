@@ -11,5 +11,6 @@ dependencies:
   - rest:rest
   - contentpool:contentpool_data_model
   - contentpool:contentpool_replication
+  - markup_field:markup_field
   - scheduler:scheduler
   - entity_edit_redirect:entity_edit_redirect
