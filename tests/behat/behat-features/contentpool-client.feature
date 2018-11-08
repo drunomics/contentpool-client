@@ -104,7 +104,8 @@ Feature: Contentpool client-side replication works.
     # Article with Science channel must not be pushed.
     And I remember that push for last test article was evaluated as "approved"
     # Now check how articles were replicated to satellite.
-    When I am logged in as a user with the "administrator" role
+    When I open the satellite
+    And I am logged in as a user with the "administrator" role
     Then I am on satellite
     # We know last test article should be replicated so we use following behat step
     # since it waits for article until replicated. Then we check rest of articles
