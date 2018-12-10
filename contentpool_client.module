@@ -6,6 +6,8 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\workspace\Entity\Replication;
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -71,7 +73,8 @@ function contentpool_client_cron() {
   $autopull_count = $remote_pull_manager->checkAndDoAutopulls();
 
   if ($autopull_count) {
-    \Drupal::logger('contentpool client')->info('Autopull for @count remotes triggered.', ['@count' => $autopull_count]);
+    \Drupal::logger('contentpool client')
+      ->info('Autopull for @count remotes triggered.', ['@count' => $autopull_count]);
   }
   else {
     \Drupal::logger('contentpool client')->info('No autopulls triggered.');
@@ -92,4 +95,57 @@ function contentpool_client_theme($existing, $type, $theme, $path) {
       ],
     ],
   ];
+}
+
+/**
+ * Implements hook_requirements().
+ */
+/**
+ * Implements hook_requirements().
+ */
+function contentpool_client_requirements($phase) {
+  if ($phase === 'runtime') {
+    $requirements = [];
+    /** @var \Drupal\contentpool_client\Service\ReplicationHelper $replication_helper */
+    $replication_helper = \Drupal::service('contentpool_client.replication_helper');
+    $replication = $replication_helper->getLastReplication();
+    if ($replication) {
+      /** @var \Drupal\workspace\Entity\WorkspacePointer $upstream_workspace_pointer */
+      $upstream_workspace_pointer = $replication->source->entity;
+      /** @var \Drupal\workspace\Entity\WorkspacePointer $active_workspace_pointer */
+      $active_workspace_pointer = $replication->target->entity;
+      $message = t('Replication from <em>@source</em> to <em>@target</em>', [
+        '@source' => $upstream_workspace_pointer->label(),
+        '@target' => $active_workspace_pointer->label(),
+      ]);
+
+      $severity = REQUIREMENT_INFO;
+      switch ($replication->replication_status->value) {
+        case Replication::FAILED:
+          $status = t('Failed');
+          $severity = REQUIREMENT_ERROR;
+          break;
+        case Replication::QUEUED:
+          $status = t('Queued');
+          break;
+        case Replication::REPLICATING:
+          $status = t('Replicating');
+          break;
+        case Replication::REPLICATED:
+          $status = t('Replicated');
+          break;
+        default:
+          $status = t('Unkown');
+          break;
+      }
+
+      $requirements['contentpool_client_replication'] = [
+        'title' => $message,
+        'value' => $status,
+        'description' => t('Restart replication by following <strong><a href=":url">this</a></strong> link.', [':url' => Url::fromRoute('contentpool_client.restart_replication')->toString()]),
+        'severity' => $severity,
+      ];
+    }
+    return $requirements;
+  }
 }
