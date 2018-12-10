@@ -8,3 +8,13 @@ entity.remote.contentpool_replication_filter:
     _custom_access: '\Drupal\contentpool_client\Form\ContentpoolReplicationFilterForm::access'
   options:
     _admin_route: TRUE
+
+contentpool_client.restart_replication:
+  path: '/admin/reports/status/contentpool-client/replication/restart'
+  defaults:
+    _controller: '\Drupal\contentpool_client\Controller\ReplicationRestartController::restartReplication'
+  options:
+    no_cache: TRUE
+    _admin_route: TRUE
+  requirements:
+    _permission: 'administer site configuration'
