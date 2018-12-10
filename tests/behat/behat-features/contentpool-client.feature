@@ -56,7 +56,7 @@ Feature: Contentpool client-side replication works.
     And I fill in "title[0][value]" with "Replication behat test" and random suffix
     And I fill in "field_seo_title[0][value]" with "Replication behat test" and last random suffix
     And I select "-Bakery" from "edit-field-channel"
-    And I check the box "status[value]"
+    And I select "published" from "moderation_state[0]"
     When I press "Save"
     Then I wait for "has been created."
     And I should get a 200 HTTP response
@@ -84,7 +84,7 @@ Feature: Contentpool client-side replication works.
     And I fill in "field_seo_title[0][value]" with "Replication behat test" and last random suffix
     # Choose Science, since satellite does not opt to replicate articles with this channel.
     And I select "Science" from "edit-field-channel"
-    And I check the box "status[value]"
+    And I select "published" from "moderation_state[0]"
     When I press "Save"
     Then I wait for "has been created."
     And I should get a 200 HTTP response
@@ -96,7 +96,7 @@ Feature: Contentpool client-side replication works.
     And I fill in "field_seo_title[0][value]" with "Replication behat test" and last random suffix
     # Choose Cooking, since satellite wants to replicate articles with Food channel and their descendants.
     And I select "-Cooking" from "edit-field-channel"
-    And I check the box "status[value]"
+    And I select "published" from "moderation_state[0]"
     When I press "Save"
     Then I wait for "has been created."
     And I should get a 200 HTTP response

@@ -41,6 +41,8 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
 
 install:
+  # For PRs, ensure there is a valid branch.
+  - ENSURE_VALID_BRANCH=1 source scripts/util/get-branch.sh
   - ./scripts/create-project.sh
   - ./scripts/launch-contentpool.sh
   - ./scripts/run-server.sh
