@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\relaxed\Entity\RemoteInterface;
 use GuzzleHttp\ClientInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -152,10 +153,17 @@ class ContentpoolReplicationFilterForm extends FormBase {
 
     $settings = $this->getReplicationSettings($remote);
     $parameters = $settings->getParameters();
+    $changed = ($parameters['filter'] ?? []) !== $filter;
     $parameters['filter'] = $filter;
     $settings->set('parameters', $parameters);
     $settings->save();
     $this->messenger->addMessage($this->t('The configuration options have been saved.'));
+    if ($changed) {
+      $this->messenger->addMessage($this->t('Changes to the replication filter settings take affect on the next replication. Please <strong><a href=":url">reset</a></strong> the replication status in order to replicate the complete content with updated filters.', [
+        ':url' => Url::fromRoute('contentpool_client.restart_replication')
+          ->toString(),
+      ]));
+    }
   }
 
   /**
@@ -189,7 +197,8 @@ class ContentpoolReplicationFilterForm extends FormBase {
       $response = $this->httpClient->get($base_url . '/api/contentpool-term-reference-fields?entity_type_id=node&bundle=article', [
         'auth' => $auth,
       ]);
-      $termreference_fields = json_decode($response->getBody()->getContents(), TRUE);
+      $termreference_fields = json_decode($response->getBody()
+        ->getContents(), TRUE);
     }
     catch (\Exception $e) {
       $this->messenger->addError($this->t('Error fetching reference fields from contentpool. Error: %e', ['%e' => $e->getMessage()]));
