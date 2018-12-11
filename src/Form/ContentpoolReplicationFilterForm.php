@@ -10,6 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\relaxed\Entity\RemoteInterface;
 use GuzzleHttp\ClientInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -156,6 +157,10 @@ class ContentpoolReplicationFilterForm extends FormBase {
     $settings->set('parameters', $parameters);
     $settings->save();
     $this->messenger->addMessage($this->t('The configuration options have been saved.'));
+    $this->messenger->addMessage($this->t('Please consider the option of restarting the replication on the following <strong><a href=":url">link</a></strong>.', [
+      ':url' => Url::fromRoute('contentpool_client.restart_replication')
+        ->toString(),
+    ]));
   }
 
   /**
@@ -189,7 +194,8 @@ class ContentpoolReplicationFilterForm extends FormBase {
       $response = $this->httpClient->get($base_url . '/api/contentpool-term-reference-fields?entity_type_id=node&bundle=article', [
         'auth' => $auth,
       ]);
-      $termreference_fields = json_decode($response->getBody()->getContents(), TRUE);
+      $termreference_fields = json_decode($response->getBody()
+        ->getContents(), TRUE);
     }
     catch (\Exception $e) {
       $this->messenger->addError($this->t('Error fetching reference fields from contentpool. Error: %e', ['%e' => $e->getMessage()]));
