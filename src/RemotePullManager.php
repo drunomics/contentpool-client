@@ -129,7 +129,7 @@ class RemotePullManager implements RemotePullManagerInterface {
     $last_autopull = $this->state->get($remote_state_id);
 
     // If autopull was never run or the intervals has been reached, we pull.
-    if (!$last_autopull || ($last_autopull + $autopull_interval) < time()) {
+    if (!$last_autopull || ($last_autopull + $autopull_interval) < time() || 1==1) {
       $this->doPull($remote);
     }
 

@@ -34,40 +34,44 @@ function contentpool_client_requirements($phase) {
         '#suffix' => '<br/>',
         '#markup' => t('Triggered on @datetime', ['@datetime' => $date_format->format($replication->changed->value, 'short')]),
       ];
-      // Specially handle the case when there are conflicts.
-      if ($conflicts = $replication_helper->hasConflicts($upstream_workspace_pointer, $active_workspace_pointer, TRUE)) {
-        $requirement['value'] = t('<a href=":link" target="_blank">@count conflict(s)</a>', [
-          ':link' => Url::fromRoute('entity.workspace.conflicts', [
-            'workspace' => $active_workspace_pointer->getWorkspace()
-              ->id(),
-          ])->toString(),
-          '@count' => $conflicts,
-        ]);
-        $requirement['severity'] = REQUIREMENT_ERROR;
+
+      switch ($replication->replication_status->value) {
+        case Replication::FAILED:
+          $value = t('Failed');
+          $requirement['severity'] = REQUIREMENT_ERROR;
+          break;
+
+        case Replication::QUEUED:
+          $value = t('Queued');
+          break;
+
+        case Replication::REPLICATING:
+          $value = t('Replicating');
+          break;
+
+        case Replication::REPLICATED:
+          $value = t('Replicated');
+          break;
+
+        default:
+          $value = t('Unknown');
+          break;
       }
-      else {
-        switch ($replication->replication_status->value) {
-          case Replication::FAILED:
-            $requirement['value'] = t('Failed');
-            $requirement['severity'] = REQUIREMENT_ERROR;
-            break;
-
-          case Replication::QUEUED:
-            $requirement['value'] = t('Queued');
-            break;
-
-          case Replication::REPLICATING:
-            $requirement['value'] = t('Replicating');
-            break;
-
-          case Replication::REPLICATED:
-            $requirement['value'] = t('Replicated');
-            break;
-
-          default:
-            $requirement['value'] = t('Unknown');
-            break;
-        }
+      $requirement['value'][] = [
+        '#markup' => $value,
+      ];
+      // Attach conflicts information if there are any.
+      if ($conflicts = $replication_helper->hasConflicts($upstream_workspace_pointer, $active_workspace_pointer, TRUE)) {
+        $requirement['value'][] = [
+          '#markup' => ': ' . t('<a href=":link" target="_blank">@count conflict(s)</a>', [
+            ':link' => Url::fromRoute('entity.workspace.conflicts', [
+              'workspace' => $active_workspace_pointer->getWorkspace()
+                ->id(),
+            ])->toString(),
+            '@count' => $conflicts,
+          ])
+        ];
+        $requirement['severity'] = REQUIREMENT_ERROR;
       }
     }
     else {
