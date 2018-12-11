@@ -137,7 +137,7 @@ class ReplicationHelper {
   }
 
   /**
-   *  Checks if given upstream has conflicts against given workspace.
+   * Checks if given upstream has conflicts against given workspace.
    *
    * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
    *   Source workspace pointer.

@@ -43,6 +43,7 @@ class ReplicationRestartController extends ControllerBase implements ContainerIn
    * Restarts the replication.
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   Redirect back to status reports page.
    */
   public function restartReplication() {
     $this->replicationHelper->restartReplication();
