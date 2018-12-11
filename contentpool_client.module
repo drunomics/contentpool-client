@@ -115,31 +115,56 @@ function contentpool_client_requirements($phase) {
       '@source' => $upstream_workspace_pointer->label(),
       '@target' => $active_workspace_pointer->label(),
     ]);
-    $description = t('Restart replication by following <strong><a href=":url">this</a></strong> link.', [':url' => Url::fromRoute('contentpool_client.restart_replication')->toString()]);
     $severity = REQUIREMENT_INFO;
     if ($replication) {
-      switch ($replication->replication_status->value) {
-        case Replication::FAILED:
-          $status = t('Failed');
-          $severity = REQUIREMENT_ERROR;
-          break;
-        case Replication::QUEUED:
-          $status = t('Queued');
-          break;
-        case Replication::REPLICATING:
-          $status = t('Replicating');
-          break;
-        case Replication::REPLICATED:
-          $status = t('Replicated');
-          break;
-        default:
-          $status = t('Unknown');
-          break;
+      /** @var \Drupal\Core\Datetime\DateFormatter $date_format */
+      $date_format = \Drupal::service('date.formatter');
+      // Attach the date the replication was triggered on.
+      $description[] = [
+        '#suffix' => '<br/>',
+        '#markup' => t('Triggered on @datetime', ['@datetime' => $date_format->format($replication->changed->value, 'short')]),
+      ];
+      // Specially handle the case when there are conflicts.
+      if ($conflicts = $replication_helper->hasConflicts($upstream_workspace_pointer, $active_workspace_pointer, TRUE)) {
+        $status = t('<a href=":link" target="_blank">@count conflict(s)</a>',[
+          ':link' => Url::fromRoute('entity.workspace.conflicts', [
+            'workspace' => $active_workspace_pointer->getWorkspace()
+              ->id(),
+          ])->toString(),
+          '@count' => $conflicts,
+        ]);
+        $severity = REQUIREMENT_ERROR;
+      }
+      else {
+        switch ($replication->replication_status->value) {
+          case Replication::FAILED:
+            $status = t('Failed');
+            $severity = REQUIREMENT_ERROR;
+            break;
+          case Replication::QUEUED:
+            $status = t('Queued');
+            break;
+          case Replication::REPLICATING:
+            $status = t('Replicating');
+            break;
+          case Replication::REPLICATED:
+            $status = t('Replicated');
+            break;
+          default:
+            $status = t('Unknown');
+            break;
+        }
       }
     }
     else {
       $status = t('Not yet reported');
     }
+    $description[] = [
+      '#markup' => t('Restart replication by following <strong><a href=":url">this</a></strong> link.', [
+        ':url' => Url::fromRoute('contentpool_client.restart_replication')
+          ->toString(),
+      ]),
+    ];
     $requirements['contentpool_client_replication'] = [
       'title' => $title,
       'value' => $status,

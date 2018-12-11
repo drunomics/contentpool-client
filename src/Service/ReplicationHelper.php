@@ -87,7 +87,7 @@ class ReplicationHelper {
   /**
    * Gets the workspace pointer of currently active workspace.
    *
-   * @return \Drupal\workspace\WorkspacePointerInterface
+   * @return \Drupal\workspace\Entity\WorkspacePointer
    *   The active workspace pointer.
    */
   public function getActiveWorkspacePointer() {
@@ -103,7 +103,7 @@ class ReplicationHelper {
   /**
    * Gets the workspace pointer of upstream of currently active workspace.
    *
-   * @return \Drupal\workspace\WorkspacePointerInterface
+   * @return \Drupal\workspace\Entity\WorkspacePointer
    *   The upstream workspace pointer.
    */
   public function getUpstreamWorkspacePointer() {
@@ -151,8 +151,8 @@ class ReplicationHelper {
    * @param bool $silent
    *   Optional. Whether messages should be printed.
    *
-   * @return bool
-   *   Whether conflicts were found or not.
+   * @return bool|int
+   *   False or number of conflicts.
    */
   public function hasConflicts(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer, $silent = FALSE) {
     $conflicts = $this->conflictTracker
@@ -172,7 +172,7 @@ class ReplicationHelper {
             '@count' => count($conflicts),
           ]));
       }
-      return TRUE;
+      return count($conflicts);
     }
     return FALSE;
   }
