@@ -141,10 +141,8 @@ class RemotePullManager implements RemotePullManagerInterface {
    * {@inheritdoc}
    */
   public function doPull(Remote $remote, $process_immediately = FALSE) {
-    // Queue replication only if it is not already queued.
-    if (!$this->replicationHelper->isReplicationQueued(TRUE)) {
-      $this->replicationHelper->queueReplicationTaskWithCurrentActiveWorkspace();
-    }
+    // Queue replication for currently active workspace.
+    $this->replicationHelper->queueReplicationTaskWithCurrentActiveWorkspace();
 
     if ($process_immediately) {
       $this->processReplicationQueue();

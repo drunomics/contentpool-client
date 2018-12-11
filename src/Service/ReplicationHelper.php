@@ -16,6 +16,7 @@ use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\relaxed\Entity\Remote;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\workspace\Entity\Replication;
+use Drupal\workspace\Entity\WorkspacePointer;
 use Drupal\workspace\ReplicatorInterface;
 
 /**
@@ -141,68 +142,39 @@ class ReplicationHelper {
   }
 
   /**
-   * Create a replication task into the queue.
+   *  Checks if given upstream has conflicts against given workspace.
    *
-   * @param $source_workspace_pointer
+   * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
    *   Source workspace pointer.
-   * @param $target_workspace_pointer
+   * @param \Drupal\workspace\Entity\WorkspacePointer $target_workspace_pointer
    *   Target workspace pointer.
+   * @param bool $silent
+   *   Optional. Whether messages should be printed.
+   *
+   * @return bool
+   *   Whether conflicts were found or not.
    */
-  public function queueReplicationTask($source_workspace_pointer, $target_workspace_pointer) {
-    try {
-      // Derive a replication task from the Workspace we are acting on.
-      $task = $this->replicatorManager->getTask($target_workspace_pointer->getWorkspace(), 'pull_replication_settings');
-      $response = $this->replicatorManager->update($source_workspace_pointer, $target_workspace_pointer, $task);
+  public function hasConflicts(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer, $silent = FALSE) {
+    $conflicts = $this->conflictTracker
+      ->useWorkspace($target_workspace_pointer->getWorkspace())
+      ->getAll();
 
-      if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
-        // Notify the user if there are now conflicts.
-        $conflicts = $this->conflictTracker
-          ->useWorkspace($target_workspace_pointer->getWorkspace())
-          ->getAll();
-
-        if ($conflicts) {
-          $this->messenger()
-            ->addError($this->t('%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %upstream workspace</a>.', [
-              '%upstream' => $source_workspace_pointer->label(),
-              '%workspace' => $target_workspace_pointer->label(),
-              ':link' => Url::fromRoute('entity.workspace.conflicts', [
-                'workspace' => $target_workspace_pointer->getWorkspace()
-                  ->id(),
-              ])->toString(),
-              '@count' => count($conflicts),
-            ]));
-        }
-        else {
-          $this->messenger()
-            ->addMessage($this->t('An update of %workspace has been queued with content from %upstream.', [
-              '%upstream' => $source_workspace_pointer->label(),
-              '%workspace' => $target_workspace_pointer->label(),
-            ]));
-        }
-      }
-      else {
+    if ($conflicts) {
+      if (!$silent) {
         $this->messenger()
-          ->addError($this->t('Error updating %workspace from %upstream.', [
+          ->addError($this->t('%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %upstream workspace</a>.', [
             '%upstream' => $source_workspace_pointer->label(),
             '%workspace' => $target_workspace_pointer->label(),
+            ':link' => Url::fromRoute('entity.workspace.conflicts', [
+              'workspace' => $target_workspace_pointer->getWorkspace()
+                ->id(),
+            ])->toString(),
+            '@count' => count($conflicts),
           ]));
       }
+      return TRUE;
     }
-    catch (\Exception $e) {
-      watchdog_exception('Workspace', $e);
-      $this->messenger()->addError($e->getMessage());
-    }
-  }
-
-  /**
-   * Queue replication task with current active workspace.
-   */
-  public function queueReplicationTaskWithCurrentActiveWorkspace() {
-    // If no upstream is found then no replication can be queued.
-    if ($upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) {
-      $active_workspace_pointer = $this->getActiveWorkspacePointer();
-      $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer);
-    }
+    return FALSE;
   }
 
   /**
@@ -231,16 +203,63 @@ class ReplicationHelper {
   }
 
   /**
+   * Create a replication task into the queue.
+   *
+   * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
+   *   Source workspace pointer.
+   * @param \Drupal\workspace\Entity\WorkspacePointer $target_workspace_pointer
+   *   Target workspace pointer.
+   */
+  public function queueReplicationTask(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer) {
+    // Queue replication if there are no conflicts and no replication is queued.
+    if (!$this->hasConflicts($source_workspace_pointer, $target_workspace_pointer) && !$this->isReplicationQueued()) {
+      try {
+        // Derive a replication task from the Workspace we are acting on.
+        $task = $this->replicatorManager->getTask($target_workspace_pointer->getWorkspace(), 'pull_replication_settings');
+        $response = $this->replicatorManager->update($source_workspace_pointer, $target_workspace_pointer, $task);
+
+        if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
+          $this->messenger()
+            ->addMessage($this->t('An update of %workspace has been queued with content from %upstream.', [
+              '%upstream' => $source_workspace_pointer->label(),
+              '%workspace' => $target_workspace_pointer->label(),
+            ]));
+        }
+        else {
+          $this->messenger()
+            ->addError($this->t('Error updating %workspace from %upstream.', [
+              '%upstream' => $source_workspace_pointer->label(),
+              '%workspace' => $target_workspace_pointer->label(),
+            ]));
+        }
+      }
+      catch (\Exception $e) {
+        watchdog_exception('Workspace', $e);
+        $this->messenger()->addError($e->getMessage());
+      }
+    }
+  }
+
+  /**
+   * Queue replication task with current active workspace.
+   */
+  public function queueReplicationTaskWithCurrentActiveWorkspace() {
+    // If no upstream is found then no replication can be queued.
+    if ($upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) {
+      $active_workspace_pointer = $this->getActiveWorkspacePointer();
+      $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer);
+    }
+  }
+
+  /**
    * Restarts replication for currently active workspace and its upstream.
    */
   public function restartReplication() {
     // Reset flag if last replication failed.
     $this->state->set('workspace.last_replication_failed', FALSE);
 
-    // Queue replication, but only if it was not queued already.
-    if (!$this->isReplicationQueued()) {
-      $this->queueReplicationTaskWithCurrentActiveWorkspace();
-    }
+    // Queue replication for currently active workspace.
+    $this->queueReplicationTaskWithCurrentActiveWorkspace();
   }
 
 }
