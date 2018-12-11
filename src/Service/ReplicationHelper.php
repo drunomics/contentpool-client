@@ -55,6 +55,13 @@ class ReplicationHelper {
   protected $workspaceManager;
 
   /**
+   * The injected service to track conflicts during replication.
+   *
+   * @var \Drupal\multiversion\Workspace\ConflictTrackerInterface
+   */
+  protected $conflictTracker;
+
+  /**
    * Constructs a RemoteAutopullManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -65,12 +72,15 @@ class ReplicationHelper {
    *   The replicator manager.
    * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
    *   The multiversion workspace manager.
+   * @param \Drupal\multiversion\Workspace\ConflictTrackerInterface $conflict_tracker
+   *   The multiversion conflict tracker.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, WorkspaceManagerInterface $workspace_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, WorkspaceManagerInterface $workspace_manager, ConflictTrackerInterface $conflict_tracker) {
     $this->entityTypeManager = $entity_type_manager;
     $this->state = $state;
     $this->replicatorManager = $replicator_manager;
     $this->workspaceManager = $workspace_manager;
+    $this->conflictTracker = $conflict_tracker;
   }
 
   /**
@@ -121,13 +131,66 @@ class ReplicationHelper {
     $query->condition('source', $upstream_workspace_pointer->id());
     $query->condition('target', $active_workspace_pointer->id());
     $query->sort('changed', 'DESC');
-    $query->range(0,1);
+    $query->range(0, 1);
     $result = $query->execute();
     if (!$result) {
       return NULL;
     }
     $replication_id = reset($result);
     return Replication::load($replication_id);
+  }
+
+  /**
+   * Create a replication task into the queue.
+   *
+   * @param $source_workspace_pointer
+   *   Source workspace pointer.
+   * @param $target_workspace_pointer
+   *   Target workspace pointer.
+   */
+  public function queueReplicationTask($source_workspace_pointer, $target_workspace_pointer) {
+    try {
+      // Derive a replication task from the Workspace we are acting on.
+      $task = $this->replicatorManager->getTask($target_workspace_pointer->getWorkspace(), 'pull_replication_settings');
+      $response = $this->replicatorManager->update($source_workspace_pointer, $target_workspace_pointer, $task);
+
+      if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
+        // Notify the user if there are now conflicts.
+        $conflicts = $this->conflictTracker
+          ->useWorkspace($target_workspace_pointer->getWorkspace())
+          ->getAll();
+
+        if ($conflicts) {
+          $this->messenger()
+            ->addError($this->t('%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %target workspace</a>.', [
+              '%upstream' => $target_workspace_pointer->label(),
+              '%workspace' => $source_workspace_pointer->label(),
+              ':link' => Url::fromRoute('entity.workspace.conflicts', [
+                'workspace' => $target_workspace_pointer->getWorkspace()
+                  ->id(),
+              ])->toString(),
+              '@count' => count($conflicts),
+              '%target' => $target_workspace_pointer->label(),
+            ]));
+        }
+        $this->messenger()
+          ->addMessage($this->t('An update of %workspace has been queued with content from %upstream.', [
+            '%upstream' => $target_workspace_pointer->label(),
+            '%workspace' => $source_workspace_pointer->label(),
+          ]));
+      }
+      else {
+        $this->messenger()
+          ->addError($this->t('Error updating %workspace from %upstream.', [
+            '%upstream' => $target_workspace_pointer->label(),
+            '%workspace' => $source_workspace_pointer->label(),
+          ]));
+      }
+    }
+    catch (\Exception $e) {
+      watchdog_exception('Workspace', $e);
+      $this->messenger()->addError($e->getMessage());
+    }
   }
 
   /**
@@ -152,23 +215,7 @@ class ReplicationHelper {
         ]));
       return;
     }
-
-    try {
-      // Derive a replication task from the Workspace we are acting on.
-      $task = $this->replicatorManager->getTask($active_workspace_pointer->getWorkspace(), 'pull_replication_settings');
-      $response = $this->replicatorManager->update($upstream_workspace_pointer, $active_workspace_pointer, $task);
-
-      if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
-        $this->messenger()->addMessage($this->t('An update of %workspace has been queued with content from %upstream.', ['%upstream' => $upstream_workspace_pointer->label(), '%workspace' => $active_workspace_pointer->label()]));
-      }
-      else {
-        $this->messenger()->addError($this->t('Error updating %workspace from %upstream.', ['%upstream' => $upstream_workspace_pointer->label(), '%workspace' => $active_workspace_pointer->label()]));
-      }
-    }
-    catch (\Exception $e) {
-      watchdog_exception('Workspace', $e);
-      $this->messenger()->addError($e->getMessage());
-    }
+    $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer);
   }
 
 }
