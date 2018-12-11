@@ -235,6 +235,7 @@ class ReplicationHelper {
     // Reset flag if last replication failed.
     $this->state->set('workspace.last_replication_failed', FALSE);
 
+    // Queue replication, but only if it was not queued already.
     if (!$this->isReplicationQueued()) {
       $this->queueReplicationTaskWithCurrentActiveWorkspace();
     }
