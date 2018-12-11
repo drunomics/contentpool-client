@@ -193,28 +193,51 @@ class ReplicationHelper {
   }
 
   /**
+   * Queue replication task with current active workspace.
+   */
+  public function queueReplicationTaskWithCurrentActiveWorkspace() {
+    // If no upstream is found then no replication can be queued.
+    if ($upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) {
+      $active_workspace_pointer = $this->getActiveWorkspacePointer();
+      $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer);
+    }
+  }
+
+  /**
+   * Checks whethere there is already a replication queued.
+   *
+   * @param bool $silent
+   *   Whether messages should be printed.
+   *
+   * @return bool
+   *   Whether replication was queued or not.
+   */
+  public function isReplicationQueued($silent = FALSE) {
+    // Check if last replication is not already queued.
+    $replication = $this->getLastReplication();
+    if ($replication && $replication->replication_status->value == Replication::QUEUED) {
+      if (!$silent) {
+        $this->messenger()
+          ->addMessage($this->t('An update of %workspace with content from %upstream has been already queued.', [
+            '%upstream' => $replication->source->entity ?? $replication->source->entity->label(),
+            '%workspace' => $replication->target->entity ?? $replication->target->entity->label(),
+          ]));
+      }
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
    * Restarts replication for currently active workspace and its upstream.
    */
   public function restartReplication() {
     // Reset flag if last replication failed.
     $this->state->set('workspace.last_replication_failed', FALSE);
-    // If no upstream is found then there is nothing to restart.
-    if (!$upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) {
-      return;
-    }
-    $active_workspace_pointer = $this->getActiveWorkspacePointer();
 
-    // Check if last replication is not already queued.
-    $replication = $this->getLastReplication();
-    if ($replication && $replication->replication_status->value == Replication::QUEUED) {
-      $this->messenger()
-        ->addMessage($this->t('An update of %workspace with content from %upstream has been already queued.', [
-          '%upstream' => $upstream_workspace_pointer->label(),
-          '%workspace' => $active_workspace_pointer->label(),
-        ]));
-      return;
+    if (!$this->isReplicationQueued()) {
+      $this->queueReplicationTaskWithCurrentActiveWorkspace();
     }
-    $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer);
   }
 
 }
