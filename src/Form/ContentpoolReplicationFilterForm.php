@@ -153,14 +153,17 @@ class ContentpoolReplicationFilterForm extends FormBase {
 
     $settings = $this->getReplicationSettings($remote);
     $parameters = $settings->getParameters();
+    $changed = ($parameters['filter'] ?? []) !== $filter;
     $parameters['filter'] = $filter;
     $settings->set('parameters', $parameters);
     $settings->save();
     $this->messenger->addMessage($this->t('The configuration options have been saved.'));
-    $this->messenger->addMessage($this->t('Please consider the option of restarting the replication on the following <strong><a href=":url">link</a></strong>.', [
-      ':url' => Url::fromRoute('contentpool_client.restart_replication')
-        ->toString(),
-    ]));
+    if ($changed) {
+      $this->messenger->addMessage($this->t('Changes to the replication filter settings take affect on the next replication. Please <strong><a href=":url">link</a></strong> the replication status in order to replicate the complete with updated filters.', [
+        ':url' => Url::fromRoute('contentpool_client.restart_replication')
+          ->toString(),
+      ]));
+    }
   }
 
   /**
