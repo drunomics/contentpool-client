@@ -5,6 +5,7 @@ namespace Drupal\contentpool_client\Commands;
 use drunomics\ServiceUtils\Core\Config\ConfigFactoryTrait;
 use drunomics\ServiceUtils\Core\Entity\EntityTypeManagerTrait;
 use Drupal\contentpool_client\RemotePullManagerTrait;
+use Drupal\contentpool_client\ReplicationHelperTrait;
 use Drush\Commands\DrushCommands;
 use Drush\Utils\StringUtils;
 
@@ -24,6 +25,7 @@ class ContentpoolClientCommands extends DrushCommands {
   use ConfigFactoryTrait;
   use EntityTypeManagerTrait;
   use RemotePullManagerTrait;
+  use ReplicationHelperTrait;
 
   /**
    * Pulls content from the contentpool server.
@@ -118,6 +120,19 @@ class ContentpoolClientCommands extends DrushCommands {
     $config->set('base_redirect_url', $remote_url_parts['scheme'] . '://' . $remote_url_parts['host']);
     $config->set('entity_edit_path_patterns', ['node' => ['article' => '/entity/{uuid}/edit']]);
     $config->save();
+  }
+
+  /**
+   * Resets the replication status.
+   *
+   * @usage contentpool-client:reset
+   *   drush cpr
+   *
+   * @command contentpool-client:reset
+   * @aliases cpr
+   */
+  public function reset() {
+    $this->getReplicationHelper()->restartReplication();
   }
 
 }
