@@ -123,15 +123,15 @@ class ContentpoolClientCommands extends DrushCommands {
   }
 
   /**
-   * Restarts the replication status.
+   * Resets the replication status.
    *
-   * @usage contentpool-client:restart-replication-status
-   *   drush cprrs
+   * @usage contentpool-client:reset
+   *   drush cpr
    *
-   * @command contentpool-client:restart-replication-status
-   * @aliases cprrs
+   * @command contentpool-client:reset
+   * @aliases cpr
    */
-  public function restartReplicationStatus() {
+  public function reset() {
     $this->getReplicationHelper()->restartReplication();
   }
 
