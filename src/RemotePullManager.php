@@ -10,12 +10,7 @@ use Drupal\Core\Queue\RequeueException;
 use Drupal\Core\Queue\SuspendQueueException;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\Url;
-use Drupal\multiversion\Workspace\ConflictTrackerInterface;
-use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\relaxed\Entity\Remote;
-use Drupal\replication\Entity\ReplicationLogInterface;
-use Drupal\workspace\ReplicatorInterface;
 
 /**
  * Helper class to get training references and backreferences.
@@ -78,6 +73,7 @@ class RemotePullManager implements RemotePullManagerInterface {
     $this->state = $state;
     $this->queueFactory = $queue_factory;
     $this->queueManager = $queue_manager;
+    $this->replicationHelper = $replication_helper;
   }
 
   /**
