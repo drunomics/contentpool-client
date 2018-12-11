@@ -43,6 +43,19 @@ Feature: Contentpool client-side replication works.
     And I should not see "science"
 
   @javascript
+  Scenario: Replicated content is rendered correctly
+    Given I run drush cpc
+    And I run drush cron
+    And I am logged in as a user with the "administrator" role
+    And I am on "/admin/content"
+
+    When I click "Cultured meat"
+    Then I should see "The concept of cultured meat was popularized"
+    # The custom-elements must be rendered, thus not visible any more.
+    And the response should not contain "<pg-text"
+    And the response should not contain "<template slot=\"field-text\">"
+
+  @javascript
   Scenario: Pushing notification works
     Given I am logged in as a user with the "administrator" role
     # Trigger auto remote registration.
