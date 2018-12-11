@@ -19,7 +19,7 @@ use Drupal\workspace\Entity\Replication;
 use Drupal\workspace\ReplicatorInterface;
 
 /**
- * Helper class to get replication related information.
+ * Helper class to operate better with replication entities.
  */
 class ReplicationHelper {
 

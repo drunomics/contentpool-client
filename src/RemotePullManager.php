@@ -2,6 +2,7 @@
 
 namespace Drupal\contentpool_client;
 
+use Drupal\contentpool_client\Service\ReplicationHelper;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\Queue\QueueWorkerManagerInterface;
@@ -38,18 +39,11 @@ class RemotePullManager implements RemotePullManagerInterface {
   protected $state;
 
   /**
-   * The replicator manager.
+   * The replicator helper service.
    *
-   * @var \Drupal\workspace\ReplicatorInterface
+   * @var \Drupal\contentpool_client\Service\ReplicationHelper
    */
-  protected $replicatorManager;
-
-  /**
-   * The injected service to track conflicts during replication.
-   *
-   * @var \Drupal\multiversion\Workspace\ConflictTrackerInterface
-   */
-  protected $conflictTracker;
+  protected $replicationHelper;
 
   /**
    * The queue service.
@@ -66,38 +60,24 @@ class RemotePullManager implements RemotePullManagerInterface {
   protected $queueManager;
 
   /**
-   * The workspace manager.
-   *
-   * @var \Drupal\multiversion\Workspace\WorkspaceManagerInterface
-   */
-  protected $workspaceManager;
-
-  /**
    * Constructs a RemoteAutopullManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state interface.
-   * @param \Drupal\workspace\ReplicatorInterface $replicator_manager
-   *   The replicator manager.
-   * @param \Drupal\multiversion\Workspace\ConflictTrackerInterface $conflict_tracker
-   *   The multiversion conflict tracker.
+   * @param \Drupal\contentpool_client\Service\ReplicationHelper $replication_helper
+   *   The replication helper service.
    * @param \Drupal\Core\Queue\QueueFactory $queue_factory
    *   The queue factory.
    * @param \Drupal\Core\Queue\QueueWorkerManagerInterface $queue_manager
    *   The queue manager.
-   * @param \Drupal\multiversion\Workspace\WorkspaceManagerInterface $workspace_manager
-   *   The multiversion workspace manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, ConflictTrackerInterface $conflict_tracker, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager, WorkspaceManagerInterface $workspace_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicationHelper $replication_helper, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager) {
     $this->entityTypeManager = $entity_type_manager;
     $this->state = $state;
-    $this->replicatorManager = $replicator_manager;
-    $this->conflictTracker = $conflict_tracker;
     $this->queueFactory = $queue_factory;
     $this->queueManager = $queue_manager;
-    $this->workspaceManager = $workspace_manager;
   }
 
   /**
@@ -165,63 +145,9 @@ class RemotePullManager implements RemotePullManagerInterface {
    * {@inheritdoc}
    */
   public function doPull(Remote $remote, $process_immediately = FALSE) {
-    $workspace = $this->workspaceManager->getActiveWorkspace();
-
-    // Check for a workspace configuration whose upstream is this remote.
-    $workspace_pointers = $this->entityTypeManager
-      ->getStorage('workspace_pointer')
-      ->loadByProperties(['workspace_pointer' => $workspace->id()]);
-    $target = reset($workspace_pointers);
-
-    /** @var \Drupal\workspace\Entity\WorkspacePointer $target */
-    if (!isset($workspace->upstream)) {
-      return;
-    }
-
-    $upstream = $workspace->upstream->entity;
-
-    // Replication task creation and conflict handling, derived from workspace
-    // update form.
-    try {
-      // Derive a replication task from the Workspace we are acting on.
-      $task = $this->replicatorManager->getTask($target->getWorkspace(), 'pull_replication_settings');
-      $response = $this->replicatorManager->update($upstream, $target, $task);
-
-      if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
-        // Notify the user if there are now conflicts.
-        $conflicts = $this->conflictTracker
-          ->useWorkspace($target->getWorkspace())
-          ->getAll();
-
-        if ($conflicts) {
-          drupal_set_message($this->t(
-            '%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %target workspace</a>.',
-            [
-              '%upstream' => $upstream->label(),
-              '%workspace' => $target->label(),
-              ':link' => Url::fromRoute('entity.workspace.conflicts', ['workspace' => $target->getWorkspace()->id()])->toString(),
-              '@count' => count($conflicts),
-              '%target' => $upstream->label(),
-            ]
-          ), 'error');
-        }
-        else {
-          drupal_set_message($this->t('An update of %workspace has been queued with content from %upstream.', [
-            '%upstream' => $upstream->label(),
-            '%workspace' => $target->label(),
-          ]));
-        }
-      }
-      else {
-        drupal_set_message($this->t('Error updating %workspace from %upstream.', [
-          '%upstream' => $upstream->label(),
-          '%workspace' => $target->label(),
-        ]), 'error');
-      }
-    }
-    catch (\Exception $e) {
-      watchdog_exception('Workspace', $e);
-      drupal_set_message($e->getMessage(), 'error');
+    // Queue replication only if it is not already queued.
+    if (!$this->replicationHelper->isReplicationQueued(TRUE)) {
+      $this->replicationHelper->queueReplicationTaskWithCurrentActiveWorkspace();
     }
 
     if ($process_immediately) {
