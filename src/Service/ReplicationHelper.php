@@ -204,10 +204,10 @@ class ReplicationHelper {
   }
 
   /**
-   * Checks whethere there is already a replication queued.
+   * Checks whether there is already a replication queued.
    *
    * @param bool $silent
-   *   Whether messages should be printed.
+   *   Optional. Whether messages should be printed.
    *
    * @return bool
    *   Whether replication was queued or not.
