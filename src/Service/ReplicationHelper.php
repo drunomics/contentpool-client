@@ -172,11 +172,13 @@ class ReplicationHelper {
               '@count' => count($conflicts),
             ]));
         }
-        $this->messenger()
-          ->addMessage($this->t('An update of %workspace has been queued with content from %upstream.', [
-            '%upstream' => $source_workspace_pointer->label(),
-            '%workspace' => $target_workspace_pointer->label(),
-          ]));
+        else {
+          $this->messenger()
+            ->addMessage($this->t('An update of %workspace has been queued with content from %upstream.', [
+              '%upstream' => $source_workspace_pointer->label(),
+              '%workspace' => $target_workspace_pointer->label(),
+            ]));
+        }
       }
       else {
         $this->messenger()
@@ -219,8 +221,8 @@ class ReplicationHelper {
       if (!$silent) {
         $this->messenger()
           ->addMessage($this->t('An update of %workspace with content from %upstream has been already queued.', [
-            '%upstream' => $replication->source->entity ?? $replication->source->entity->label(),
-            '%workspace' => $replication->target->entity ?? $replication->target->entity->label(),
+            '%upstream' => $replication->source->entity ? $replication->source->entity->label() : '',
+            '%workspace' => $replication->target->entity ? $replication->target->entity->label() : '',
           ]));
       }
       return TRUE;
