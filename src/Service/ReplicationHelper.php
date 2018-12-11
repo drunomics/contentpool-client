@@ -162,28 +162,27 @@ class ReplicationHelper {
 
         if ($conflicts) {
           $this->messenger()
-            ->addError($this->t('%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %target workspace</a>.', [
-              '%upstream' => $target_workspace_pointer->label(),
-              '%workspace' => $source_workspace_pointer->label(),
+            ->addError($this->t('%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %upstream workspace</a>.', [
+              '%upstream' => $source_workspace_pointer->label(),
+              '%workspace' => $target_workspace_pointer->label(),
               ':link' => Url::fromRoute('entity.workspace.conflicts', [
                 'workspace' => $target_workspace_pointer->getWorkspace()
                   ->id(),
               ])->toString(),
               '@count' => count($conflicts),
-              '%target' => $target_workspace_pointer->label(),
             ]));
         }
         $this->messenger()
           ->addMessage($this->t('An update of %workspace has been queued with content from %upstream.', [
-            '%upstream' => $target_workspace_pointer->label(),
-            '%workspace' => $source_workspace_pointer->label(),
+            '%upstream' => $source_workspace_pointer->label(),
+            '%workspace' => $target_workspace_pointer->label(),
           ]));
       }
       else {
         $this->messenger()
           ->addError($this->t('Error updating %workspace from %upstream.', [
-            '%upstream' => $target_workspace_pointer->label(),
-            '%workspace' => $source_workspace_pointer->label(),
+            '%upstream' => $source_workspace_pointer->label(),
+            '%workspace' => $target_workspace_pointer->label(),
           ]));
       }
     }
