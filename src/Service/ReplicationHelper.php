@@ -4,16 +4,11 @@ namespace Drupal\contentpool_client\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerTrait;
-use Drupal\Core\Queue\QueueFactory;
-use Drupal\Core\Queue\QueueWorkerManagerInterface;
-use Drupal\Core\Queue\RequeueException;
-use Drupal\Core\Queue\SuspendQueueException;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
-use Drupal\relaxed\Entity\Remote;
 use Drupal\replication\Entity\ReplicationLogInterface;
 use Drupal\workspace\Entity\Replication;
 use Drupal\workspace\Entity\WorkspacePointer;
@@ -211,19 +206,21 @@ class ReplicationHelper {
    *   Target workspace pointer.
    */
   public function queueReplicationTask(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer) {
-    // Queue replication if there are no conflicts and no replication is queued.
-    if (!$this->hasConflicts($source_workspace_pointer, $target_workspace_pointer) && !$this->isReplicationQueued()) {
+    // Queue replication if there no replication is queued yet.
+    if (!$this->isReplicationQueued()) {
       try {
         // Derive a replication task from the Workspace we are acting on.
         $task = $this->replicatorManager->getTask($target_workspace_pointer->getWorkspace(), 'pull_replication_settings');
         $response = $this->replicatorManager->update($source_workspace_pointer, $target_workspace_pointer, $task);
 
         if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
-          $this->messenger()
-            ->addMessage($this->t('An update of %workspace has been queued with content from %upstream.', [
-              '%upstream' => $source_workspace_pointer->label(),
-              '%workspace' => $target_workspace_pointer->label(),
-            ]));
+          if (!$this->hasConflicts($source_workspace_pointer, $target_workspace_pointer)) {
+            $this->messenger()
+              ->addMessage($this->t('An update of %workspace has been queued with content from %upstream.', [
+                '%upstream' => $source_workspace_pointer->label(),
+                '%workspace' => $target_workspace_pointer->label(),
+              ]));
+          }
         }
         else {
           $this->messenger()
