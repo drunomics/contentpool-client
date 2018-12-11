@@ -69,7 +69,7 @@ function contentpool_client_requirements($phase) {
                 ->id(),
             ])->toString(),
             '@count' => $conflicts,
-          ])
+          ]),
         ];
         $requirement['severity'] = REQUIREMENT_ERROR;
       }
