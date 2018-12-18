@@ -224,9 +224,9 @@ class ReplicationHelper {
   /**
    * Obtain replication id of remote in given source workspace.
    *
-   * This cannot be reused on satellite site, so it needs to be rebuild.
-   * @see \Relaxed\Replicator\Replication::generateReplicationId
-   * @see \Drupal\workspace\Entity\WorkspacePointer::generateReplicationId
+   * This cannot be reused on satellite site, so it needs to be rebuild. Check
+   * \Relaxed\Replicator\Replication::generateReplicationId
+   * \Drupal\workspace\Entity\WorkspacePointer::generateReplicationId.
    *
    * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
    *   The workspace pointer.
@@ -234,6 +234,7 @@ class ReplicationHelper {
    *   Replication task.
    *
    * @return string
+   *   Replication id.
    */
   protected function getReplicationId(WorkspacePointer $source_workspace_pointer, ReplicationTask $task) {
     /** @var \Doctrine\CouchDB\CouchDBClient $source */
