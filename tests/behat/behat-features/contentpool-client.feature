@@ -12,7 +12,7 @@ Feature: Contentpool client-side replication works.
     And I fill in "password" with "test"
 
   Scenario: Replication via drush works
-    Given I run drush cpc
+    Given I run drush cppull
     And I run drush cron
     And I am logged in as a user with the "administrator" role
     And I am on "/admin/content"
