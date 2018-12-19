@@ -28,18 +28,33 @@ class ContentpoolClientCommands extends DrushCommands {
   use ReplicationHelperTrait;
 
   /**
+   * Checks the remote for the content changes and does required pulls.
+   *
+   * @usage contentpool-client:check
+   *   drush cpc
+   *
+   * @command contentpool-client:check
+   * @aliases cpc
+   */
+  public function checkContent() {
+    $check_count = $this->getRemotePullManager()->checkAndDoAutopulls();
+
+    $this->output()->writeln("Checked and pulled {$check_count} remotes");
+  }
+
+  /**
    * Pulls content from the contentpool server.
    *
    * @usage contentpool-client:pull-content
-   *   drush cpc
+   *   drush cppull
    *
    * @command contentpool-client:pull-content
-   * @aliases cpc
+   * @aliases cppull
    */
   public function pullContent() {
     $pull_count = $this->getRemotePullManager()->pullAllRemotes();
 
-    $this->output()->writeln("Scheduled pulling from {$pull_count} remotes");
+    $this->output()->writeln("Pulled from {$pull_count} remotes");
   }
 
   /**
