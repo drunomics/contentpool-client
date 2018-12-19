@@ -84,7 +84,7 @@ changes occurred.
 
 Just run the following command (requires Drush 9):
 
-    drush cppull && drush queue-run workspace_replication
+    drush cppull && drush qRe-run workspace_replication
 
 ### Pull data via the UI
 
