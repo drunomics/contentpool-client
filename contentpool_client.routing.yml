@@ -17,4 +17,5 @@ contentpool_client.reset_replication:
     no_cache: TRUE
     _admin_route: TRUE
   requirements:
+    _csrf_token: 'TRUE'
     _permission: 'administer site configuration'
