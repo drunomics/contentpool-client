@@ -78,8 +78,8 @@ function contentpool_client_requirements($phase) {
       $requirement['value'] = t('Not yet reported');
     }
     $requirement['description'][] = [
-      '#markup' => t('Restart replication by following <strong><a href=":url">this</a></strong> link.', [
-        ':url' => Url::fromRoute('contentpool_client.restart_replication')
+      '#markup' => t('Reset replication by following <strong><a href=":url">this</a></strong> link.', [
+        ':url' => Url::fromRoute('contentpool_client.reset_replication')
           ->toString(),
       ]),
     ];

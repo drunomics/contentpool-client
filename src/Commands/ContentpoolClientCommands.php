@@ -132,7 +132,7 @@ class ContentpoolClientCommands extends DrushCommands {
    * @aliases cpr
    */
   public function reset() {
-    $this->getReplicationHelper()->restartReplication();
+    $this->getReplicationHelper()->resetReplication();
   }
 
 }

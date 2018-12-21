@@ -9,9 +9,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
- * Restarts the replication of currently active workspace and its upstream.
+ * Resets the replication of currently active workspace and its upstream.
  */
-class ReplicationRestartController extends ControllerBase implements ContainerInjectionInterface {
+class ReplicationResetController extends ControllerBase implements ContainerInjectionInterface {
 
   /**
    * The replication helper.
@@ -40,13 +40,13 @@ class ReplicationRestartController extends ControllerBase implements ContainerIn
   }
 
   /**
-   * Restarts the replication.
+   * Resets the replication.
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
    *   Redirect back to status reports page.
    */
-  public function restartReplication() {
-    $this->replicationHelper->restartReplication();
+  public function resetReplication() {
+    $this->replicationHelper->resetReplication();
     return new RedirectResponse('/admin/reports/status');
   }
 
