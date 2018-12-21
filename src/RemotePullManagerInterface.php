@@ -27,8 +27,10 @@ interface RemotePullManagerInterface {
    *
    * @param \Drupal\relaxed\Entity\Remote $remote
    *   The remote on the contentpool server.
+   * @param bool $dry_run
+   *   (optional) If it's a dry run so no pull happens.
    */
-  public function isAutopullNeeded(Remote $remote);
+  public function isAutopullNeeded(Remote $remote, $dry_run = FALSE);
 
   /**
    * Does a pull for a single remote.

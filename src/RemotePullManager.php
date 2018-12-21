@@ -118,7 +118,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function isAutopullNeeded(Remote $remote) {
+  public function isAutopullNeeded(Remote $remote, $dry_run = FALSE) {
     // Never needed if autopull is disabled.
     if ($remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 'never') == 'never') {
       return;
@@ -130,9 +130,17 @@ class RemotePullManager implements RemotePullManagerInterface {
 
     // If autopull was never run or the intervals has been reached, we pull.
     if (!$last_autopull || ($last_autopull + $autopull_interval) < time()) {
+      // Don't process the pull on dry run.
+      if ($dry_run) {
+        return TRUE;
+      }
       $this->doPull($remote);
     }
 
+    // Don't update the state on dry run.
+    if ($dry_run) {
+      return FALSE;
+    }
     // Set the curent time as last pull time.
     $this->state->set($remote_state_id, time());
   }

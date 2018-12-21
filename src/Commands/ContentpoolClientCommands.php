@@ -28,7 +28,7 @@ class ContentpoolClientCommands extends DrushCommands {
   use ReplicationHelperTrait;
 
   /**
-   * Checks the remote for the content changes and does required pulls.
+   * Checks if the remote requires a pull.
    *
    * @usage contentpool-client:check
    *   drush cpc
@@ -36,10 +36,18 @@ class ContentpoolClientCommands extends DrushCommands {
    * @command contentpool-client:check
    * @aliases cpc
    */
-  public function checkContent() {
-    $check_count = $this->getRemotePullManager()->checkAndDoAutopulls();
-
-    $this->output()->writeln("Checked and pulled {$check_count} remotes");
+  public function check() {
+    /** @var \Drupal\relaxed\Entity\Remote[] $remotes */
+    $remotes = $this->getEntityTypeManager()->getStorage('remote')->loadMultiple();
+    foreach ($remotes as $remote) {
+      // We check if an autopull is needed based on settings and interval.
+      if ($this->getRemotePullManager()->isAutopullNeeded($remote, TRUE)) {
+        $this->output()->writeln("There are new changes for the remote " . $remote->id());
+      }
+      else {
+        $this->output()->writeln("There are no changes for the remote " . $remote->id());
+      }
+    }
   }
 
   /**
