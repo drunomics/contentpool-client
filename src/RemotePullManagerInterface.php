@@ -11,8 +11,11 @@ interface RemotePullManagerInterface {
 
   /**
    * Pulls from all registered remotes.
+   *
+   * @param bool $process_immediately
+   *   (optional) Whether to process the queue tasks immediately.
    */
-  public function pullAllRemotes();
+  public function pullAllRemotes($process_immediately = FALSE);
 
   /**
    * Checks which remotes need autopulls and invokes them.

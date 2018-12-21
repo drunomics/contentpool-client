@@ -84,7 +84,7 @@ changes occurred.
 
 Just run the following command (requires Drush 9):
 
-    drush cppull && drush qRe-run workspace_replication
+    drush cppull
 
 ### Pull data via the UI
 
@@ -114,7 +114,7 @@ command. It will pull from all remote servers that are marked as a Contentpool.
 
 For example:
 
-    drush cppull && drush queue-run workspace_replication
+    drush cppull
 
 ### Troubleshooting
 

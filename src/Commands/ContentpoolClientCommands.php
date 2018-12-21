@@ -52,7 +52,7 @@ class ContentpoolClientCommands extends DrushCommands {
    * @aliases cppull
    */
   public function pullContent() {
-    $pull_count = $this->getRemotePullManager()->pullAllRemotes();
+    $pull_count = $this->getRemotePullManager()->pullAllRemotes(TRUE);
 
     $this->output()->writeln("Pulled from {$pull_count} remotes");
   }

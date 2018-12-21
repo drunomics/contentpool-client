@@ -79,7 +79,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function pullAllRemotes() {
+  public function pullAllRemotes($process_immediately = FALSE) {
     $remotes = $this->entityTypeManager->getStorage('remote')->loadMultiple();
 
     $counter = 0;
@@ -90,7 +90,7 @@ class RemotePullManager implements RemotePullManagerInterface {
       }
 
       // We try to do a pull from the remote.
-      $this->doPull($remote);
+      $this->doPull($remote, $process_immediately);
       $counter++;
     }
 
