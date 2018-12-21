@@ -14,7 +14,7 @@ docker-compose -f devsetup-docker/service-chrome.yml up -d
 
 # Launch tests inside a docker container, so name resolution works thanks to
 # docker host aliases and the PHP environment is controlled by the container.
-docker-compose exec web ./web/modules/drunomics/contentpool-client/tests/behat/run.sh
+docker-compose exec web ./web/modules/drunomics/contentpool-client/tests/behat/run.sh $@
 
 # Stop chrome container.
 docker-compose -f devsetup-docker/service-chrome.yml stop
