@@ -13,7 +13,6 @@ Feature: Contentpool client-side replication works.
 
   Scenario: Replication via drush works
     Given I run drush cppull
-    And I run drush cron
     And I am logged in as a user with the "administrator" role
     And I am on "/admin/content"
     # We subscribe to channel "Food", "Culutured meat" is in "Food/Barbequeue".
