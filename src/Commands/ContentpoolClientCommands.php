@@ -37,16 +37,11 @@ class ContentpoolClientCommands extends DrushCommands {
    * @aliases cpc
    */
   public function check() {
-    /** @var \Drupal\relaxed\Entity\Remote[] $remotes */
-    $remotes = $this->getEntityTypeManager()->getStorage('remote')->loadMultiple();
-    foreach ($remotes as $remote) {
-      // We check if an autopull is needed based on settings and interval.
-      if ($this->getRemotePullManager()->isAutopullNeeded($remote, TRUE)) {
-        $this->output()->writeln("There are new changes for the remote " . $remote->id());
-      }
-      else {
-        $this->output()->writeln("There are no changes for the remote " . $remote->id());
-      }
+    if ($this->getReplicationHelper()->checkReplication()) {
+      $this->output()->writeln("There are new changes to be replicated");
+    }
+    else {
+      $this->output()->writeln("There are no changes to be replicated.");
     }
   }
 

@@ -272,7 +272,8 @@ class ReplicationHelper {
    *   Replication log entity.
    */
   protected function getReplicationLogByReplicationId($replication_id) {
-    $entities = $this->entityTypeManager->getStorage('replication_log')->loadByProperties(['uuid' => $replication_id]);
+    $entities = $this->entityTypeManager->getStorage('replication_log')
+      ->loadByProperties(['uuid' => $replication_id]);
     $replication_log = reset($entities);
     return $replication_log instanceof ReplicationLog ? $replication_log : NULL;
   }
@@ -388,6 +389,72 @@ class ReplicationHelper {
       $active_workspace_pointer = $this->getActiveWorkspacePointer();
       $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer, $reset);
     }
+  }
+
+  /**
+   * Get mapping of changes so they can be sent rev diff couch db endpoint.
+   *
+   * A clone of replication function inside Replication class @see
+   * \Relaxed\Replicator\Replication::getMapping().
+   *
+   * @param array $changes
+   *   Replication changes returned from target.
+   *
+   * @return array
+   *   Mapping of changes.
+   */
+  protected function getMapping(array $changes) {
+    $rows = is_array($changes['results']) ? $changes['results'] : [];
+    // To be sent to target/_revs_diff.
+    $mapping = [];
+    foreach ($rows as $row) {
+      $mapping[$row['id']] = [];
+      foreach ($row['changes'] as $revision) {
+        $mapping[$row['id']][] = $revision['rev'];
+      }
+    }
+    return $mapping;
+  }
+
+  /**
+   * Checks if there are changes between remote and current active workspace.
+   *
+   * @return bool
+   *   True if there are changes between remote and current active workspace.
+   */
+  public function checkReplication() {
+    $source_workspace_pointer = $this->getUpstreamWorkspacePointer();
+    $active_workspace_pointer = $this->getActiveWorkspacePointer();
+    /** @var \Doctrine\CouchDB\CouchDBClient $source */
+    $source = $this->replicator->setupEndpoint($source_workspace_pointer);
+    $target = $this->replicator->setupEndpoint($active_workspace_pointer);
+    /** @var \Relaxed\Replicator\ReplicationTask $task */
+    $task = $this->replicatorManager->getTask($active_workspace_pointer->getWorkspace(), 'pull_replication_settings');
+    $since = 0;
+    // Try to obtain since from replication log entity.
+    if ($replication_id = $this->getReplicationId($source_workspace_pointer, $task)) {
+      if ($replication_log = $this->getReplicationLogByReplicationId($replication_id)) {
+        $since = $replication_log->getSourceLastSeq();
+      }
+    }
+
+    $changes = $source->getChanges([
+      'feed' => 'normal',
+      'style' => $task->getStyle(),
+      'since' => $since,
+      'filter' => $task->getFilter(),
+      'parameters' => $task->getParameters(),
+      'doc_ids' => $task->getDocIds(),
+      'limit' => $task->getLimit(),
+    ]);
+    // No changes on contentpool, so there is nothing to replicate.
+    if (empty($changes['results']) || empty($changes['last_seq'])) {
+      return FALSE;
+    }
+
+    $mapping = $this->getMapping($changes);
+    $diff = count($mapping) > 0 ? $target->getRevisionDifference($mapping) : [];
+    return !empty($diff);
   }
 
   /**
