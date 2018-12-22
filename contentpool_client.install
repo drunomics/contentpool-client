@@ -19,7 +19,7 @@ function contentpool_client_requirements($phase) {
     $replication_helper = \Drupal::service('contentpool_client.replication_helper');
     // Check if upstream workspace does exist.
     $upstream_workspace_pointer = $replication_helper->getUpstreamWorkspacePointer();
-    if (!$upstream_workspace_pointer)  {
+    if (!$upstream_workspace_pointer) {
       return [
         'severity' => REQUIREMENT_ERROR,
         'title' => t('No upstream workspace found to replicate from.'),
@@ -78,12 +78,12 @@ function contentpool_client_requirements($phase) {
       if ($conflicts = $replication_helper->hasConflicts($upstream_workspace_pointer, $active_workspace_pointer, TRUE)) {
         $requirement['value'][] = [
           '#markup' => ': ' . t('<a href=":link" target="_blank">@count conflict(s)</a>', [
-            ':link' => Url::fromRoute('entity.workspace.conflicts', [
-              'workspace' => $active_workspace_pointer->getWorkspace()
-                ->id(),
-            ])->toString(),
-            '@count' => $conflicts,
-          ]),
+              ':link' => Url::fromRoute('entity.workspace.conflicts', [
+                'workspace' => $active_workspace_pointer->getWorkspace()
+                  ->id(),
+              ])->toString(),
+              '@count' => $conflicts,
+            ]),
         ];
         $requirement['severity'] = REQUIREMENT_ERROR;
       }
