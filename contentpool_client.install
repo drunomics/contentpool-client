@@ -78,12 +78,12 @@ function contentpool_client_requirements($phase) {
       if ($conflicts = $replication_helper->hasConflicts($upstream_workspace_pointer, $active_workspace_pointer, TRUE)) {
         $requirement['value'][] = [
           '#markup' => ': ' . t('<a href=":link" target="_blank">@count conflict(s)</a>', [
-              ':link' => Url::fromRoute('entity.workspace.conflicts', [
-                'workspace' => $active_workspace_pointer->getWorkspace()
-                  ->id(),
-              ])->toString(),
-              '@count' => $conflicts,
-            ]),
+            ':link' => Url::fromRoute('entity.workspace.conflicts', [
+              'workspace' => $active_workspace_pointer->getWorkspace()
+                ->id(),
+            ])->toString(),
+            '@count' => $conflicts,
+          ]),
         ];
         $requirement['severity'] = REQUIREMENT_ERROR;
       }
