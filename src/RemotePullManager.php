@@ -3,7 +3,7 @@
 namespace Drupal\contentpool_client;
 
 use Drupal\contentpool_client\Exception\ReplicationException;
-use Drupal\contentpool_client\Service\ReplicationHelper;
+use Drupal\contentpool_client\ReplicationHelper;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Queue\QueueFactory;
@@ -39,7 +39,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   /**
    * The replicator helper service.
    *
-   * @var \Drupal\contentpool_client\Service\ReplicationHelper
+   * @var \Drupal\contentpool_client\ReplicationHelper
    */
   protected $replicationHelper;
 
@@ -64,7 +64,7 @@ class RemotePullManager implements RemotePullManagerInterface {
    *   The entity type manager.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state interface.
-   * @param \Drupal\contentpool_client\Service\ReplicationHelper $replication_helper
+   * @param \Drupal\contentpool_client\ReplicationHelper $replication_helper
    *   The replication helper service.
    * @param \Drupal\Core\Queue\QueueFactory $queue_factory
    *   The queue factory.

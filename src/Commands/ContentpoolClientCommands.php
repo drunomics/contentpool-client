@@ -38,7 +38,7 @@ class ContentpoolClientCommands extends DrushCommands {
    */
   public function check() {
     if ($this->getReplicationHelper()->checkReplication()) {
-      $this->output()->writeln("There are new changes to be replicated");
+      $this->output()->writeln("There are new changes to be replicated.");
     }
     else {
       $this->output()->writeln("There are no changes to be replicated.");
