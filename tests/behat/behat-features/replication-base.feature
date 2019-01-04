@@ -5,12 +5,13 @@ Feature: Contentpool client-side replication basically works.
 
   Make sure that content can be pulled from remote contentpool server.
 
-  Scenario: Replication via drush works
+  Scenario: Replication via drush is working
 
     When I run drush cpc
     Then drush output should contain "There are new changes to be replicated."
-
     Given I run drush cppull
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    And I run drush cpc
     Then drush output should contain "There are no changes to be replicated."
 
     Given I am logged in as a user with the "administrator" role
