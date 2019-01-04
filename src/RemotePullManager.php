@@ -2,8 +2,9 @@
 
 namespace Drupal\contentpool_client;
 
-use Drupal\contentpool_client\Service\ReplicationHelper;
+use Drupal\contentpool_client\Exception\ReplicationException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\Queue\QueueWorkerManagerInterface;
 use Drupal\Core\Queue\RequeueException;
@@ -18,6 +19,7 @@ use Drupal\relaxed\Entity\Remote;
 class RemotePullManager implements RemotePullManagerInterface {
 
   use StringTranslationTrait;
+  use MessengerTrait;
 
   /**
    * The entity type manager.
@@ -36,7 +38,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   /**
    * The replicator helper service.
    *
-   * @var \Drupal\contentpool_client\Service\ReplicationHelper
+   * @var \Drupal\contentpool_client\ReplicationHelper
    */
   protected $replicationHelper;
 
@@ -61,7 +63,7 @@ class RemotePullManager implements RemotePullManagerInterface {
    *   The entity type manager.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state interface.
-   * @param \Drupal\contentpool_client\Service\ReplicationHelper $replication_helper
+   * @param \Drupal\contentpool_client\ReplicationHelper $replication_helper
    *   The replication helper service.
    * @param \Drupal\Core\Queue\QueueFactory $queue_factory
    *   The queue factory.
@@ -79,7 +81,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function pullAllRemotes() {
+  public function pullAllRemotes($process_immediately = FALSE) {
     $remotes = $this->entityTypeManager->getStorage('remote')->loadMultiple();
 
     $counter = 0;
@@ -90,11 +92,38 @@ class RemotePullManager implements RemotePullManagerInterface {
       }
 
       // We try to do a pull from the remote.
-      $this->doPull($remote);
+      $this->doPull($remote, $process_immediately);
       $counter++;
     }
 
     return $counter;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function doPull(Remote $remote, $process_immediately = FALSE) {
+    try {
+      // Queue replication for currently active workspace.
+      $this->replicationHelper->queueReplicationTaskWithCurrentActiveWorkspace();
+
+      if ($process_immediately) {
+        $this->processReplicationQueue();
+        $this->messenger()
+          ->addMessage($this->t('Content of remote %remote has been replicated successfully.', [
+            '%remote' => $remote->label(),
+          ]));
+      }
+      else {
+        $this->messenger()
+          ->addMessage($this->t('Replicating content of remote %remote has been queued successfully.', [
+            '%remote' => $remote->label(),
+          ]));
+      }
+    }
+    catch (ReplicationException $exception) {
+      $exception->printError();
+    }
   }
 
   /**
@@ -118,7 +147,7 @@ class RemotePullManager implements RemotePullManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function isAutopullNeeded(Remote $remote) {
+  public function isAutopullNeeded(Remote $remote, $dry_run = FALSE) {
     // Never needed if autopull is disabled.
     if ($remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 'never') == 'never') {
       return;
@@ -130,30 +159,23 @@ class RemotePullManager implements RemotePullManagerInterface {
 
     // If autopull was never run or the intervals has been reached, we pull.
     if (!$last_autopull || ($last_autopull + $autopull_interval) < time()) {
+      // Don't process the pull on dry run.
+      if ($dry_run) {
+        return TRUE;
+      }
       $this->doPull($remote);
     }
 
+    // Don't update the state on dry run.
+    if ($dry_run) {
+      return FALSE;
+    }
     // Set the curent time as last pull time.
     $this->state->set($remote_state_id, time());
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function doPull(Remote $remote, $process_immediately = FALSE) {
-    // Queue replication for currently active workspace.
-    $this->replicationHelper->queueReplicationTaskWithCurrentActiveWorkspace();
-
-    if ($process_immediately) {
-      $this->processReplicationQueue();
-    }
-  }
-
-  /**
    * Process only the workflow_replication queue.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   protected function processReplicationQueue() {
     $info = $this->queueManager->getDefinition('workspace_replication');
@@ -171,15 +193,15 @@ class RemotePullManager implements RemotePullManagerInterface {
       }
       catch (RequeueException $e) {
         $queue->releaseItem($item);
+        watchdog_exception('contentpool-client', $e);
       }
       catch (SuspendQueueException $e) {
         $queue->releaseItem($item);
-        watchdog_exception('cron', $e);
-
+        watchdog_exception('contentpool-client', $e);
         return;
       }
       catch (\Exception $e) {
-        watchdog_exception('cron', $e);
+        watchdog_exception('contentpool-client', $e);
       }
     }
   }

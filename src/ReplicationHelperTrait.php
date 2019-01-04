@@ -10,14 +10,14 @@ trait ReplicationHelperTrait {
   /**
    * The replication helper service.
    *
-   * @var \Drupal\contentpool_client\Service\ReplicationHelper
+   * @var \Drupal\contentpool_client\ReplicationHelper
    */
   protected $replicationHelper;
 
   /**
    * Gets the replication helper service.
    *
-   * @return \Drupal\contentpool_client\Service\ReplicationHelper
+   * @return \Drupal\contentpool_client\ReplicationHelper
    *   The replication helper service.
    */
   protected function getReplicationHelper() {

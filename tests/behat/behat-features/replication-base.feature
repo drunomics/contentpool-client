@@ -1,20 +1,20 @@
 @api
 @smoke
 @replication
-Feature: Contentpool client-side replication works.
+Feature: Contentpool client-side replication basically works.
 
   Make sure that content can be pulled from remote contentpool server.
 
-  Scenario: I configure the contentpool client module
-    Given I am logged in as a user with the "administrator" role
-    And I go to "admin/config/relaxed/settings"
-    And I fill in "username" with "replicator"
-    And I fill in "password" with "test"
+  Scenario: Replication via drush is working
 
-  Scenario: Replication via drush works
-    Given I run drush cpc
-    And I run drush cron
-    And I am logged in as a user with the "administrator" role
+    When I run drush cpc
+    Then drush output should contain "There are new changes to be replicated."
+    Given I run drush cppull
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    And I run drush cpc
+    Then drush output should contain "There are no changes to be replicated."
+
+    Given I am logged in as a user with the "administrator" role
     And I am on "/admin/content"
     # We subscribe to channel "Food", "Culutured meat" is in "Food/Barbequeue".
     Then I should see the text "Cultured meat"

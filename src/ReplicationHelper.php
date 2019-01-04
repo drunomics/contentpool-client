@@ -1,10 +1,12 @@
 <?php
 
-namespace Drupal\contentpool_client\Service;
+namespace Drupal\contentpool_client;
 
+use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\contentpool_client\Exception\ReplicationException;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
-use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -25,7 +27,6 @@ use Drupal\workspace\ReplicatorInterface;
 class ReplicationHelper {
 
   use StringTranslationTrait;
-  use MessengerTrait;
 
   /**
    * The entity type manager.
@@ -270,11 +271,20 @@ class ReplicationHelper {
    *
    * @return \Drupal\replication\Entity\ReplicationLog
    *   Replication log entity.
+   *
+   * @throws \Drupal\contentpool_client\Exception\ReplicationException
+   *   Thrown when there are errors getting the log.
    */
   protected function getReplicationLogByReplicationId($replication_id) {
-    $entities = $this->entityTypeManager->getStorage('replication_log')->loadByProperties(['uuid' => $replication_id]);
-    $replication_log = reset($entities);
-    return $replication_log instanceof ReplicationLog ? $replication_log : NULL;
+    try {
+      $entities = $this->entityTypeManager->getStorage('replication_log')
+        ->loadByProperties(['uuid' => $replication_id]);
+      $replication_log = reset($entities);
+      return $replication_log instanceof ReplicationLog ? $replication_log : NULL;
+    }
+    catch (PluginException $e) {
+      throw new ReplicationException($e->getMessage(), []);
+    }
   }
 
   /**
@@ -292,6 +302,24 @@ class ReplicationHelper {
   }
 
   /**
+   * Queue replication task with current active workspace.
+   *
+   * @param bool $reset
+   *   Optional. To reset replication state or not. This does not cover the
+   *   replication flag.
+   *
+   * @throws \Drupal\contentpool_client\Exception\ReplicationException
+   *   Thrown when there are errors queuing replication.
+   */
+  public function queueReplicationTaskWithCurrentActiveWorkspace($reset = FALSE) {
+    // If no upstream is found then no replication can be queued.
+    if ($upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) {
+      $active_workspace_pointer = $this->getActiveWorkspacePointer();
+      $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer, $reset);
+    }
+  }
+
+  /**
    * Create a replication task into the queue.
    *
    * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
@@ -300,6 +328,9 @@ class ReplicationHelper {
    *   Target workspace pointer.
    * @param bool $reset
    *   Optional. To reset replication state or not.
+   *
+   * @throws \Drupal\contentpool_client\Exception\ReplicationException
+   *   Thrown when there are errors queuing replication.
    */
   public function queueReplicationTask(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer, $reset = FALSE) {
     // Queue replication if there no replication is queued yet.
@@ -312,7 +343,6 @@ class ReplicationHelper {
         $this->cleanUpQueue();
       }
 
-      $error = FALSE;
       $replication_log = ReplicationLog::create();
       // Derive a replication task from the Workspace we are acting on.
       $task = $this->replicatorManager->getTask($target_workspace_pointer->getWorkspace(), 'pull_replication_settings');
@@ -324,26 +354,22 @@ class ReplicationHelper {
 
         if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
           if ($conflicts = $this->hasConflicts($source_workspace_pointer, $target_workspace_pointer)) {
-            $error = TRUE;
-            $this->messenger()
-              ->addError($this->t('%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %upstream workspace</a>.', [
-                '%upstream' => $source_workspace_pointer->label(),
-                '%workspace' => $target_workspace_pointer->label(),
-                ':link' => Url::fromRoute('entity.workspace.conflicts', [
-                  'workspace' => $target_workspace_pointer->getWorkspace()
-                    ->id(),
-                ])->toString(),
-                '@count' => count($conflicts),
-              ]));
+            throw new ReplicationException('%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %upstream workspace</a>.', [
+              '%upstream' => $source_workspace_pointer->label(),
+              '%workspace' => $target_workspace_pointer->label(),
+              ':link' => Url::fromRoute('entity.workspace.conflicts', [
+                'workspace' => $target_workspace_pointer->getWorkspace()
+                  ->id(),
+              ])->toString(),
+              '@count' => count($conflicts),
+            ]);
           }
         }
         else {
-          $error = TRUE;
-          $this->messenger()
-            ->addError($this->t('Error updating %workspace from %upstream.', [
-              '%upstream' => $source_workspace_pointer->label(),
-              '%workspace' => $target_workspace_pointer->label(),
-            ]));
+          throw new ReplicationException('Error updating %workspace from %upstream.', [
+            '%upstream' => $source_workspace_pointer->label(),
+            '%workspace' => $target_workspace_pointer->label(),
+          ]);
         }
       }
 
@@ -361,37 +387,86 @@ class ReplicationHelper {
           $key_value->delete($replication_log_id);
         }
       }
-
-      if (!$error) {
-        $this->messenger()
-          ->addMessage($this->t('An update of %workspace has been queued with content from %upstream.', [
-            '%upstream' => $source_workspace_pointer->label(),
-            '%workspace' => $target_workspace_pointer->label(),
-          ]));
-      }
     }
-    catch (\Exception $e) {
-      watchdog_exception('Workspace', $e);
-      $this->messenger()->addError($e->getMessage());
+    catch (EntityStorageException $e) {
+      throw new ReplicationException('Unable to write replication logs. Exception: ' . $e->getMessage());
     }
   }
 
   /**
-   * Queue replication task with current active workspace.
+   * Get mapping of changes so they can be sent rev diff couch db endpoint.
    *
-   * @param bool $reset
-   *   Optional. To reset replication state or not.
+   * A clone of replication function inside Replication class @see
+   * \Relaxed\Replicator\Replication::getMapping().
+   *
+   * @param array $changes
+   *   Replication changes returned from target.
+   *
+   * @return array
+   *   Mapping of changes.
    */
-  public function queueReplicationTaskWithCurrentActiveWorkspace($reset = FALSE) {
-    // If no upstream is found then no replication can be queued.
-    if ($upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) {
-      $active_workspace_pointer = $this->getActiveWorkspacePointer();
-      $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer, $reset);
+  protected function getMapping(array $changes) {
+    $rows = is_array($changes['results']) ? $changes['results'] : [];
+    // To be sent to target/_revs_diff.
+    $mapping = [];
+    foreach ($rows as $row) {
+      $mapping[$row['id']] = [];
+      foreach ($row['changes'] as $revision) {
+        $mapping[$row['id']][] = $revision['rev'];
+      }
     }
+    return $mapping;
+  }
+
+  /**
+   * Checks if there are changes between remote and current active workspace.
+   *
+   * @return bool
+   *   True if there are changes between remote and current active workspace.
+   *
+   * @throws \Doctrine\CouchDB\HTTP\HTTPException
+   * @throws \Drupal\contentpool_client\Exception\ReplicationException
+   */
+  public function checkReplication() {
+    $source_workspace_pointer = $this->getUpstreamWorkspacePointer();
+    $active_workspace_pointer = $this->getActiveWorkspacePointer();
+    /** @var \Doctrine\CouchDB\CouchDBClient $source */
+    $source = $this->replicator->setupEndpoint($source_workspace_pointer);
+    $target = $this->replicator->setupEndpoint($active_workspace_pointer);
+    /** @var \Relaxed\Replicator\ReplicationTask $task */
+    $task = $this->replicatorManager->getTask($active_workspace_pointer->getWorkspace(), 'pull_replication_settings');
+    $since = 0;
+    // Try to obtain since from replication log entity.
+    if ($replication_id = $this->getReplicationId($source_workspace_pointer, $task)) {
+      if ($replication_log = $this->getReplicationLogByReplicationId($replication_id)) {
+        $since = $replication_log->getSourceLastSeq();
+      }
+    }
+
+    $changes = $source->getChanges([
+      'feed' => 'normal',
+      'style' => $task->getStyle(),
+      'since' => $since,
+      'filter' => $task->getFilter(),
+      'parameters' => $task->getParameters(),
+      'doc_ids' => $task->getDocIds(),
+      'limit' => $task->getLimit(),
+    ]);
+    // No changes on contentpool, so there is nothing to replicate.
+    if (empty($changes['results']) || empty($changes['last_seq'])) {
+      return FALSE;
+    }
+
+    $mapping = $this->getMapping($changes);
+    $diff = count($mapping) > 0 ? $target->getRevisionDifference($mapping) : [];
+    return !empty($diff);
   }
 
   /**
    * Resets replication for currently active workspace and its upstream.
+   *
+   * @throws \Drupal\contentpool_client\Exception\ReplicationException
+   *   Thrown when there are errors queuing replication.
    */
   public function resetReplication() {
     // Reset flag if last replication failed.

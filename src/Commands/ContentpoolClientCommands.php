@@ -28,18 +28,36 @@ class ContentpoolClientCommands extends DrushCommands {
   use ReplicationHelperTrait;
 
   /**
+   * Checks if the remote requires a pull.
+   *
+   * @usage contentpool-client:check
+   *   drush cpc
+   *
+   * @command contentpool-client:check
+   * @aliases cpc
+   */
+  public function check() {
+    if ($this->getReplicationHelper()->checkReplication()) {
+      $this->output()->writeln("There are new changes to be replicated.");
+    }
+    else {
+      $this->output()->writeln("There are no changes to be replicated.");
+    }
+  }
+
+  /**
    * Pulls content from the contentpool server.
    *
    * @usage contentpool-client:pull-content
-   *   drush cpc
+   *   drush cppull
+   *
+   * @option queue Do not replicate immediately, but queue replication tasks.
    *
    * @command contentpool-client:pull-content
-   * @aliases cpc
+   * @aliases cppull
    */
-  public function pullContent() {
-    $pull_count = $this->getRemotePullManager()->pullAllRemotes();
-
-    $this->output()->writeln("Scheduled pulling from {$pull_count} remotes");
+  public function pullContent($options = ['queue' => FALSE]) {
+    $this->getRemotePullManager()->pullAllRemotes(!$options['queue']);;
   }
 
   /**
