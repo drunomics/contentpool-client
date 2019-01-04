@@ -5,7 +5,6 @@ namespace Drupal\contentpool_client\Controller;
 use Drupal\contentpool_client\Exception\ReplicationException;
 use Drupal\contentpool_client\ReplicationHelperTrait;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Messenger\MessengerTrait;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**

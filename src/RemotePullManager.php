@@ -3,7 +3,6 @@
 namespace Drupal\contentpool_client;
 
 use Drupal\contentpool_client\Exception\ReplicationException;
-use Drupal\contentpool_client\ReplicationHelper;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Queue\QueueFactory;
