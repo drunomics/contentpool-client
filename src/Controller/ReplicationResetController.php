@@ -2,6 +2,7 @@
 
 namespace Drupal\contentpool_client\Controller;
 
+use Drupal\contentpool_client\Exception\ReplicationException;
 use Drupal\contentpool_client\Service\ReplicationHelper;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -46,7 +47,12 @@ class ReplicationResetController extends ControllerBase implements ContainerInje
    *   Redirect back to status reports page.
    */
   public function resetReplication() {
-    $this->replicationHelper->resetReplication();
+    try {
+      $this->replicationHelper->resetReplication();
+    }
+    catch (ReplicationException $e) {
+      $e->printError();
+    }
     return new RedirectResponse('/admin/reports/status');
   }
 

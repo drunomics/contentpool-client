@@ -51,13 +51,13 @@ class ContentpoolClientCommands extends DrushCommands {
    * @usage contentpool-client:pull-content
    *   drush cppull
    *
+   * @option queue Do not replicate immediately, but queue replication tasks.
+   *
    * @command contentpool-client:pull-content
    * @aliases cppull
    */
-  public function pullContent() {
-    $pull_count = $this->getRemotePullManager()->pullAllRemotes(TRUE);
-
-    $this->output()->writeln("Pulled from {$pull_count} remotes");
+  public function pullContent($options = ['queue' => FALSE]) {
+    $this->getRemotePullManager()->pullAllRemotes(!$options['queue']);;
   }
 
   /**
