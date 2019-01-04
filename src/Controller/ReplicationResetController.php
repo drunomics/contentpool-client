@@ -3,42 +3,17 @@
 namespace Drupal\contentpool_client\Controller;
 
 use Drupal\contentpool_client\Exception\ReplicationException;
-use Drupal\contentpool_client\Service\ReplicationHelper;
+use Drupal\contentpool_client\ReplicationHelperTrait;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Messenger\MessengerTrait;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Resets the replication of currently active workspace and its upstream.
  */
-class ReplicationResetController extends ControllerBase implements ContainerInjectionInterface {
+class ReplicationResetController extends ControllerBase {
 
-  /**
-   * The replication helper.
-   *
-   * @var \Drupal\contentpool_client\Service\ReplicationHelper
-   */
-  protected $replicationHelper;
-
-  /**
-   * Constructor.
-   *
-   * @param \Drupal\contentpool_client\Service\ReplicationHelper $replication_helper
-   *   The replication helper.
-   */
-  public function __construct(ReplicationHelper $replication_helper) {
-    $this->replicationHelper = $replication_helper;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('contentpool_client.replication_helper')
-    );
-  }
+  use ReplicationHelperTrait;
 
   /**
    * Resets the replication.
@@ -48,7 +23,8 @@ class ReplicationResetController extends ControllerBase implements ContainerInje
    */
   public function resetReplication() {
     try {
-      $this->replicationHelper->resetReplication();
+      $this->getReplicationHelper()->resetReplication();
+      $this->messenger()->addMessage($this->t('The replication status has been successfully reset.'));
     }
     catch (ReplicationException $e) {
       $e->printError();
