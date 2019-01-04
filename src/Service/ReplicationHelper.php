@@ -391,9 +391,9 @@ class ReplicationHelper {
   }
 
   /**
-   * Restarts replication for currently active workspace and its upstream.
+   * Resets replication for currently active workspace and its upstream.
    */
-  public function restartReplication() {
+  public function resetReplication() {
     // Reset flag if last replication failed.
     $this->state->set('workspace.last_replication_failed', FALSE);
 
