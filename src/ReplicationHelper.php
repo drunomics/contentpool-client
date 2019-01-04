@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\contentpool_client\Service;
+namespace Drupal\contentpool_client;
 
 use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\contentpool_client\Exception\ReplicationException;
