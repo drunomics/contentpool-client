@@ -5,6 +5,7 @@
  * The main behat context.
  */
 
+use Behat\Mink\Exception\ElementNotFoundException;
 use Drupal\DrupalExtension\Context\DrupalContext;
 
 /**
@@ -67,6 +68,22 @@ class FeatureContext extends DrupalContext {
    */
   public function waitForSomeTime($milliseconds) {
     sleep($milliseconds / 1000);
+  }
+
+  /**
+   * Focus some element.
+   *
+   * @When I focus the element :locator
+   * @When I focus the field :locator
+   */
+  public function focusElement($locator) {
+    $element = $this->getSession()->getPage()->find('css', $locator);
+
+    if (null === $element) {
+      throw new ElementNotFoundException($this->getDriver(), NULL, 'css', $locator);
+    }
+
+    $element->focus();
   }
 
 }

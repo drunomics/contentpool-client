@@ -28,6 +28,40 @@ class ContentPoolContext extends RawDrupalContext {
   protected $contentpoolBaseUrl;
 
   /**
+   * Remember whether replication filters have been configured.
+   *
+   * @var bool
+   */
+  public static $configured = FALSE;
+
+  /**
+   * @BeforeScenario
+   *
+   * Note that this should only run once, but BeforeSuite or BeforeFeature only
+   * work statically, thus we use a static to ensure this is only run once.
+   */
+  public function configureReplicationFilter() {
+    if (!static::$configured) {
+      $filter['node:article']['field_channel'] = [
+        // Food.
+        'e4da9222-c270-43b7-abb9-2f83b1ad8716',
+      ];
+      $filter['node:article']['field_tags'] = [
+        // Quantum.
+        '92af4c88-0b17-41be-b6d8-306766ae3377',
+        // Cuba.
+        '02c8cbd9-15b7-4231-b9ef-46c1ef37b233',
+      ];
+
+      Drupal::configFactory()->getEditable('replication.replication_settings.contentpool')
+        ->set('parameters.filter', $filter)
+        ->save();
+
+      static::$configured = TRUE;
+    }
+  }
+
+  /**
    * @BeforeScenario
    */
   public function before($scope) {
