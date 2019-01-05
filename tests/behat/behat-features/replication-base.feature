@@ -6,10 +6,8 @@ Feature: Contentpool client-side replication basically works.
 
   @replication-base-default
   Scenario: Replication with pre-configured filter and default-content works
-
     Given I run drush cppull
     Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
-
     When I am logged in as a user with the "administrator" role
     And I am on "/admin/content"
     # We subscribe to channel "Food", "Culutured meat" is in "Food/Barbequeue".

@@ -17,9 +17,23 @@ function contentpool_client_requirements($phase) {
     $requirements = [];
     /** @var \Drupal\contentpool_client\ReplicationHelper $replication_helper */
     $replication_helper = \Drupal::service('contentpool_client.replication_helper');
-    $replication = $replication_helper->getLastReplication();
+    // Check if upstream workspace does exist.
     $upstream_workspace_pointer = $replication_helper->getUpstreamWorkspacePointer();
+    if (!$upstream_workspace_pointer) {
+      return [
+        'severity' => REQUIREMENT_ERROR,
+        'title' => t('No upstream workspace found to replicate from.'),
+      ];
+    }
+    // Check if active (downstream) workspace does exist.
     $active_workspace_pointer = $replication_helper->getActiveWorkspacePointer();
+    if (!$active_workspace_pointer) {
+      return [
+        'severity' => REQUIREMENT_ERROR,
+        'title' => t('No active workspace found to replicate to.'),
+      ];
+    }
+    $replication = $replication_helper->getLastReplication();
     // Prepare requirement.
     $requirement['severity'] = REQUIREMENT_INFO;
     $requirement['title'] = t('Replication from <em>@source</em> to <em>@target</em>', [
