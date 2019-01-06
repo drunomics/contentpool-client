@@ -49,9 +49,11 @@ Feature: Contentpool client-side replication basically works.
     And I open the satellite
     And I run drush cppull
     And I am logged in as a user with the "administrator" role
+    # Trigger auto remote registration during status check.
+    And I visit "/admin/reports/status"
     And I am on "/admin/content"
     And I click "BEHAT: Bakery"
-    And I click "Edit"
+    And I click on "Edit" below the element ".tabs"
     Then I am on contentpool
     When I fill in "title[0][value]" with "BEHAT: The best bakery"
     And I press "Save"

@@ -102,4 +102,18 @@ class FeatureContext extends DrupalContext {
     $element->click();
   }
 
+  /**
+   * Click some link contained in some element.
+   *
+   * @When I click on :link below the element :locator
+   */
+  public function clickLinkBelowElement($link, $locator) {
+    $element = $this->getSession()->getPage()->find('css', $locator);
+
+    if (!isset($element)) {
+      throw new ElementNotFoundException($this->getDriver(), NULL, 'css', $locator);
+    }
+    $element->clickLink($link);
+  }
+
 }
