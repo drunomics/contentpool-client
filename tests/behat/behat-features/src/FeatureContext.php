@@ -79,11 +79,27 @@ class FeatureContext extends DrupalContext {
   public function focusElement($locator) {
     $element = $this->getSession()->getPage()->find('css', $locator);
 
-    if (null === $element) {
+    if (!isset($element)) {
       throw new ElementNotFoundException($this->getDriver(), NULL, 'css', $locator);
     }
 
     $element->focus();
+  }
+
+  /**
+   * Click some element.
+   *
+   * @When I click on the element :locator
+   * @When I click in the field :locator
+   */
+  public function clickElement($locator) {
+    $element = $this->getSession()->getPage()->find('css', $locator);
+
+    if (!isset($element)) {
+      throw new ElementNotFoundException($this->getDriver(), NULL, 'css', $locator);
+    }
+
+    $element->click();
   }
 
 }

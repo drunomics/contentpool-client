@@ -30,7 +30,7 @@ Feature: Replication can be filtered and reset.
     And I should not see the text "BEHAT: Science"
     Then I should see the text "BEHAT: Cooking"
 
-  @javascript
+  @javascript @replication-filter-change
   Scenario: Replication filter changes take effect after reset
 
     Given I am logged in to contentpool
@@ -51,8 +51,9 @@ Feature: Replication can be filtered and reset.
     And I should not see the text "BEHAT: More science"
 
     When I am on "admin/config/services/relaxed/contentpool/replication_filter"
-    And I focus the element "#treeselect_filter-field_channel .vue-treeselect__multi-value"
-    And I check "Science"
+    # Open the autocompletion drop-down and select "Science"
+    And I click on the element "#treeselect_filter-field_channel .vue-treeselect__input"
+    And I click on the element '#treeselect_filter-field_channel .vue-treeselect__option[data-id="1bc7757f-ff52-4dde-ab24-68c1cd7362b8"] label'
     And I press "Save"
     Then I should see "Changes to the replication filter settings take affect on the next replication."
     Then I should see "Please reset the replication status in order to replicate the complete content with updated filters."
