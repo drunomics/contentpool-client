@@ -7,7 +7,11 @@ default:
       contexts:
         - FeatureContext
         - ContentPoolContext
+        - ParagraphContext
         - drunomics\BehatDrupalUtils\Context\DrupalSmokeContext
+        - drunomics\BehatDrupalUtils\Context\DrupalFormJSContext
+        - drunomics\BehatDrupalUtils\Context\DrupalFormContext
+        - drunomics\BehatDrupalUtils\Context\EntityBrowserContext
         - Drupal\DrupalExtension\Context\MinkContext
         - Drupal\DrupalExtension\Context\MessageContext
         - Drupal\DrupalExtension\Context\DrushContext
