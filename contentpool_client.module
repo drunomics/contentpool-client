@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -93,4 +94,23 @@ function contentpool_client_theme($existing, $type, $theme, $path) {
       ],
     ],
   ];
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function contentpool_client_page_attachments_alter(array &$attachments) {
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if ($node instanceof NodeInterface) {
+    if ($node->hasField('field_canonical_url') &&
+      !$node->get('field_canonical_url')->isEmpty() &&
+      isset($attachments['#attached']['html_head'])) {
+      $canonical_url = $node->field_canonical_url[0]->uri;
+      foreach ($attachments['#attached']['html_head'] as $key => $head) {
+        if ((isset($head[1]) ? $head[1] : FALSE) == 'canonical_url') {
+          $attachments['#attached']['html_head'][$key][0]['#attributes']['href'] = $canonical_url;
+        }
+      }
+    }
+  }
 }
