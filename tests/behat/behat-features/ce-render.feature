@@ -80,7 +80,7 @@ Feature: Content is rendered correctly via custom elements
     And the response should not contain "<pg-pinterest"
     And the response should not contain "<pg-gallery"
 
-    Then I click "Edit" in user menu
+    Then I click "Edit" in local tasks
     And I wait for the page to be loaded
 
     # Then add an image paragraph.
