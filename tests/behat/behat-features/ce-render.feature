@@ -61,6 +61,8 @@ Feature: Content is rendered correctly via custom elements
     # admin/content has some issues due to sticky table headers, so use frontpage instead.
     And I am on "/"
     When I click "BEHAT: RENDER TEST"
+
+    # Check if paragraphs are visible.
     Then I should see "Lorem ipsum"
     Then I should see "Quote"
     Then I should see "Drunomics"
@@ -68,6 +70,7 @@ Feature: Content is rendered correctly via custom elements
     Then I wait for the Instagram paragraph to be rendered
     And the response should contain "<twitter-widget"
     Then I should see "We give you top ten reasons why Drupal rocks the CMS arena"
+
     # The custom-elements must be rendered, thus not visible any more.
     # The text below is a bit misleading, as the response originally contains the tag but the current HTML may not
     # contain it any more.
@@ -80,10 +83,11 @@ Feature: Content is rendered correctly via custom elements
     And the response should not contain "<pg-pinterest"
     And the response should not contain "<pg-gallery"
 
+    # Image paragraph is added later, because to create another paragraph after
+    # using entity browser once the form needs to be reloaded.
+    # TODO Test should be updated when we find the reason for this behaviour.
     Then I click "Edit" in local tasks
     And I wait for the page to be loaded
-
-    # Then add an image paragraph.
     And I add a paragraph "Image" at slot number "8"
     And I wait for AJAX to finish
     And I press "Select image" in paragraph number "8"
