@@ -13,3 +13,4 @@ dependencies:
   - contentpool:contentpool_replication
   - scheduler:scheduler
   - entity_edit_redirect:entity_edit_redirect
+  - uuid_url:uuid_url

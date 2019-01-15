@@ -30,7 +30,8 @@
     "drupal/replication": "^1.0@beta",
     "drupal/scheduler": "*",
     "drupal/vuejs": "^1.0@beta",
-    "drupal/workspace": "^1.0@beta"
+    "drupal/workspace": "^1.0@beta",
+    "drupal/uuid_url": "1.x-dev"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
