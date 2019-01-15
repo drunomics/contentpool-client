@@ -98,17 +98,35 @@ function contentpool_client_theme($existing, $type, $theme, $path) {
 
 /**
  * Implements hook_page_attachments_alter().
+ *
+ * If host from canonical url replicated from contentpool site does not match current host, add canonical url to metadata.
  */
 function contentpool_client_page_attachments_alter(array &$attachments) {
   $node = \Drupal::routeMatch()->getParameter('node');
   if ($node instanceof NodeInterface) {
-    if ($node->hasField('field_canonical_url') &&
-      !$node->get('field_canonical_url')->isEmpty() &&
-      isset($attachments['#attached']['html_head'])) {
+    if ($node->hasField('field_canonical_url') && !$node->get('field_canonical_url')->isEmpty()) {
       $canonical_url = $node->field_canonical_url[0]->uri;
-      foreach ($attachments['#attached']['html_head'] as $key => $head) {
-        if ((isset($head[1]) ? $head[1] : FALSE) == 'canonical_url') {
-          $attachments['#attached']['html_head'][$key][0]['#attributes']['href'] = $canonical_url;
+      $canonical_host = parse_url($canonical_url, PHP_URL_HOST);
+      $current_host = \Drupal::request()->getHost();
+      if ($canonical_host != $current_host) {
+        if (isset($attachments['#attached']['html_head'])) {
+          foreach ($attachments['#attached']['html_head'] as $key => $head) {
+            if ((isset($head[1]) ? $head[1] : FALSE) == 'canonical_url') {
+              $attachments['#attached']['html_head'][$key][0]['#attributes']['href'] = $canonical_url;
+            }
+          }
+        }
+        else {
+          $attachments['#attached']['html_head'] = [
+            [
+              '#attributes' => [
+                'rel' => 'canonical',
+                'href' => $canonical_url,
+              ],
+              '#tag' => 'link',
+            ],
+            'canonical_url',
+          ];
         }
       }
     }
