@@ -100,8 +100,9 @@ function contentpool_client_theme($existing, $type, $theme, $path) {
 /**
  * Implements hook_page_attachments_alter().
  *
- * If a node is replicated to another satellite which acts as primary site, set the canoncial URL
- * to this satellite in order to avoid SEO problems due to "duplicate content".
+ * If a node is replicated to another satellite which acts as primary site,
+ * set the canoncial URL to this satellite in order to avoid SEO problems
+ * due to "duplicate content".
  */
 function contentpool_client_page_attachments_alter(array &$attachments) {
   $node = \Drupal::routeMatch()->getParameter('node');
