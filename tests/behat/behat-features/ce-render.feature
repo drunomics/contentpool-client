@@ -57,6 +57,7 @@ Feature: Content is rendered correctly via custom elements
     And I wait for the page to be loaded
 
     Given I run drush cppull
+    And I open the satellite
     And I am logged in as a user with the "administrator" role
     # admin/content has some issues due to sticky table headers, so use frontpage instead.
     And I am on "/"
@@ -88,6 +89,7 @@ Feature: Content is rendered correctly via custom elements
     # TODO Test should be updated when we find the reason for this behaviour.
     Then I click "Edit" in local tasks
     And I wait for the page to be loaded
+    Then I am on contentpool
     And I add a paragraph "Image" at slot number "8"
     And I wait for AJAX to finish
     And I press "Select image" in paragraph number "8"
@@ -102,6 +104,7 @@ Feature: Content is rendered correctly via custom elements
     And I wait for the page to be loaded
 
     Given I run drush cppull
+    And I open the satellite
     And I am logged in as a user with the "administrator" role
     And I am on "/"
     When I click "BEHAT: RENDER TEST"
