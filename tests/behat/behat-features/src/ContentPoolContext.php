@@ -42,11 +42,11 @@ class ContentPoolContext extends RawDrupalContext {
    */
   public function configureReplicationFilter() {
     if (!static::$configured) {
-      $filter['node:article']['field_channel'] = [
+      $filter['field_channel'] = [
         // Food.
         'e4da9222-c270-43b7-abb9-2f83b1ad8716',
       ];
-      $filter['node:article']['field_tags'] = [
+      $filter['field_tags'] = [
         // Quantum.
         '92af4c88-0b17-41be-b6d8-306766ae3377',
         // Cuba.

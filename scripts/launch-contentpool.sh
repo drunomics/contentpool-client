@@ -16,6 +16,7 @@ git --git-dir=./contentpool/.git show -s
 # refer to the client.
 unset GIT_BRANCH
 unset GIT_CURRENT_BRANCH
+unset PRE_BUILD_COMMANDS
 
 ./contentpool/scripts/create-project.sh
 ./contentpool/scripts/run-server.sh
