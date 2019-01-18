@@ -23,7 +23,7 @@ Feature: Contentpool media replication basically works.
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
     Then I wait for AJAX to finish
-    Then "[name='field_teaser_media[target_id]']" should not be empty
+    Then "[name='field_teaser_media[target_id]']" value should be "media:3"
 
     # Save and publish article.
     And I select "Published" from "moderation_state[0]"
