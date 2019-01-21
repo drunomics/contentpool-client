@@ -35,7 +35,7 @@
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
-    "drunomics/behat-drupal-utils": "^1.1.0",
+    "drunomics/behat-drupal-utils": "^2.1.0",
     "drupal/coder": "^8.2"
   },
   "repositories": [
