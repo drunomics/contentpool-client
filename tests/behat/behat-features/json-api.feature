@@ -17,4 +17,5 @@ Feature: The Json Api is working.
 
   @access-token
   Scenario: I can get a oauth access token.
-    Then I get a oauth access token
+    When I am on "/"
+    Then I request an article

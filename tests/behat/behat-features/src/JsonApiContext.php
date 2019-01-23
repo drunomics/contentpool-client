@@ -7,8 +7,12 @@
 
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Client as GuzzleClient;
-// use WoohooLabs\Yang\JsonApi\Request\JsonApiRequestBuilder;
+use Http\Adapter\Guzzle6\Client;
+use kamermans\OAuth2\GrantType\PasswordCredentials;
+use kamermans\OAuth2\OAuth2Middleware;
+use WoohooLabs\Yang\JsonApi\Request\JsonApiRequestBuilder;
 use WoohooLabs\Yang\JsonApi\Client\JsonApiClient;
 use Drupal\DrupalExtension\Context\RawDrupalContext;
 
@@ -30,26 +34,49 @@ class JsonApiContext extends RawDrupalContext {
     }
     $this->contentpoolBaseUrl = getenv('CONTENTPOOL_BASE_URL');
 
-    // Instantiate the Guzzle HTTP Client
-    $guzzleClient = new GuzzleClient();
+    // Authorization client - this is used to request OAuth access tokens
+    $reauth_client = new GuzzleClient([
+      // URL for access_token request
+      'base_uri' => "{$this->contentpoolBaseUrl}/oauth/token",
+    ]);
+    $reauth_config = [
+      "client_id" => "4e612b91-d72e-4a7f-aac8-7f3b921a988e",
+      "client_secret" => "behat123",
+      "username" => "dru_admin",
+      "password" => "changeme",
+    ];
 
-    $this->jsonApiClient = new JsonApiClient($guzzleClient);
+    $grant_type = new PasswordCredentials($reauth_client, $reauth_config);
+
+    $oauth = new OAuth2Middleware($grant_type);
+
+    $stack = HandlerStack::create();
+    $stack->push($oauth);
+
+    $client = Client::createWithConfig([
+      'auth'     => 'oauth',
+      'handler'  => $stack,
+    ]);
+
+    $this->jsonApiClient = new JsonApiClient($client);
   }
 
   /**
-   * @Then /^I get a oauth access token$/
+   * @Then /^I request an article$/
    */
-  public function iGetAOauthAccessToken() {
+  public function iRequestAnArticle() {
     // Instantiate an empty PSR-7 request.
     $request = new Request("", "");
 
-    $request = $request
-      ->withProtocolVersion("1.1")
-      ->withUri(new Uri("{$this->contentpoolBaseUrl}/oauth/token"))
-      ->withHeader("Accept", "application/vnd.api+json")
-      ->withHeader("Content-Type", "application/x-www-form-urlencoded");
+    $requestBuilder = new JsonApiRequestBuilder($request);
 
-    //$request->withBody("");
+    $requestBuilder
+      ->setProtocolVersion("1.1")
+      ->setMethod("GET")
+      ->setUri("{$this->contentpoolBaseUrl}/jsonapi/node/article")
+      ->setHeader("Accept-Charset", "utf-8");
+
+    $request = $requestBuilder->getRequest();
 
     $response = $this->jsonApiClient->sendRequest($request);
 
