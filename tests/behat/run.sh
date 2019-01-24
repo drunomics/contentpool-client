@@ -33,7 +33,7 @@ export BEHAT_PARAMS
 echo "Running behat tests with chrome URL $CHROME_URL and base URL $BASE_URL..."
 
 # Finally, run...
-vendor/bin/behat -c $CONFIG_FILE --tags access-token --colors $@
+vendor/bin/behat -c $CONFIG_FILE --colors $@
 EXIT_CODE=$?
 
 if [[ $PHAPP_ENV = vagrant ]]; then

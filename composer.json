@@ -38,8 +38,7 @@
     "drunomics/behat-drupal-utils": "^2.1.0",
     "drupal/coder": "^8.2",
     "woohoolabs/yang": "^1.2",
-    "php-http/guzzle6-adapter": "^2.0",
-    "kamermans/guzzle-oauth2-subscriber": "~1.0"
+    "php-http/guzzle6-adapter": "^2.0"
   },
   "repositories": [
     {
