@@ -47,6 +47,13 @@ class JsonApiContext extends RawDrupalContext {
   protected $jsonApiClient;
 
   /**
+   * Json api response.
+   *
+   * @var WoohooLabs\Yang\JsonApi\Response\JsonApiResponse
+   */
+  protected $response;
+
+  /**
    * @BeforeScenario
    */
   public function before($scope) {
@@ -65,7 +72,7 @@ class JsonApiContext extends RawDrupalContext {
   }
 
   /**
-   * @Then I request an article with the uuid :uuid
+   * @Then I request an article with the uuid :uuid via json api
    */
   public function iRequestAnArticleWithTheUuid($uuid) {
     // Instantiate an empty PSR-7 request.
@@ -81,18 +88,47 @@ class JsonApiContext extends RawDrupalContext {
 
     $request = $requestBuilder->getRequest();
 
-    $response = $this->jsonApiClient->sendRequest($request);
-
-    if (!$response->isSuccessful() || !$response->hasDocument()) {
-      throw new ExpectationException('Request to fetch an article was not successful or has no results', $this->getSession());
-    }
-
+    $this->response = $this->jsonApiClient->sendRequest($request);
   }
 
   /**
-   * @Then I save the consumer id
+   * @Then The json api request was successful
    */
-  public function iSaveTheConsumerId() {
+  public function theJsonApiRequestWasSuccessful() {
+    if (!$this->response->isSuccessful() || !$this->response->hasDocument()) {
+      $error = $this->response->document()->error(0);
+      throw new ExpectationException(sprintf('Response was not successful: %s: %s', $error->title(), $error->detail()), $this->getSession());
+    }
+  }
+
+  /**
+   * @Then The json api request has results
+   */
+  public function theJsonApiRequestHasResults() {
+    if ($this->response->isSuccessful() && !$this->response->hasDocument()) {
+      throw new ExpectationException('Response has no results.', $this->getSession());
+    }
+  }
+
+  /**
+   * @Then The json api response contains the fields :fields
+   */
+  public function theJsonApiResponseContainsTheFields($fields) {
+    $hydrator = new ClassHydrator();
+    $article = $hydrator->hydrate($this->response->document());
+
+    $fields_list = explode(',', $fields);
+    foreach ($fields_list as $field) {
+      if (empty($article->{$field})) {
+        throw new ExpectationException("A field was not part of the response: $field", $this->getSession());
+      }
+    }
+  }
+
+  /**
+   * @Then I save the consumer id for oauth authentication
+   */
+  public function iSaveTheConsumerIdForOuathAuthentication() {
     // Instantiate an empty PSR-7 request.
     $consumer_id = $this->getSession()->getDriver()->evaluateScript('jQuery("td:contains(\'BEHAT Consumer\')").first().prev().text()');
     if (empty($consumer_id)) {
@@ -102,7 +138,7 @@ class JsonApiContext extends RawDrupalContext {
   }
 
   /**
-   * @Then I request an article with the uuid :uuid and included :fields
+   * @Then I request an article with the uuid :uuid and included :fields via json api
    */
   public function iRequestAnArticleWithTheUuidAndIncludedFields($uuid, $fields) {
     // Instantiate an empty PSR-7 request.
@@ -118,26 +154,11 @@ class JsonApiContext extends RawDrupalContext {
 
     $request = $requestBuilder->getRequest();
 
-    $response = $this->jsonApiClient->sendRequest($request);
-
-    if (!$response->isSuccessful() || !$response->hasDocument()) {
-      throw new ExpectationException('Request to fetch an article was not successful or has no results', $this->getSession());
-    }
-
-    $hydrator = new ClassHydrator();
-    $article = $hydrator->hydrate($response->document());
-
-    $fields_list = explode(',', $fields);
-    foreach ($fields_list as $field) {
-      if (empty($article->{$field})) {
-        throw new ExpectationException("A field was not part of the response: $field", $this->getSession());
-      }
-    }
-
+    $this->response = $this->jsonApiClient->sendRequest($request);
   }
 
   /**
-   * @Then I create an article with the title :title
+   * @Then I create an article with the title :title via json_api
    */
   public function iCreateAnArticleWithTheTitle($title) {
     $oauth_access_token = $this->getOauthAccessToken();
@@ -175,13 +196,7 @@ class JsonApiContext extends RawDrupalContext {
 
     $request = $requestBuilder->getRequest();
 
-    $response = $this->jsonApiClient->sendRequest($request);
-
-    if ($response && !$response->isSuccessful()) {
-      $error = $response->document()->error(0);
-      throw new ExpectationException(sprintf('Request to create an article was not successful or has no results: %s: %s', $error->title(), $error->detail()), $this->getSession());
-    }
-
+    $this->response = $this->jsonApiClient->sendRequest($request);
   }
 
   /**
@@ -206,7 +221,6 @@ class JsonApiContext extends RawDrupalContext {
     curl_setopt($ch, CURLOPT_URL, "{$this->contentpoolBaseUrl}/oauth/token");
     curl_setopt($ch, CURLOPT_POST, TRUE);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-    /* curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); */
     curl_setopt($ch, CURLOPT_POSTFIELDS, $config);
     $data = curl_exec($ch);
 
