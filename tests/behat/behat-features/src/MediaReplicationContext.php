@@ -148,13 +148,9 @@ class MediaReplicationContext extends RawDrupalContext {
    */
   public function editLastMedia() {
     $id = self::$currentlySelectedMedia;
-    $found_element = $this->getSession()
-      ->evaluateScript("jQuery(\"a[href^='/media/$id/edit']\").length > 0");
-    if (!$found_element) {
-      throw new ExpectationException('Edit link not found.', $this->getSession());
-    }
-    $this->getSession()
-      ->evaluateScript("jQuery(\"a[href^='/media/$id/edit']\").click()");
+    $xpath = "//td[contains(@class, 'field-operations')]//a[contains(@href, 'media/$id/edit')]";
+    $this->getSession()->getDriver()
+      ->click($xpath);
   }
 
   /**
