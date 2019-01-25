@@ -142,9 +142,9 @@ class MediaReplicationContext extends RawDrupalContext {
   }
 
   /**
-   * I edit last selected media on contentpool.
+   * I edit last selected media.
    *
-   * @Given I edit last media on contentpool
+   * @Then I edit last media
    */
   public function editLastMedia() {
     $id = self::$currentlySelectedMedia;
