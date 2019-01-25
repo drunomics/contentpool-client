@@ -72,3 +72,36 @@ Feature: Replication can be filtered and reset.
     When I run drush cppull
     And I am on "/admin/content"
     And I should see the text "BEHAT: More science"
+
+  @javascript @replication-filtered-remove
+  Scenario: Not matching replication filter removes previously replicated content
+
+    Given I am logged in to contentpool
+    When I visit path "node/add/article" on contentpool
+    # Choose bakery (under food) which should be replicated.
+    And I select "-Bakery" from "edit-field-channel"
+    And I fill in "title[0][value]" with "BEHAT: Bakeries FTW!"
+    And I fill in "field_seo_title[0][value]" with "ftw"
+    And I select "published" from "moderation_state[0]"
+    When I press "Save"
+    Then I wait for "has been created."
+
+    When I open the satellite
+    And I am logged in as a user with the "administrator" role
+    Then I am on satellite
+    And I run drush cppull
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    And I am on "/admin/content"
+    And I should see the text "BEHAT: Bakeries FTW!"
+
+    # Edit the content and change channels so content is not replicated any more.
+    And I click on "Edit" below the element ".view-content tr:contains('BEHAT: Bakeries FTW!')"
+    Then I am on contentpool
+    And I select "Science" from "edit-field-channel"
+    When I press "Save"
+    Then I am on satellite
+
+    When I run drush cppull
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    When I am on "/admin/content"
+    And I should not see the text "BEHAT: Bakeries FTW!"
