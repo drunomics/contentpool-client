@@ -147,7 +147,14 @@ class MediaReplicationContext extends RawDrupalContext {
    * @Given I edit last media on contentpool
    */
   public function editLastMedia() {
-    $this->visitPath('/media/' . self::$currentlySelectedMedia . '/edit');
+    $id = self::$currentlySelectedMedia;
+    $found_element = $this->getSession()
+      ->evaluateScript("jQuery(\"a[href^='/media/$id/edit']\")..length > 0");
+    if (!$found_element) {
+      throw new ExpectationException('Edit link not found.', $this->getSession());
+    }
+    $this->getSession()
+      ->evaluateScript("jQuery(\"a[href^='/media/$id/edit']\").click()");
   }
 
   /**

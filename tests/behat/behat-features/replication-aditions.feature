@@ -184,6 +184,8 @@ Feature: Contentpool media replication basically works.
     Then I should see the text "BEHAT: Media 2"
 
     # Edit media
+    Given I am on contentpool
+    And I visit path "admin/content/media" on contentpool
     And I edit last media on contentpool
     And I fill in "name[0][value]" with "BEHAT: Image media edited"
     And I press "Save and keep published"
