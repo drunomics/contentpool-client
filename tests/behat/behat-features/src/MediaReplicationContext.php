@@ -142,12 +142,12 @@ class MediaReplicationContext extends RawDrupalContext {
   }
 
   /**
-   * I visit last selected media on contentpool.
+   * I edit last selected media on contentpool.
    *
-   * @Given I visit last media on contentpool
+   * @Given I edit last media on contentpool
    */
-  public function visitLastMedia() {
-    $this->visitPath('media/' . self::$currentlySelectedMedia . '/edit');
+  public function editLastMedia() {
+    $this->visitPath('/media/' . self::$currentlySelectedMedia . '/edit');
   }
 
   /**
