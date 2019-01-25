@@ -147,7 +147,7 @@ class ContentpoolReplicationFilterForm extends FormBase {
       list(, $field) = explode("-", $form_field);
       $value = $form_state->getValue($form_field);
       if (!empty($value)) {
-        $filter['node:article'][$field] = array_map('trim', explode(",", $value));
+        $filter[$field] = array_map('trim', explode(",", $value));
       }
     }
 
@@ -217,7 +217,7 @@ class ContentpoolReplicationFilterForm extends FormBase {
     $current_filter = $parameters['filter'];
 
     foreach ($termreference_fields as $field => $field_data) {
-      $value = isset($current_filter['node:article'][$field]) ? $current_filter['node:article'][$field] : NULL;
+      $value = isset($current_filter[$field]) ? $current_filter[$field] : NULL;
       $renderable = [
         '#theme' => 'treeselect_filter',
         '#field' => $field,

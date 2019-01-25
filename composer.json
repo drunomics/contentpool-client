@@ -23,18 +23,19 @@
   "prefer-stable": true,
   "require": {
     "drunomics/contentpool_data_model": "^1.0.5",
-    "drunomics/contentpool_replication": "^1.0@dev",
+    "drunomics/contentpool_replication": "^2.0",
     "drunomics/service-utils": "*",
     "drupal/entity_edit_redirect": "^1.5",
     "drupal/relaxed": "^1.0@beta",
     "drupal/replication": "^1.0@beta",
     "drupal/scheduler": "*",
     "drupal/vuejs": "^1.0@beta",
-    "drupal/workspace": "^1.0@beta"
+    "drupal/workspace": "^1.0@beta",
+    "drupal/uuid_url": "^1.0"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
-    "drunomics/behat-drupal-utils": "^1.1.0",
+    "drunomics/behat-drupal-utils": "^2.1.0",
     "drupal/coder": "^8.2"
   },
   "repositories": [
