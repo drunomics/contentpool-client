@@ -162,6 +162,7 @@ Feature: Contentpool media replication basically works.
     Then I should get a 200 HTTP response
     Then I should see the text "Edit"
     And I click "Edit" in local tasks
+    And I wait for the page to be loaded
     Then Save "[name='field_teaser_media[target_id]']" value as currently selected
     And I press "edit-field-teaser-media-current-items-0-remove-button"
     And I wait for AJAX to finish
@@ -185,14 +186,17 @@ Feature: Contentpool media replication basically works.
 
     # Edit media
     Given I visit path "admin/content/media" on contentpool
-    And I edit last media on contentpool
+    And I edit last media
+    Then I wait for the page to be loaded
     And I fill in "name[0][value]" with "BEHAT: Image media edited"
     And I press "Save and keep published"
 
     # Edit article
     And I visit path "/" on contentpool
     And I click "BEHAT: Media 2"
+    And I wait for the page to be loaded
     And I click "Edit" in local tasks
+    And I wait for the page to be loaded
 
     # Re add media to article
     And I press "field_teaser_media_entity_browser_entity_browser"
