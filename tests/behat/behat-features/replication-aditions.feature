@@ -184,12 +184,13 @@ Feature: Contentpool media replication basically works.
     Then I should see the text "BEHAT: Media 2"
 
     # Edit media
+    Given I am logged in to contentpool
     And I visit last media on contentpool
     And I fill in "name[0][value]" with "BEHAT: Image media edited"
     And I press "Save and keep published"
 
     # Edit article
-    Given I visit path "/" on contentpool
+    And I visit path "/" on contentpool
     And I click "BEHAT: Media 2"
     And I click "Edit" in local tasks
 
