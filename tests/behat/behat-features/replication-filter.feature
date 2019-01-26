@@ -95,7 +95,7 @@ Feature: Replication can be filtered and reset.
     And I should see the text "BEHAT: Bakeries FTW!"
 
     # Edit the content and change channels so content is not replicated any more.
-    And I click on "Edit" below the element ".view-content tr:contains('BEHAT: Bakeries FTW!')"
+    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Bakeries FTW!')"
     Then I am on contentpool
     And I select "Science" from "edit-field-channel"
     When I press "Save"
