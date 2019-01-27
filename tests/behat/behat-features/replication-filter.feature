@@ -1,5 +1,5 @@
 @api
-@replication-filter
+@replication @replication-filter
 Feature: Replication can be filtered and reset.
 
   Scenario: Replication filter works
