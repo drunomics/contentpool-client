@@ -89,8 +89,12 @@ Feature: Replication can be filtered and reset.
     When I open the satellite
     And I am logged in as a user with the "administrator" role
     Then I am on satellite
+    And I run drush cpc
+    Then drush output should contain "There are new changes to be replicated."
     And I run drush cppull
     Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    When I run drush cpc
+    Then drush output should contain "There are no changes to be replicated."
     And I am on "/admin/content"
     And I should see the text "BEHAT: Bakeries FTW!"
 
@@ -101,7 +105,12 @@ Feature: Replication can be filtered and reset.
     When I press "Save"
     Then I am on satellite
 
+    When I run drush cpc
+    Then drush output should contain "There are new changes to be replicated."
     When I run drush cppull
     Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    And I run drush cpc
+    Then drush output should contain "There are no changes to be replicated."
     When I am on "/admin/content"
+    And I reload the page
     And I should not see the text "BEHAT: Bakeries FTW!"
