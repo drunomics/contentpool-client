@@ -77,8 +77,8 @@ Feature: Contentpool client-side replication basically works.
     And I visit "/admin/reports/status"
     When I am logged in to contentpool
     Then I should see current site registered
-    When I click push notification link for current site
-    Then I press "Confirm"
+    When I click push notification link "Click to enable" for current site
+    And I press "Confirm"
     When I visit path "node/add/article" on contentpool
     And I fill in "title[0][value]" with "BEHAT: Bakery"
     And I fill in "field_seo_title[0][value]" with "Behat bakery"
@@ -108,3 +108,9 @@ Feature: Contentpool client-side replication basically works.
     And I wait for "3000" ms
     And I reload the page
     And I should see "BEHAT: Bakery2"
+    # Finally, disable push registration again.
+    When I open the contentpool
+    Then I should see current site registered
+    When I click push notification link 'Click to disable' for current site
+    And I press "Confirm"
+    Then I should see "Disabled"
