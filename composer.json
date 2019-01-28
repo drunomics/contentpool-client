@@ -36,7 +36,9 @@
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
     "drunomics/behat-drupal-utils": "^2.2.0",
-    "drupal/coder": "^8.2"
+    "drupal/coder": "^8.2",
+    "woohoolabs/yang": "^1.2",
+    "php-http/guzzle6-adapter": "^2.0"
   },
   "repositories": [
     {

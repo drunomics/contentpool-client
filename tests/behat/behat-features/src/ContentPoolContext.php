@@ -28,37 +28,25 @@ class ContentPoolContext extends RawDrupalContext {
   protected $contentpoolBaseUrl;
 
   /**
-   * Remember whether replication filters have been configured.
+   * Ensure default filter config is set for every scenario.
    *
-   * @var bool
-   */
-  public static $configured = FALSE;
-
-  /**
    * @BeforeScenario
-   *
-   * Note that this should only run once, but BeforeSuite or BeforeFeature only
-   * work statically, thus we use a static to ensure this is only run once.
    */
   public function configureReplicationFilter() {
-    if (!static::$configured) {
-      $filter['field_channel'] = [
-        // Food.
-        'e4da9222-c270-43b7-abb9-2f83b1ad8716',
-      ];
-      $filter['field_tags'] = [
-        // Quantum.
-        '92af4c88-0b17-41be-b6d8-306766ae3377',
-        // Cuba.
-        '02c8cbd9-15b7-4231-b9ef-46c1ef37b233',
-      ];
+    $filter['field_channel'] = [
+      // Food.
+      'e4da9222-c270-43b7-abb9-2f83b1ad8716',
+    ];
+    $filter['field_tags'] = [
+      // Quantum.
+      '92af4c88-0b17-41be-b6d8-306766ae3377',
+      // Cuba.
+      '02c8cbd9-15b7-4231-b9ef-46c1ef37b233',
+    ];
 
-      Drupal::configFactory()->getEditable('replication.replication_settings.contentpool')
-        ->set('parameters.filter', $filter)
-        ->save();
-
-      static::$configured = TRUE;
-    }
+    Drupal::configFactory()->getEditable('replication.replication_settings.contentpool')
+      ->set('parameters.filter', $filter)
+      ->save();
   }
 
   /**
@@ -175,11 +163,11 @@ class ContentPoolContext extends RawDrupalContext {
   /**
    * I click push notification link for current site.
    *
-   * @Then I click push notification link for current site
+   * @Then I click push notification link :link for current site
    */
-  public function clickPushNotificationLinkForCurrentSite() {
+  public function clickPushNotificationLinkForCurrentSite($link = 'Click to enable') {
     $site_uuid = \Drupal::config('system.site')->get('uuid');
-    $xpath = "//table//td[text()='$site_uuid']/../td/a[@title='Click to enable'][1]";
+    $xpath = "//table//td[text()='$site_uuid']/../td/a[@title='$link'][1]";
     $push_notification_link_element = $this->getSession()->getPage()->find('xpath', $xpath);
     if (!$push_notification_link_element) {
       throw new ExpectationException('Push notification link not found."', $this->getSession());
