@@ -24,7 +24,7 @@ Feature: Contentpool media replication basically works.
     And I press "Save and publish"
 
   @javascript @replication-aditions-default
-  Scenario: Replication media works
+  Scenario: Media attached to replicated entities is replicated
     # Create article with teaser
     Given I am logged in to contentpool
     And I visit path "node/add/article" on contentpool
@@ -64,7 +64,6 @@ Feature: Contentpool media replication basically works.
     Then Value of input field "[name='field_teaser_media[target_id]']" should be "empty"
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
-    Then I wait for ".views-row:nth(2)" in entity browser "image_browser"
     When I click on "EHAT: Media image 2" in entity browser "image_browser"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
@@ -108,7 +107,6 @@ Feature: Contentpool media replication basically works.
     # Add teaser
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
-    Then I wait for ".views-row:nth(3)" in entity browser "image_browser"
     When I click on "BEHAT: Media image 3" in entity browser "image_browser"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
@@ -171,7 +169,6 @@ Feature: Contentpool media replication basically works.
     # Re add media to article
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
-    Then I wait for ".views-row:nth(3)" in entity browser "image_browser"
     When I click on "BEHAT: Media image 3 edited" in entity browser "image_browser"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close

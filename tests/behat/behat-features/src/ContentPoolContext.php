@@ -228,7 +228,6 @@ class ContentPoolContext extends RawDrupalContext {
       ->evaluateScript("jQuery(\"#entity_browser_iframe_$entity_browser\").contents().find(\".views-field-name:contains('$media_title')\").first().closest(\".views-row\").click()");
   }
 
-
   /**
    * @Then Value of input field :element_selector should be :value
    */
