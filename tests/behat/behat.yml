@@ -8,8 +8,6 @@ default:
         - FeatureContext
         - ContentPoolContext
         - ParagraphContext
-        - FormContext
-        - MediaReplicationContext
         - drunomics\BehatDrupalUtils\Context\DrupalUtilsApiContext
         - drunomics\BehatDrupalUtils\Context\DrupalCleanTestContentApiContext
         - drunomics\BehatDrupalUtils\Context\DrupalErrorCheckApiContext

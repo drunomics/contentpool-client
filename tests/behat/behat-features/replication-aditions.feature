@@ -4,51 +4,39 @@ Feature: Contentpool media replication basically works.
 
   Make sure that media referenced in content can be pulled from remote contentpool server.
 
-  @replication-aditions-test-media
-  Scenario: Creating media entities
+  Scenario:
     Given I am logged in to contentpool
 
-    # Add media entitiy
+    # Add media entities
     And I visit path "media/add/image" on contentpool
-    And I fill in "name[0][value]" with "BEHAT: Image media 1"
+    And I fill in "name[0][value]" with "BEHAT: Media image 1"
     When I attach the file "core/profiles/demo_umami/modules/demo_umami_content/default_content/images/chili-sauce-umami.jpg" to "files[field_image_0]"
     And I press "Save and publish"
-    Then I save media to array with title "BEHAT: Image media 1"
 
     And I visit path "media/add/image" on contentpool
-    And I fill in "name[0][value]" with "BEHAT: Image media 2"
+    And I fill in "name[0][value]" with "BEHAT: Media image 2"
     When I attach the file "core/profiles/demo_umami/modules/demo_umami_content/default_content/images/chili-sauce-umami.jpg" to "files[field_image_0]"
     And I press "Save and publish"
-    Then I save media to array with title "BEHAT: Image media 2"
 
     And I visit path "media/add/image" on contentpool
-    And I fill in "name[0][value]" with "BEHAT: Image media 3"
+    And I fill in "name[0][value]" with "BEHAT: Media image 3"
     When I attach the file "core/profiles/demo_umami/modules/demo_umami_content/default_content/images/chili-sauce-umami.jpg" to "files[field_image_0]"
     And I press "Save and publish"
-    Then I save media to array with title "BEHAT: Image media 3"
-
-    And I visit path "media/add/image" on contentpool
-    And I fill in "name[0][value]" with "BEHAT: Image media 4"
-    When I attach the file "core/profiles/demo_umami/modules/demo_umami_content/default_content/images/chili-sauce-umami.jpg" to "files[field_image_0]"
-    And I press "Save and publish"
-    Then I save media to array with title "BEHAT: Image media 4"
 
   @javascript @replication-aditions-default
   Scenario: Replication media works
     # Create article with teaser
     Given I am logged in to contentpool
-    When I visit path "node/add/article" on contentpool
-    And I fill in "title[0][value]" with "BEHAT: Media"
-    And I fill in "field_seo_title[0][value]" with "test media"
+    And I visit path "node/add/article" on contentpool
+    And I fill in "title[0][value]" with "BEHAT: Media article"
+    And I fill in "field_seo_title[0][value]" with "Behat media article"
     And I select "-Cooking" from "edit-field-channel"
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
-    Then I wait for ".views-row:nth(0)" in entity browser "image_browser"
-    When I click on "0" of created media in "image_browser"
+    When I click on media "BEHAT: Media image 1" in entity browser "image_browser"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
     Then I wait for AJAX to finish
-    Then Save "[name='field_teaser_media[target_id]']" value as currently selected
     And I select "Published" from "moderation_state[0]"
     And I press "Save as"
     And I wait for the page to be loaded
@@ -60,30 +48,27 @@ Feature: Contentpool media replication basically works.
     And I am logged in as a user with the "administrator" role
 
     # Check article replicated
-    And I am on "/"
-    Then I should see the text "BEHAT: Media"
+    And I am on "admin/content"
+    Then I should see the text "BEHAT: Media article"
 
     # Check media is replicated
     And I am on "admin/content/media"
-    Then I should see title of currently selected media
-    And I should get a 200 HTTP response
+    Then I should see the text "BEHAT: Media image 1"
 
     # Edit article and change teaser
-    Given I visit path "/" on contentpool
-    And I click "BEHAT: Media"
-    And I click "Edit" in local tasks
+    Given I visit path "admin/content" on contentpool
+    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media article')"
+    Then I wait for the page to be loaded
     And I press "edit-field-teaser-media-current-items-0-remove-button"
     And I wait for AJAX to finish
-    Then "[name='field_teaser_media[target_id]']" value is empty
+    Then Value of input field "[name='field_teaser_media[target_id]']" should be "empty"
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
     Then I wait for ".views-row:nth(2)" in entity browser "image_browser"
-    When I click on "1" of created media in "image_browser"
+    When I click on "EHAT: Media image 2" in entity browser "image_browser"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
     Then I wait for AJAX to finish
-    Then Save "[name='field_teaser_media[target_id]']" value as currently selected
-    And I select "Published" from "moderation_state[0]"
     And I press "Save as"
     And I wait for the page to be loaded
 
@@ -94,16 +79,15 @@ Feature: Contentpool media replication basically works.
     And I am logged in as a user with the "administrator" role
 
     # Check article replicated
-    And I am on "/"
-    Then I should see the text "BEHAT: Media"
+    And I am on "admin/content"
+    Then I should see the text "BEHAT: Media article"
 
     # Check media is replicated
     And I am on "admin/content/media"
-    Then I should see title of currently selected media
-    And I should get a 200 HTTP response
+    Then I should see the text "BEHAT: Media image 2"
 
   @javascript @replication-aditions-only-used
-  Scenario: Replication media works only when used
+  Scenario: Replication media works only for referenced media
     # Replicate
     Given I open the satellite
     When I run drush cppull
@@ -112,25 +96,23 @@ Feature: Contentpool media replication basically works.
 
     # Check media is not replicated
     And I am on "admin/content/media"
-    And Unused media is not replicated
+    Then I should not see the text "BEHAT: Media image 3"
 
     # Create article
     Given I am logged in to contentpool
     When I visit path "node/add/article" on contentpool
-    And I fill in "title[0][value]" with "BEHAT: Media 2"
-    And I fill in "field_seo_title[0][value]" with "test media 2"
+    And I fill in "title[0][value]" with "BEHAT: Media article 2"
+    And I fill in "field_seo_title[0][value]" with "Media article 2"
     And I select "-Cooking" from "edit-field-channel"
-    And I select "published" from "moderation_state[0]"
 
     # Add teaser
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
     Then I wait for ".views-row:nth(3)" in entity browser "image_browser"
-    And I click on unused media in "image_browser"
+    When I click on "BEHAT: Media image 3" in entity browser "image_browser"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
     Then I wait for AJAX to finish
-    Then Save "[name='field_teaser_media[target_id]']" value as currently selected
 
     # Save and publish article.
     And I select "Published" from "moderation_state[0]"
@@ -144,33 +126,23 @@ Feature: Contentpool media replication basically works.
     And I am logged in as a user with the "administrator" role
 
     # Check media and article are replicated
-    And I am on "/"
-    Then I should see the text "BEHAT: Media 2"
+    And I am on "admin/content"
+    Then I should see the text "BEHAT: Media article 2"
 
     # Check media is replicated
     And I am on "admin/content/media"
-    Then I should see title of currently selected media
-    And I should get a 200 HTTP response
+    Then I should see the text "BEHAT: Media image 3"
 
   @javascript @replication-aditions-media-edited
   Scenario: Replication works for edited media
-    # Remove reference media and replicate
+    # Remove reference media BEHAT: Media image 3 and replicate
     Given I am logged in to contentpool
-    And I visit path "/" on contentpool
-    And I click "BEHAT: Media 2"
-    And I wait for the page to be loaded
-    Then I should get a 200 HTTP response
-    Then I should see the text "Edit"
-    And I click "Edit" in local tasks
-    And I wait for the page to be loaded
-    Then Save "[name='field_teaser_media[target_id]']" value as currently selected
+    And I visit path "admin/content" on contentpool
+    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media article 2')"
+    Then I wait for the page to be loaded
     And I press "edit-field-teaser-media-current-items-0-remove-button"
     And I wait for AJAX to finish
-    Then "[name='field_teaser_media[target_id]']" value is empty
-    Then I wait for AJAX to finish
-
-    # Save and publish article.
-    And I select "Published" from "moderation_state[0]"
+    Then Value of input field "[name='field_teaser_media[target_id]']" should be "empty"
     And I press "Save as"
     And I wait for the page to be loaded
 
@@ -181,28 +153,26 @@ Feature: Contentpool media replication basically works.
     And I am logged in as a user with the "administrator" role
 
     # Check article replicated
-    And I am on "/"
-    Then I should see the text "BEHAT: Media 2"
+    And I am on "admin/content"
+    Then I should see the text "BEHAT: Media article 2"
 
     # Edit media
     Given I visit path "admin/content/media" on contentpool
-    And I edit last media
+    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media image 3')"
     Then I wait for the page to be loaded
-    And I fill in "name[0][value]" with "BEHAT: Image media edited"
+    And I fill in "name[0][value]" with "BEHAT: Media image 3 edited"
     And I press "Save and keep published"
 
     # Edit article
-    And I visit path "/" on contentpool
-    And I click "BEHAT: Media 2"
-    And I wait for the page to be loaded
-    And I click "Edit" in local tasks
+    And I visit path "admin/content" on contentpool
+    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media 2')"
     And I wait for the page to be loaded
 
     # Re add media to article
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
     Then I wait for ".views-row:nth(3)" in entity browser "image_browser"
-    And I click on edited media in "image_browser"
+    When I click on "BEHAT: Media image 3 edited" in entity browser "image_browser"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
     Then I wait for AJAX to finish
@@ -218,10 +188,9 @@ Feature: Contentpool media replication basically works.
     And I am logged in as a user with the "administrator" role
 
     # Check media changes got replicated
-    And I am on "/"
+    And I am on "admin/content"
     Then I should see the text "BEHAT: Media 2"
 
     # Check media is replicated
     And I am on "admin/content/media"
-    Then I should see the text "BEHAT: Image media edited"
-    And I should get a 200 HTTP response
+    Then I should see the text "BEHAT: Media image 3 edited"
