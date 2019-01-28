@@ -223,12 +223,12 @@ class ContentPoolContext extends RawDrupalContext {
 
     $el = $this->getSession()->getPage()->find('css', $element_selector);
     $selectedValue = $el->getValue();
-    if ($value == 'empty' && $selectedValue) {
+    if ($value == 'empty' && !empty(trim($el->getText()))) {
       throw new ExpectationException(
         'Value was expected to be empty but it was ' . $selectedValue . '.',
         $this->getSession());
     }
-    if ($selectedValue != $value) {
+    if (trim($selectedValue) != $value) {
       throw new ExpectationException(
         'Value was expected to be ' . $value . ' but it was ' . $selectedValue . '.',
         $this->getSession());
