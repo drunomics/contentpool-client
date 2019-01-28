@@ -56,14 +56,15 @@ Feature: Contentpool media replication basically works.
     Then I should see the text "BEHAT: Media image 1"
 
     # Edit article and change teaser
-    Given I visit path "admin/content" on contentpool
-    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media article')"
+    Given I open the contentpool
+    And I visit path "admin/content" on contentpool
+    And I do follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media article')"
     Then I wait for the page to be loaded
     And I press "edit-field-teaser-media-current-items-0-remove-button"
     And I wait for AJAX to finish
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
-    When I click on "BEHAT: Media image 2" in entity browser "image_browser"
+    And I click on media "BEHAT: Media image 2" in entity browser "image_browser"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
     Then I wait for AJAX to finish
@@ -106,7 +107,7 @@ Feature: Contentpool media replication basically works.
     # Add teaser
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
-    When I click on "BEHAT: Media image 3" in entity browser "image_browser"
+    When I click on media "BEHAT: Media image 3" in entity browser "image_browser"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
     Then I wait for AJAX to finish
@@ -135,7 +136,7 @@ Feature: Contentpool media replication basically works.
     # Remove reference media BEHAT: Media image 3 and replicate
     Given I am logged in to contentpool
     And I visit path "admin/content" on contentpool
-    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media article 2')"
+    And I do follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media article 2')"
     Then I wait for the page to be loaded
     And I press "edit-field-teaser-media-current-items-0-remove-button"
     And I wait for AJAX to finish
@@ -154,20 +155,20 @@ Feature: Contentpool media replication basically works.
 
     # Edit media
     Given I visit path "admin/content/media" on contentpool
-    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media image 3')"
+    And I do follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media image 3')"
     Then I wait for the page to be loaded
     And I fill in "name[0][value]" with "BEHAT: Media image 3 edited"
     And I press "Save and keep published"
 
     # Edit article
     And I visit path "admin/content" on contentpool
-    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media 2')"
+    And I do follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media 2')"
     And I wait for the page to be loaded
 
     # Re add media to article
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
-    When I click on "BEHAT: Media image 3 edited" in entity browser "image_browser"
+    When I click on media "BEHAT: Media image 3 edited" in entity browser "image_browser"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
     Then I wait for AJAX to finish

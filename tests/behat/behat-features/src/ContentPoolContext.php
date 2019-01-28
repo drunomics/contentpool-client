@@ -7,6 +7,7 @@
 
 use Behat\Mink\Exception\ExpectationException;
 use Drupal\DrupalExtension\Context\RawDrupalContext;
+use Behat\Mink\Exception\ElementNotFoundException;
 
 /**
  * Defines features from the contentpool context.
@@ -233,6 +234,25 @@ class ContentPoolContext extends RawDrupalContext {
         'Value was expected to be ' . $value . ' but it was ' . $selectedValue . '.',
         $this->getSession());
     }
+  }
+
+  /**
+   * Follow some link contained in some element.
+   *
+   * It follows the link by reading the link target and navigating to the given
+   * path instead of clicking on the element.
+   *
+   * @When I do follow the :link link below the element :locator
+   * @When I do follow the :link link below the element with :selector selector :locator
+   */
+  public function followLinkBelowElement($link, $locator, $selector = 'css') {
+
+    $element = $this->getSession()->getPage()->find($selector, $locator);
+    if (!isset($element)) {
+      throw new ElementNotFoundException($this->getDriver(), NULL, $selector, $locator);
+    }
+    $path = $element->findLink($link)->getAttribute('href');
+    $this->visitPath($path);
   }
 
 }
