@@ -164,7 +164,7 @@ Feature: Contentpool media replication basically works.
 
     # Edit article
     And I visit path "admin/content" on contentpool
-    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media 2')"
+    And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media article 2')"
     And I wait for the page to be loaded
 
     # Re add media to article
@@ -187,7 +187,7 @@ Feature: Contentpool media replication basically works.
 
     # Check media changes got replicated
     And I am on "admin/content"
-    Then I should see the text "BEHAT: Media 2"
+    Then I should see the text "BEHAT: Media article 2"
 
     # Check media is replicated
     And I am on "admin/content/media"
