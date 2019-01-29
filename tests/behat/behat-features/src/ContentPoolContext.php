@@ -7,7 +7,6 @@
 
 use Behat\Mink\Exception\ExpectationException;
 use Drupal\DrupalExtension\Context\RawDrupalContext;
-use Behat\Mink\Exception\ElementNotFoundException;
 
 /**
  * Defines features from the contentpool context.
@@ -27,6 +26,13 @@ class ContentPoolContext extends RawDrupalContext {
    * @var string
    */
   protected $contentpoolBaseUrl;
+
+  /**
+   * Array of active contexts.
+   *
+   * @var array
+   */
+  protected $activeContexts;
 
   /**
    * Ensure default filter config is set for every scenario.
@@ -62,6 +68,23 @@ class ContentPoolContext extends RawDrupalContext {
       throw new Exception('Missing contentpool base URL.');
     }
     $this->contentpoolBaseUrl = getenv('CONTENTPOOL_BASE_URL');
+
+    $environment = $scope->getEnvironment();
+    foreach ($environment->getContexts() as $context) {
+      $this->activeContexts[] = $context;
+    }
+  }
+
+  /**
+   * Set base_url for all contexts.
+   *
+   * @param string $baseUrl
+   *   Current base url.
+   */
+  private function setBaseUrl($baseUrl) {
+    foreach ($this->activeContexts as $context) {
+      $context->setMinkParameter('base_url', $baseUrl);
+    }
   }
 
   /**
@@ -82,7 +105,7 @@ class ContentPoolContext extends RawDrupalContext {
    * @Given I visit path :path on contentpool
    */
   public function visitContentpoolPath($path) {
-    $this->setMinkParameter('base_url', $this->contentpoolBaseUrl);
+    $this->setBaseUrl($this->contentpoolBaseUrl);
     $this->visitPath($path);
   }
 
@@ -104,7 +127,7 @@ class ContentPoolContext extends RawDrupalContext {
    * @Given I visit path :path on satellite
    */
   public function visitSatellitePath($path) {
-    $this->setMinkParameter('base_url', $this->satelliteBaseUrl);
+    $this->setBaseUrl($this->satelliteBaseUrl);
     $this->visitPath($path);
   }
 
@@ -215,44 +238,6 @@ class ContentPoolContext extends RawDrupalContext {
     }
     $this->getSession()
       ->evaluateScript("jQuery(\"#entity_browser_iframe_$entity_browser\").contents().find(\".views-field-name:contains('$media_title')\").first().closest(\".views-row\").click()");
-  }
-
-  /**
-   * @Then Value of input field :element_selector should be :value
-   */
-  public function shouldBeEmpty($element_selector, $value) {
-
-    $el = $this->getSession()->getPage()->find('css', $element_selector);
-    $selectedValue = $el->getValue();
-    if ($value == 'empty' && !empty(trim($el->getText()))) {
-      throw new ExpectationException(
-        'Value was expected to be empty but it was ' . $selectedValue . '.',
-        $this->getSession());
-    }
-    if (trim($selectedValue) != $value) {
-      throw new ExpectationException(
-        'Value was expected to be ' . $value . ' but it was ' . $selectedValue . '.',
-        $this->getSession());
-    }
-  }
-
-  /**
-   * Follow some link contained in some element.
-   *
-   * It follows the link by reading the link target and navigating to the given
-   * path instead of clicking on the element.
-   *
-   * @When I do follow the :link link below the element :locator
-   * @When I do follow the :link link below the element with :selector selector :locator
-   */
-  public function followLinkBelowElement($link, $locator, $selector = 'css') {
-
-    $element = $this->getSession()->getPage()->find($selector, $locator);
-    if (!isset($element)) {
-      throw new ElementNotFoundException($this->getDriver(), NULL, $selector, $locator);
-    }
-    $path = $element->findLink($link)->getAttribute('href');
-    $this->visitPath($path);
   }
 
 }
