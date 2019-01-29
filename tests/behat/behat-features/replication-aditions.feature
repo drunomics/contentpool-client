@@ -133,7 +133,7 @@ Feature: Contentpool media replication basically works.
     Then I should see the text "BEHAT: Media image 3"
 
   @javascript @replication-aditions-media-edited
-  Scenario: Replication works for edited media
+  Scenario: Replication of media works after media is edited
     # Remove reference media BEHAT: Media image 3 and replicate
     Given I am logged in to contentpool
     And I visit path "admin/content" on contentpool

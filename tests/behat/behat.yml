@@ -26,7 +26,6 @@ default:
       goutte: ~
       default_session: 'goutte'
       show_cmd: xdg-open %s
-      files_path: .
     Drupal\DrupalExtension:
       blackbox: ~
       api_driver: 'drupal'
