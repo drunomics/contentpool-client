@@ -51,7 +51,8 @@ class ContentPoolContext extends RawDrupalContext {
       '02c8cbd9-15b7-4231-b9ef-46c1ef37b233',
     ];
 
-    Drupal::configFactory()->getEditable('replication.replication_settings.contentpool')
+    Drupal::configFactory()
+      ->getEditable('replication.replication_settings.contentpool')
       ->set('parameters.filter', $filter)
       ->save();
   }
@@ -141,7 +142,8 @@ class ContentPoolContext extends RawDrupalContext {
     $element->fillField($this->getDrupalText('password_field'), 'changeme');
     $submit = $element->findButton($this->getDrupalText('log_in'));
     if (empty($submit)) {
-      throw new ExpectationException(sprintf("No submit button at %s", $this->getSession()->getCurrentUrl()));
+      throw new ExpectationException(sprintf("No submit button at %s", $this->getSession()
+        ->getCurrentUrl()));
     }
     $submit->click();
     // Quick check that user was logged in successfully.
@@ -192,7 +194,9 @@ class ContentPoolContext extends RawDrupalContext {
   public function clickPushNotificationLinkForCurrentSite($link = 'Click to enable') {
     $site_uuid = \Drupal::config('system.site')->get('uuid');
     $xpath = "//table//td[text()='$site_uuid']/../td/a[@title='$link'][1]";
-    $push_notification_link_element = $this->getSession()->getPage()->find('xpath', $xpath);
+    $push_notification_link_element = $this->getSession()
+      ->getPage()
+      ->find('xpath', $xpath);
     if (!$push_notification_link_element) {
       throw new ExpectationException('Push notification link not found."', $this->getSession());
     }
@@ -238,6 +242,21 @@ class ContentPoolContext extends RawDrupalContext {
     }
     $this->getSession()
       ->evaluateScript("jQuery(\"#entity_browser_iframe_$entity_browser\").contents().find(\".views-field-name:contains('$media_title')\").first().closest(\".views-row\").click()");
+  }
+
+  /**
+   * @Then Value of input field :element_selector is :value
+   */
+  public function inputHasValue($element_selector, $value) {
+
+    $el = $this->getSession()->getPage()->find('css', $element_selector);
+    $selectedValue = $el->getValue();
+    if (($value == 'empty' && !empty($selectedValue))
+      || ($value != 'empty' && trim($selectedValue) != $value)) {
+      throw new ExpectationException(
+        'Value was expected to be empty but it was ' . $selectedValue . '.',
+        $this->getSession());
+    }
   }
 
 }

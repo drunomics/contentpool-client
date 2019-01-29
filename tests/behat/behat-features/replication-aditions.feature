@@ -62,6 +62,7 @@ Feature: Contentpool media replication basically works.
     Then I wait for the page to be loaded
     And I press "edit-field-teaser-media-current-items-0-remove-button"
     And I wait for AJAX to finish
+    Then Value of input field "[name='field_teaser_media[target_id]']" is "empty"
     And I press "field_teaser_media_entity_browser_entity_browser"
     Then I wait for AJAX to finish
     And I click on media "BEHAT: Media image 2" in entity browser "image_browser"
@@ -140,6 +141,7 @@ Feature: Contentpool media replication basically works.
     Then I wait for the page to be loaded
     And I press "edit-field-teaser-media-current-items-0-remove-button"
     And I wait for AJAX to finish
+    Then Value of input field "[name='field_teaser_media[target_id]']" is "empty"
     And I press "Save as"
     And I wait for the page to be loaded
 
