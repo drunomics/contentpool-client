@@ -160,8 +160,9 @@ Feature: Contentpool media replication basically works.
     And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media image 3')"
     Then I wait for the page to be loaded
     And I fill in "name[0][value]" with "BEHAT: Media image 3 edited"
+    And I should see the text "Revision information"
+    And I click on the element "#edit-revision-information"
     And I check the box "Create new revision"
-    And I fill in "edit-revision-log" with "Changed media title."
     And I press "Save and keep published"
 
     # Edit media second time
@@ -170,8 +171,9 @@ Feature: Contentpool media replication basically works.
     And I follow the "Edit" link below the element ".view-content tr:contains('BEHAT: Media image 3 edited')"
     Then I wait for the page to be loaded
     And I fill in "name[0][value]" with "BEHAT: Media image 3 edited second time"
+    And I should see the text "Revision information"
+    And I click on the element "#edit-revision-information"
     And I check the box "Create new revision"
-    And I fill in "edit-revision-log" with "Media edited second time and changed media title."
     And I press "Save and keep published"
 
     # Edit article
