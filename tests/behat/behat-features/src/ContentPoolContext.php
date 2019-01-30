@@ -231,32 +231,4 @@ class ContentPoolContext extends RawDrupalContext {
     }
   }
 
-  /**
-   * @Given I click on media :media_title in entity browser :entity_browser
-   */
-  public function iClickOnMediaInEntityInBrowser($media_title, $entity_browser) {
-    $found_element = $this->getSession()
-      ->evaluateScript("jQuery(\"#entity_browser_iframe_$entity_browser\").contents().find(\".views-field-name:contains('$media_title')\").length > 0");
-    if (!$found_element) {
-      throw new ExpectationException('Element not found.', $this->getSession());
-    }
-    $this->getSession()
-      ->evaluateScript("jQuery(\"#entity_browser_iframe_$entity_browser\").contents().find(\".views-field-name:contains('$media_title')\").first().closest(\".views-row\").click()");
-  }
-
-  /**
-   * @Then Value of input field :element_selector is :value
-   */
-  public function inputHasValue($element_selector, $value) {
-
-    $el = $this->getSession()->getPage()->find('css', $element_selector);
-    $selectedValue = $el->getValue();
-    if (($value == 'empty' && !empty($selectedValue))
-      || ($value != 'empty' && trim($selectedValue) != $value)) {
-      throw new ExpectationException(
-        'Value was expected to be empty but it was ' . $selectedValue . '.',
-        $this->getSession());
-    }
-  }
-
 }
