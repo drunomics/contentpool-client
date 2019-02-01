@@ -28,6 +28,13 @@ class ContentPoolContext extends RawDrupalContext {
   protected $contentpoolBaseUrl;
 
   /**
+   * Array of active contexts.
+   *
+   * @var array
+   */
+  protected $activeContexts;
+
+  /**
    * Ensure default filter config is set for every scenario.
    *
    * @BeforeScenario
@@ -44,7 +51,8 @@ class ContentPoolContext extends RawDrupalContext {
       '02c8cbd9-15b7-4231-b9ef-46c1ef37b233',
     ];
 
-    Drupal::configFactory()->getEditable('replication.replication_settings.contentpool')
+    Drupal::configFactory()
+      ->getEditable('replication.replication_settings.contentpool')
       ->set('parameters.filter', $filter)
       ->save();
   }
@@ -61,6 +69,23 @@ class ContentPoolContext extends RawDrupalContext {
       throw new Exception('Missing contentpool base URL.');
     }
     $this->contentpoolBaseUrl = getenv('CONTENTPOOL_BASE_URL');
+
+    $environment = $scope->getEnvironment();
+    foreach ($environment->getContexts() as $context) {
+      $this->activeContexts[] = $context;
+    }
+  }
+
+  /**
+   * Set base_url for all contexts.
+   *
+   * @param string $baseUrl
+   *   Current base url.
+   */
+  private function setBaseUrl($baseUrl) {
+    foreach ($this->activeContexts as $context) {
+      $context->setMinkParameter('base_url', $baseUrl);
+    }
   }
 
   /**
@@ -81,7 +106,7 @@ class ContentPoolContext extends RawDrupalContext {
    * @Given I visit path :path on contentpool
    */
   public function visitContentpoolPath($path) {
-    $this->setMinkParameter('base_url', $this->contentpoolBaseUrl);
+    $this->setBaseUrl($this->contentpoolBaseUrl);
     $this->visitPath($path);
   }
 
@@ -103,7 +128,7 @@ class ContentPoolContext extends RawDrupalContext {
    * @Given I visit path :path on satellite
    */
   public function visitSatellitePath($path) {
-    $this->setMinkParameter('base_url', $this->satelliteBaseUrl);
+    $this->setBaseUrl($this->satelliteBaseUrl);
     $this->visitPath($path);
   }
 
@@ -117,7 +142,8 @@ class ContentPoolContext extends RawDrupalContext {
     $element->fillField($this->getDrupalText('password_field'), 'changeme');
     $submit = $element->findButton($this->getDrupalText('log_in'));
     if (empty($submit)) {
-      throw new ExpectationException(sprintf("No submit button at %s", $this->getSession()->getCurrentUrl()));
+      throw new ExpectationException(sprintf("No submit button at %s", $this->getSession()
+        ->getCurrentUrl()));
     }
     $submit->click();
     // Quick check that user was logged in successfully.
@@ -168,7 +194,9 @@ class ContentPoolContext extends RawDrupalContext {
   public function clickPushNotificationLinkForCurrentSite($link = 'Click to enable') {
     $site_uuid = \Drupal::config('system.site')->get('uuid');
     $xpath = "//table//td[text()='$site_uuid']/../td/a[@title='$link'][1]";
-    $push_notification_link_element = $this->getSession()->getPage()->find('xpath', $xpath);
+    $push_notification_link_element = $this->getSession()
+      ->getPage()
+      ->find('xpath', $xpath);
     if (!$push_notification_link_element) {
       throw new ExpectationException('Push notification link not found."', $this->getSession());
     }
