@@ -7,6 +7,7 @@ Feature: Content is rendered correctly via custom elements
     # First add a new article to contentpool.
     And I am logged in to contentpool
     And I visit path "node/add/article" on contentpool
+    Given I accept confirmation dialogs
     And I select "Food" from "Channel"
     And I fill in "Title" with "BEHAT: RENDER TEST"
     And I fill in "SEO Title" with "BEHAT: RENDER TEST"

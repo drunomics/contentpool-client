@@ -26,4 +26,11 @@ class FeatureContext extends DrupalContext {
     $this->visitPath($edit_link_element->getAttribute('href'));
   }
 
+  /**
+   * @When I accept confirmation dialogs
+   */
+  public function confirm() {
+    $this->getSession()->evaluateScript('window.confirm = function(){return true;}');
+  }
+
 }
