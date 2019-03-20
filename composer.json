@@ -22,7 +22,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "drunomics/contentpool_data_model": "^1.0.5",
+    "drunomics/contentpool_data_model": "^1.0.8",
     "drunomics/contentpool_replication": "^2.0",
     "drunomics/service-utils": "*",
     "drupal/entity_edit_redirect": "^1.5",
