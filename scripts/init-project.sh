@@ -35,5 +35,5 @@ END
 docker-compose exec web drush upwd dru_admin changeme
 
 # Add dev deps
-docker-compose exec web composer require woohoolabs/yang
-docker-compose exec web composer require php-http/guzzle6-adapter
+composer require woohoolabs/yang
+composer require php-http/guzzle6-adapter
