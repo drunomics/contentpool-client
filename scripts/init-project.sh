@@ -15,7 +15,7 @@ docker-compose exec cli drush en contentpool_client -y
 
 # Run auto-setup with the default contentpool pass,
 # see drunomics/contentpool:scripts/init-project.sh
-docker-compose exec cli drush contentpool-client:setup http://replicator:changeme@contentpool-project.localdev.space/relaxed
+docker-compose exec cli drush contentpool-client:setup http://replicator:changeme@example.contentpool-project.localdev.space/relaxed
 
 # Add some subscription filters for testing.
 docker-compose exec -T cli drush config:set replication.replication_settings.contentpool parameters.filter \
