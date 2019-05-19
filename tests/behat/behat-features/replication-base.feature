@@ -88,7 +88,7 @@ Feature: Contentpool client-side replication basically works.
     Then I wait for "has been created."
     And I should get a 200 HTTP response
     ## Workaround: Edit the article again. For some reason the push does not work the first time.
-    And I click "Edit"
+    And I click on "Edit" below the element ".tabs"
     And I press "Save"
 
     # Check on satellite if there is article already pushed.
@@ -97,7 +97,7 @@ Feature: Contentpool client-side replication basically works.
     Then I should see "BEHAT: Bakery"
     # Make sure edit link on satellite redirects to content pool.
     When I click "BEHAT: Bakery"
-    And I click "Edit"
+    And I click on "Edit" below the element ".tabs"
     Then I am on contentpool
     # Make sure we get back to satellite after saving edits.
     When I fill in "title[0][value]" with "BEHAT: Bakery2"

@@ -3,23 +3,22 @@ cd `dirname $0`/../
 set -ex
 
 cd ../satellite-project
-source dotenv/loader.sh
 
 # Run build on the host so we can leverage build caches.
 phapp build
 
 # Then install the project in the container.
-docker-compose exec web phapp install --no-build
+docker-compose exec cli phapp install --no-build
 
 # Install the module.
-docker-compose exec web drush en contentpool_client -y
+docker-compose exec cli drush en contentpool_client -y
 
 # Run auto-setup with the default contentpool pass,
 # see drunomics/contentpool:scripts/init-project.sh
-docker-compose exec web drush contentpool-client:setup http://replicator:changeme@contentpool-project.localdev.space/relaxed
+docker-compose exec cli drush contentpool-client:setup http://replicator:changeme@example.contentpool-project.localdev.space/relaxed
 
 # Add some subscription filters for testing.
-docker-compose exec -T web drush config:set replication.replication_settings.contentpool parameters.filter \
+docker-compose exec -T cli drush config:set replication.replication_settings.contentpool parameters.filter \
  --input-format=yaml - <<END
 field_channel:
   # Food
@@ -32,7 +31,7 @@ field_tags:
 END
 
 # Add admin password for testing purposes.
-docker-compose exec web drush upwd dru_admin changeme
+docker-compose exec cli drush upwd dru_admin changeme
 
 # Add dev deps
 composer require woohoolabs/yang php-http/guzzle6-adapter

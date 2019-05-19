@@ -37,7 +37,7 @@ Just run the provided drush command and provide it with the contentpool URL.
 Be sure to provide correct authentication credentials of the replicator user
 and to append the path `/relaxed` to your contentpool's base URL:
 
-    drush cps http://replicator:YOURPASS@contentpool-project.localdev.space/relaxed
+    drush cps http://replicator:YOURPASS@example.contentpool-project.localdev.space/relaxed
  
 The drush command will check the connection to the contentpool and output errors
 if there are connection issues.

@@ -8,7 +8,7 @@ source scripts/util/per-branch-env.sh
 
 [ ! -d ../satellite-project ] || (echo "Old project is still existing, please remove ../satellite-project." && exit 1)
 
-composer create-project drunomics/drupal-project:* --no-install --no-interaction ../satellite-project
+composer create-project drunomics/drupal-project:4.* --no-install --no-interaction ../satellite-project
 
 MODULE_DIR=`basename $PWD`
 source scripts/util/get-branch.sh
@@ -24,20 +24,7 @@ echo Project created.
 echo "Adding custom environment variables..."
 cat - >> .defaults.env <<END
   INSTALL_PROFILE=standard
-  CONTENTPOOL_BASE_URL=http://contentpool-project.localdev.space
-END
-
-cat - >> web/sites/all/env.localdev.settings.php <<END
-\$databases['default']['default'] = array(
-  'database' => 'test_' . \$site_prefix,
-  'username' => 'root',
-  'password' => '',
-  'prefix' => '',
-  'host' => 'localhost',
-  'port' => '3306',
-  'namespace' => 'Drupal\\Core\\Database\\Driver\\mysql',
-  'driver' => 'mysql',
-);
+  CONTENTPOOL_BASE_URL=http://example.contentpool-project.localdev.space
 END
 
 echo "Setting up project..."
