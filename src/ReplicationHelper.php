@@ -304,18 +304,14 @@ class ReplicationHelper {
   /**
    * Queue replication task with current active workspace.
    *
-   * @param bool $reset
-   *   Optional. To reset replication state or not. This does not cover the
-   *   replication flag.
-   *
    * @throws \Drupal\contentpool_client\Exception\ReplicationException
    *   Thrown when there are errors queuing replication.
    */
-  public function queueReplicationTaskWithCurrentActiveWorkspace($reset = FALSE) {
+  public function queueReplicationTaskWithCurrentActiveWorkspace() {
     // If no upstream is found then no replication can be queued.
     if ($upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) {
       $active_workspace_pointer = $this->getActiveWorkspacePointer();
-      $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer, $reset);
+      $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer);
     }
   }
 
@@ -353,7 +349,7 @@ class ReplicationHelper {
         $response = $this->replicatorManager->update($source_workspace_pointer, $target_workspace_pointer, $task);
 
         if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
-          if ($conflicts = $this->hasConflicts($source_workspace_pointer, $target_workspace_pointer)) {
+          if ($conflict_count = $this->hasConflicts($source_workspace_pointer, $target_workspace_pointer)) {
             throw new ReplicationException('%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %upstream workspace</a>.', [
               '%upstream' => $source_workspace_pointer->label(),
               '%workspace' => $target_workspace_pointer->label(),
@@ -361,7 +357,7 @@ class ReplicationHelper {
                 'workspace' => $target_workspace_pointer->getWorkspace()
                   ->id(),
               ])->toString(),
-              '@count' => count($conflicts),
+              '@count' => (int) $conflict_count,
             ]);
           }
         }
