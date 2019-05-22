@@ -6,7 +6,6 @@ set -x
 
 # Verify coding style.
 PHPCS=$(readlink -f vendor/bin/phpcs)
-( cd ./web/modules/drunomics/contentpool-client && $PHPCS --colors --report-width=130 )
 
 # Start chrome container.
 docker-compose -f docker-compose.yml -f devsetup-docker/service-chrome.yml up -d chrome
