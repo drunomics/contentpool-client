@@ -88,7 +88,7 @@ Feature: Contentpool client-side replication basically works.
     Then I wait for "has been created."
     And I should get a 200 HTTP response
     # First wait a bit so automatic replication is finished.
-    And I wait for "5000" ms
+    And I wait for "2000" ms
 
     # Check replication ran and the article got pushed.
     When I run drush cpc
@@ -105,7 +105,7 @@ Feature: Contentpool client-side replication basically works.
     And I fill in "field_seo_title[0][value]" with "behat bakery2"
     And I press "Save"
     # Make sure the article is changed. First wait a bit so replication is finished.
-    And I wait for "3000" ms
+    And I wait for "2000" ms
     Then I am on satellite
     And I reload the page
     And I should see "BEHAT: Bakery2"
