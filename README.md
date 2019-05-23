@@ -62,7 +62,7 @@ if there are connection issues.
   * Set "Replication settings on update" to "Replicate contentpool entities" 
   * Set "Replication settings on update" to "None"
   
-That's it.
+That's it!
 
 ## Vue.js
 
