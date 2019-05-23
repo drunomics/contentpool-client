@@ -93,10 +93,9 @@ Feature: Contentpool client-side replication basically works.
 
     # Check on satellite if there is article already pushed.
     When I open the satellite
-    And I am on "/admin/content"
     # First wait a bit so replication is finished.
-    And I wait for "3000" ms
-    And I reload the page
+    And I wait for "1000" ms
+    And I am on "/admin/content"
     Then I should see "BEHAT: Bakery"
     # Make sure edit link on satellite redirects to content pool.
     When I click "BEHAT: Bakery"

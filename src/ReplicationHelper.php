@@ -322,23 +322,13 @@ class ReplicationHelper {
    *   Source workspace pointer.
    * @param \Drupal\workspace\Entity\WorkspacePointer $target_workspace_pointer
    *   Target workspace pointer.
-   * @param bool $reset
-   *   Optional. To reset replication state or not.
    *
    * @throws \Drupal\contentpool_client\Exception\ReplicationException
    *   Thrown when there are errors queuing replication.
    */
-  public function queueReplicationTask(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer, $reset = FALSE) {
+  public function queueReplicationTask(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer) {
     // Queue replication if there no replication is queued yet.
     try {
-      // All the queue tasks pending in database must be vanished, since it may
-      // contain outdated state (outdated replication filters) and additionally
-      // its processing would update `since` argument, so we wouldn't get all
-      // the changes.
-      if ($reset) {
-        $this->cleanUpQueue();
-      }
-
       $replication_log = ReplicationLog::create();
       // Derive a replication task from the Workspace we are acting on.
       $task = $this->replicatorManager->getTask($target_workspace_pointer->getWorkspace(), 'pull_replication_settings');
@@ -368,63 +358,10 @@ class ReplicationHelper {
           ]);
         }
       }
-
-      if ($reset) {
-        // Reset the replication sequence by clearing up replication log entity
-        // and key value uuid storage for current workspace which also holds
-        // the replication log status.
-        $replication_log_id = $this->getReplicationId($source_workspace_pointer, $task);
-        $replication_log = $this->getReplicationLogByReplicationId($replication_log_id);
-        if ($replication_log) {
-          $replication_log->delete();
-        }
-        $key_value = $this->keyValue->get('multiversion.entity_index.uuid.' . $target_workspace_pointer->id());
-        if ($key_value->get($replication_log_id)) {
-          $key_value->delete($replication_log_id);
-        }
-      }
     }
     catch (EntityStorageException $e) {
       throw new ReplicationException('Unable to write replication logs. Exception: ' . $e->getMessage());
     }
-  }
-
-
-  /**
-   * Resets the replication state.
-   *
-   * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
-   *   Source workspace pointer.
-   * @param \Drupal\workspace\Entity\WorkspacePointer $target_workspace_pointer
-   *   Target workspace pointer.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   * @throws \Drupal\contentpool_client\Exception\ReplicationException
-   */
-  public function resetReplicationTask(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer) {
-    // All the queue tasks pending in database must be vanished, since it may
-    // contain outdated state (outdated replication filters) and additionally
-    // its processing would update `since` argument, so we wouldn't get all
-    // the changes.
-    $this->cleanUpQueue();
-
-    // Derive a replication task from the Workspace we are acting on.
-    $task = $this->replicatorManager->getTask($target_workspace_pointer->getWorkspace(), 'pull_replication_settings');
-
-    $replication_log_enties = $this->entityTypeManager->getStorage('replication_log')
-      ->loadByProperties(['workspace' => $target_workspace_pointer->getWorkspaceId()]);
-    if ($replication_log_enties) {
-      $this->entityTypeManager->getStorage('replication_log')
-        ->delete($replication_log_enties);
-    }
-
-    // Delete state of the replicated entities in target workspace.
-    $this->keyValue->get('multiversion.entity_index.uuid.' . $target_workspace_pointer->id())->deleteAll();
-
-    // Delete outdated conflicts from conflict tracker.
-    // @see \Drupal\multiversion\Workspace\ConflictTracker::getAll()
-    $collection = 'workspace.conflicts.' . $target_workspace_pointer->getWorkspaceId();
-    $this->keyValue->get($collection)->deleteAll();
   }
 
   /**
@@ -498,9 +435,6 @@ class ReplicationHelper {
 
   /**
    * Resets replication for currently active workspace and its upstream.
-   *
-   * @throws \Drupal\contentpool_client\Exception\ReplicationException
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function resetReplication() {
     // Reset flag if last replication failed.
@@ -511,8 +445,43 @@ class ReplicationHelper {
     // If no upstream is found then no replication can be queued.
     if ($upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) {
       $active_workspace_pointer = $this->getActiveWorkspacePointer();
-      $this->resetReplicationTask($upstream_workspace_pointer, $active_workspace_pointer);
+      $this->resetReplicationState($upstream_workspace_pointer, $active_workspace_pointer);
     }
+  }
+
+  /**
+   * Resets the replication state.
+   *
+   * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
+   *   Source workspace pointer.
+   * @param \Drupal\workspace\Entity\WorkspacePointer $target_workspace_pointer
+   *   Target workspace pointer.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public function resetReplicationState(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer) {
+    // All the queue tasks pending in database must be vanished, since it may
+    // contain outdated state (outdated replication filters) and additionally
+    // its processing would update `since` argument, so we wouldn't get all
+    // the changes.
+    $this->cleanUpQueue();
+
+    $replication_log_enties = $this->entityTypeManager->getStorage('replication_log')
+      ->loadByProperties(['workspace' => $target_workspace_pointer->getWorkspaceId()]);
+    if ($replication_log_enties) {
+      $this->entityTypeManager->getStorage('replication_log')
+        ->delete($replication_log_enties);
+    }
+
+    // Delete state of the replicated entities in target workspace.
+    $this->keyValue->get('multiversion.entity_index.uuid.' . $target_workspace_pointer->id())->deleteAll();
+
+    // Delete outdated conflicts from conflict tracker.
+    // @see \Drupal\multiversion\Workspace\ConflictTracker::getAll()
+    $collection = 'workspace.conflicts.' . $target_workspace_pointer->getWorkspaceId();
+    $this->keyValue->get($collection)->deleteAll();
   }
 
 }

@@ -62,7 +62,7 @@ Feature: Content is rendered correctly via custom elements
     # First wait a bit so replication is finished.
     And I wait for "1000" ms
     And I am on "/admin/content"
-    And I follow the "BEHAT: RENDER TEST" link below the element ".view-content tr:contains('BEHAT: RENDER TEST')"
+    And I follow the "BEHAT: RENDER TEST" link below the element ".view-content tr"
 
     # Check if paragraphs are visible.
     Then I should see "Lorem ipsum"
@@ -109,6 +109,6 @@ Feature: Content is rendered correctly via custom elements
     # First wait a bit so replication is finished.
     And I wait for "1000" ms
     And I am on "/admin/content"
-    And I follow the "BEHAT: RENDER TEST" link below the element ".view-content tr:contains('BEHAT: RENDER TEST')"
+    And I follow the "BEHAT: RENDER TEST" link below the element ".view-content tr"
     And the response should not contain "<pg-image"
     And Paragraph "image" should be rendered
