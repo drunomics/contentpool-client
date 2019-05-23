@@ -8,6 +8,10 @@ git:
   # Parsing composer metadata does not work with shallow clones.
   depth: false
 
+branches:
+  only:
+    - 8.x-1.x
+  
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.22.0
