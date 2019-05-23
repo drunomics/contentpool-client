@@ -13,6 +13,9 @@ docker-compose exec cli phapp install --no-build
 # Install the module.
 docker-compose exec cli drush en contentpool_client -y
 
+# Uninstall history module since a race-condition in it can cause random fails. See WV-2793 for details.
+docker-compose exec cli drush pm-uninstall history
+
 # Run auto-setup with the default contentpool pass,
 # see drunomics/contentpool:scripts/init-project.sh
 docker-compose exec cli drush contentpool-client:setup http://replicator:changeme@example.contentpool-project.localdev.space/relaxed

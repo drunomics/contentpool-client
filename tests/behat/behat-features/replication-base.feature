@@ -87,11 +87,12 @@ Feature: Contentpool client-side replication basically works.
     When I press "Save"
     Then I wait for "has been created."
     And I should get a 200 HTTP response
-    ## Workaround: Edit the article again. For some reason the push does not work the first time.
-    And I click on "Edit" below the element ".tabs"
-    And I press "Save"
+    # First wait a bit so automatic replication is finished.
+    And I wait for "3000" ms
 
-    # Check on satellite if there is article already pushed.
+    # Check replication ran and the article got pushed.
+    When I run drush cpc
+    Then drush output should contain "There are no changes to be replicated."
     When I open the satellite
     And I am on "/admin/content"
     Then I should see "BEHAT: Bakery"
@@ -103,9 +104,9 @@ Feature: Contentpool client-side replication basically works.
     When I fill in "title[0][value]" with "BEHAT: Bakery2"
     And I fill in "field_seo_title[0][value]" with "behat bakery2"
     And I press "Save"
-    Then I am on satellite
     # Make sure the article is changed. First wait a bit so replication is finished.
-    And I wait for "3000" ms
+    And I wait for "5000" ms
+    Then I am on satellite
     And I reload the page
     And I should see "BEHAT: Bakery2"
     # Finally, disable push registration again.
