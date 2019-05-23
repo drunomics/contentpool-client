@@ -93,7 +93,7 @@ Feature: Contentpool client-side replication basically works.
 
     # Check on satellite if there is article already pushed.
     When I open the satellite
-    And I am on "/admin/content
+    And I am on "/admin/content"
     # First wait a bit so replication is finished.
     And I wait for "3000" ms
     And I reload the page

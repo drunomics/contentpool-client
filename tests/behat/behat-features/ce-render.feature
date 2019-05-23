@@ -58,14 +58,11 @@ Feature: Content is rendered correctly via custom elements
 
     Given I run drush cppull
     And I open the satellite
-    Then there are no watchdog errors
     And I am logged in as a user with the "administrator" role
-    And I am on "/admin/content"
     # First wait a bit so replication is finished.
     And I wait for "1000" ms
-    And I reload the page
+    And I am on "/admin/content"
     And I follow the "BEHAT: RENDER TEST" link below the element ".view-content tr:contains('BEHAT: RENDER TEST')"
-    Then there are no watchdog errors
 
     # Check if paragraphs are visible.
     Then I should see "Lorem ipsum"
@@ -93,7 +90,6 @@ Feature: Content is rendered correctly via custom elements
     # TODO Test should be updated when we find the reason for this behaviour.
     Then I click "Edit" in local tasks
     And I wait for the page to be loaded
-    Then there are no watchdog errors
     Then I am on contentpool
     And I add a paragraph "Image" at slot number "8"
     And I wait for AJAX to finish
@@ -105,20 +101,14 @@ Feature: Content is rendered correctly via custom elements
     And I wait for entity browser "image_browser" to close
     Then I should not see "Select existing"
     And I press "Save as"
-
     And I wait for the page to be loaded
-    Then there are no watchdog errors
 
     Given I run drush cppull
     And I open the satellite
-    Then there are no watchdog errors
     And I am logged in as a user with the "administrator" role
-    And I am on "/admin/content"
     # First wait a bit so replication is finished.
     And I wait for "1000" ms
-    And I reload the page
-    And I wait for the page to be loaded
-    And there are no watchdog errors
+    And I am on "/admin/content"
     And I follow the "BEHAT: RENDER TEST" link below the element ".view-content tr:contains('BEHAT: RENDER TEST')"
     And the response should not contain "<pg-image"
     And Paragraph "image" should be rendered
