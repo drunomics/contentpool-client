@@ -59,9 +59,10 @@ Feature: Content is rendered correctly via custom elements
     Given I run drush cppull
     And I open the satellite
     And I am logged in as a user with the "administrator" role
-    # admin/content has some issues due to sticky table headers, so use frontpage instead.
-    And I am on "/"
-    When I click "BEHAT: RENDER TEST"
+    # First wait a bit so replication is finished.
+    And I wait for "1000" ms
+    And I am on "/admin/content"
+    And I follow the "BEHAT: RENDER TEST" link below the element ".view-content"
 
     # Check if paragraphs are visible.
     Then I should see "Lorem ipsum"
@@ -100,13 +101,14 @@ Feature: Content is rendered correctly via custom elements
     And I wait for entity browser "image_browser" to close
     Then I should not see "Select existing"
     And I press "Save as"
-
     And I wait for the page to be loaded
 
     Given I run drush cppull
     And I open the satellite
     And I am logged in as a user with the "administrator" role
-    And I am on "/"
-    When I click "BEHAT: RENDER TEST"
+    # First wait a bit so replication is finished.
+    And I wait for "1000" ms
+    And I am on "/admin/content"
+    And I follow the "BEHAT: RENDER TEST" link below the element ".view-content"
     And the response should not contain "<pg-image"
     And Paragraph "image" should be rendered

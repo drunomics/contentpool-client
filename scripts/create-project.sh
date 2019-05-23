@@ -27,6 +27,9 @@ cat - >> .defaults.env <<END
   CONTENTPOOL_BASE_URL=http://example.contentpool-project.localdev.space
 END
 
+# Update file entity to dev version for 8.7 compatibility
+composer require drupal/file_entity:2.x-dev
+
 echo "Setting up project..."
 phapp setup localdev
 

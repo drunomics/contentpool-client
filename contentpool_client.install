@@ -21,30 +21,39 @@ function contentpool_client_requirements($phase) {
     $upstream_workspace_pointer = $replication_helper->getUpstreamWorkspacePointer();
     if (!$upstream_workspace_pointer) {
       return [
-        'severity' => REQUIREMENT_ERROR,
-        'title' => t('No upstream workspace found to replicate from.'),
+        'contentpool_client_replication' => [
+          'severity' => REQUIREMENT_ERROR,
+          'title' => t('Contentpool replication'),
+          'description' => t('No upstream workspace found to replicate from.'),
+        ],
       ];
     }
     // Check if active (downstream) workspace does exist.
     $active_workspace_pointer = $replication_helper->getActiveWorkspacePointer();
     if (!$active_workspace_pointer) {
       return [
-        'severity' => REQUIREMENT_ERROR,
-        'title' => t('No active workspace found to replicate to.'),
+        'contentpool_client_replication' => [
+          'severity' => REQUIREMENT_ERROR,
+          'title' => t('Contentpool replication'),
+          'description' => t('No active workspace found to replicate to.'),
+        ],
       ];
     }
     $replication = $replication_helper->getLastReplication();
     // Prepare requirement.
     $requirement['severity'] = REQUIREMENT_INFO;
-    $requirement['title'] = t('Replication from <em>@source</em> to <em>@target</em>', [
-      '@source' => $upstream_workspace_pointer->label(),
-      '@target' => $active_workspace_pointer->label(),
-    ]);
+    $requirement['title'] = t('Contentpool replication');
+    $requirement['description'][] = [
+      '#markup' => t('Replication from <em>@source</em> to <em>@target</em>.', [
+        '@source' => $upstream_workspace_pointer->label(),
+        '@target' => $active_workspace_pointer->label(),
+      ]),
+    ];
     if ($replication) {
       /** @var \Drupal\Core\Datetime\DateFormatter $date_format */
       $date_format = \Drupal::service('date.formatter');
       // Attach the date the replication was triggered on.
-      $requirement['description'][] = [
+      $requirement['value'][] = [
         '#suffix' => '<br/>',
         '#markup' => t('Triggered on @datetime', ['@datetime' => $date_format->format($replication->changed->value, 'short')]),
       ];
@@ -89,12 +98,13 @@ function contentpool_client_requirements($phase) {
       }
     }
     else {
-      $requirement['value'] = t('Not yet reported');
+      $requirement['value'][] = [
+        '#markup' => t('Not yet reported'),
+      ];
     }
     $requirement['description'][] = [
-      '#markup' => t('Reset replication by following <strong><a href=":url">this</a></strong> link.', [
-        ':url' => Url::fromRoute('contentpool_client.reset_replication')
-          ->toString(),
+      '#markup' => ' ' . t('Reset replication by following <strong><a href=":url">this</a></strong> link.', [
+        ':url' => Url::fromRoute('contentpool_client.reset_replication')->toString(),
       ]),
     ];
     $requirements['contentpool_client_replication'] = $requirement;
