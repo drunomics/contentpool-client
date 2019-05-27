@@ -98,10 +98,11 @@ Feature: Content is rendered correctly via custom elements
     And I wait for the page to be loaded
 
     Given I run drush cppull
+    # First wait a bit so replication is finished.
+    And I wait for "2000" ms
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
     And I open the satellite
     And I am logged in as a user with the "administrator" role
-    # First wait a bit so replication is finished.
-    And I wait for "1000" ms
     And I am on "/admin/content"
     And I follow the "BEHAT: RENDER TEST" link below the element ".view-content"
     And the response should contain "<pg-image"
