@@ -69,8 +69,11 @@ Feature: Content is rendered correctly via custom elements
     Then I should see "Quote"
     Then I should see "Drunomics"
     Then I should see "BEHAT: Gallery; Moon or meat?"
+    Then I wait for the Instagram paragraph to be rendered
 
-    # The custom-elements are present in response.
+    # The custom-elements must be rendered, thus not visible any more.
+    # The text below is a bit misleading, as the response originally contains the tag but the current HTML may not
+    # contain it any more.
     And the response should contain "<pg-text"
     And the response should contain "<pg-quote"
     And the response should contain "<pg-link"
@@ -93,19 +96,19 @@ Feature: Content is rendered correctly via custom elements
     Then ".views-row:nth-of-type(1)" in entity browser "image_browser" should have the class "checked"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
+    And I wait for AJAX to finish
     Then I should not see "Select existing"
+    Then I wait for ".file" in paragraph number "2"
     And I press "Save as"
     And I wait for the page to be loaded
 
     Given I run drush cppull
-    # First wait a bit so replication is finished.
-    And I wait for "2000" ms
-    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
     And I open the satellite
     And I am logged in as a user with the "administrator" role
+    # First wait a bit so replication is finished.
+    And I wait for "1000" ms
     And I am on "/admin/content"
     And I follow the "BEHAT: RENDER TEST" link below the element ".view-content"
     And I wait for the page to be loaded
-    And I debug the element "body"
     And the response should contain "<pg-image"
     And Paragraph "image" should be rendered
