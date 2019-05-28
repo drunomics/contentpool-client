@@ -106,6 +106,6 @@ Feature: Content is rendered correctly via custom elements
     And I am on "/admin/content"
     And I follow the "BEHAT: RENDER TEST" link below the element ".view-content"
     And I wait for the page to be loaded
-    And I debug the element ".content"
+    And I debug the element "body"
     And the response should contain "<pg-image"
     And Paragraph "image" should be rendered
