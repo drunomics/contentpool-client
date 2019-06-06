@@ -70,6 +70,8 @@ Feature: Content is rendered correctly via custom elements
     Then I should see "Drunomics"
     Then I should see "BEHAT: Gallery; Moon or meat?"
     Then I wait for the Instagram paragraph to be rendered
+    And the response should contain "<twitter-widget"
+    Then I should see "We give you top ten reasons why Drupal rocks the CMS arena"
 
     # The custom-elements must be rendered, thus not visible any more.
     # The text below is a bit misleading, as the response originally contains the tag but the current HTML may not
