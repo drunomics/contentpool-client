@@ -70,7 +70,6 @@ Feature: Content is rendered correctly via custom elements
     Then I should see "Drunomics"
     Then I should see "BEHAT: Gallery; Moon or meat?"
     Then I wait for the Instagram paragraph to be rendered
-    Then I wait for the Twitter paragraph to be rendered
 
     # The custom-elements must be rendered, thus not visible any more.
     # The text below is a bit misleading, as the response originally contains the tag but the current HTML may not
@@ -81,6 +80,7 @@ Feature: Content is rendered correctly via custom elements
     And the response should contain "<pg-instagram"
     And the response should contain "<pg-twitter"
     And the response should contain "<pg-pinterest"
+    And the response should contain "<pg-twitter"
     And the response should contain "<pg-gallery"
 
     # Image paragraph is added later, because to create another paragraph after
