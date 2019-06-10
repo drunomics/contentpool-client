@@ -70,20 +70,18 @@ Feature: Content is rendered correctly via custom elements
     Then I should see "Drunomics"
     Then I should see "BEHAT: Gallery; Moon or meat?"
     Then I wait for the Instagram paragraph to be rendered
-    And the response should contain "<twitter-widget"
-    Then I should see "We give you top ten reasons why Drupal rocks the CMS arena"
 
     # The custom-elements must be rendered, thus not visible any more.
     # The text below is a bit misleading, as the response originally contains the tag but the current HTML may not
     # contain it any more.
-    And the response should not contain "<pg-text"
-    And the response should not contain "<template slot="
-    And the response should not contain "<pg-quote"
-    And the response should not contain "<pg-link"
-    And the response should not contain "<pg-instagram"
-    And the response should not contain "<pg-twitter"
-    And the response should not contain "<pg-pinterest"
-    And the response should not contain "<pg-gallery"
+    And the response should contain "<pg-text"
+    And the response should contain "<pg-quote"
+    And the response should contain "<pg-link"
+    And the response should contain "<pg-instagram"
+    And the response should contain "<pg-twitter"
+    And the response should contain "<pg-pinterest"
+    And the response should contain "<pg-twitter"
+    And the response should contain "<pg-gallery"
 
     # Image paragraph is added later, because to create another paragraph after
     # using entity browser once the form needs to be reloaded.
@@ -99,7 +97,9 @@ Feature: Content is rendered correctly via custom elements
     Then ".views-row:nth-of-type(1)" in entity browser "image_browser" should have the class "checked"
     And I click on "#edit-submit" in entity browser "image_browser"
     And I wait for entity browser "image_browser" to close
+    And I wait for AJAX to finish
     Then I should not see "Select existing"
+    Then I wait for ".file" in paragraph number "2"
     And I press "Save as"
     And I wait for the page to be loaded
 
@@ -110,5 +110,6 @@ Feature: Content is rendered correctly via custom elements
     And I wait for "1000" ms
     And I am on "/admin/content"
     And I follow the "BEHAT: RENDER TEST" link below the element ".view-content"
-    And the response should not contain "<pg-image"
+    And I wait for the page to be loaded
+    And the response should contain "<pg-image"
     And Paragraph "image" should be rendered
