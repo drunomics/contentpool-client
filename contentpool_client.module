@@ -115,11 +115,12 @@ function contentpool_client_page_attachments_alter(array &$attachments) {
           foreach ($attachments['#attached']['html_head'] as $key => $head) {
             if ((isset($head[1]) ? $head[1] : FALSE) == 'canonical_url') {
               $attachments['#attached']['html_head'][$key][0]['#attributes']['href'] = $canonical_url;
+              $found = TRUE;
             }
           }
         }
-        else {
-          $attachments['#attached']['html_head'] = [
+        if (empty($found)) {
+          $attachments['#attached']['html_head'][] = [
             [
               '#attributes' => [
                 'rel' => 'canonical',
