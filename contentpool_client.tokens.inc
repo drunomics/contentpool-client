@@ -13,10 +13,10 @@ use Drupal\Core\Url;
  * Implements hook_token_info().
  */
 function contentpool_client_token_info() {
-  $info['tokens']['node']['contentpool-canonical-url'] = array(
+  $info['tokens']['node']['contentpool-canonical-url'] = [
     'name' => t('Contentpool Canonical URL'),
     'description' => t('The canonical URL as provided by the contentpool.'),
-  );
+  ];
   return $info;
 }
 
