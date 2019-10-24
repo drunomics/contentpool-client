@@ -378,20 +378,7 @@ class ReplicationHelper {
         $replication_log->save();
         $response = $this->replicatorManager->update($source_workspace_pointer, $target_workspace_pointer, $task);
 
-        if (($response instanceof ReplicationLogInterface) && ($response->get('ok')->value == TRUE)) {
-          if ($conflict_count = $this->hasConflicts($source_workspace_pointer, $target_workspace_pointer)) {
-            throw new ReplicationException('%workspace has been updated with content from %upstream, but there are <a href=":link">@count conflict(s) with the %upstream workspace</a>.', [
-              '%upstream' => $source_workspace_pointer->label(),
-              '%workspace' => $target_workspace_pointer->label(),
-              ':link' => Url::fromRoute('entity.workspace.conflicts', [
-                'workspace' => $target_workspace_pointer->getWorkspace()
-                  ->id(),
-              ])->toString(),
-              '@count' => (int) $conflict_count,
-            ]);
-          }
-        }
-        else {
+        if (($response instanceof ReplicationLogInterface) && !($response->get('ok')->value)) {
           throw new ReplicationException('Error updating %workspace from %upstream.', [
             '%upstream' => $source_workspace_pointer->label(),
             '%workspace' => $target_workspace_pointer->label(),
