@@ -92,7 +92,7 @@ Feature: Replication can be filtered and reset.
     And I run drush cpc
     Then drush output should contain "There are new changes to be replicated."
     And I run drush cppull
-    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated with status /Success/."
     When I run drush cpc
     Then drush output should contain "There are no changes to be replicated."
     And I am on "/admin/content"
@@ -108,7 +108,7 @@ Feature: Replication can be filtered and reset.
     When I run drush cpc
     Then drush output should contain "There are new changes to be replicated."
     When I run drush cppull
-    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated with status /Success/."
     And I run drush cpc
     Then drush output should contain "There are no changes to be replicated."
     When I am on "/admin/content"

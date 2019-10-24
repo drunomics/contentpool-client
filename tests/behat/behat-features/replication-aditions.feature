@@ -50,7 +50,7 @@ Feature: Contentpool media replication basically works.
     # Replicate
     Given I open the satellite
     When I run drush cppull
-    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated with status /Success/."
     And I am logged in as a user with the "administrator" role
 
     # Check article replicated
@@ -82,7 +82,7 @@ Feature: Contentpool media replication basically works.
     # Replicate
     Given I open the satellite
     When I run drush cppull
-    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated with status /Success/."
     And I am logged in as a user with the "administrator" role
 
     # Check article replicated
@@ -98,7 +98,7 @@ Feature: Contentpool media replication basically works.
     # Replicate
     Given I open the satellite
     When I run drush cppull
-    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated with status /Success/."
     And I am logged in as a user with the "administrator" role
 
     # Check media is not replicated
@@ -126,7 +126,7 @@ Feature: Contentpool media replication basically works.
     # Replicate
     Given I open the satellite
     When I run drush cppull
-    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated with status /Success/."
     And I am logged in as a user with the "administrator" role
 
     # Check media and article are replicated
@@ -160,7 +160,7 @@ Feature: Contentpool media replication basically works.
     # Replicate
     Given I open the satellite
     When I run drush cppull
-    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated with status /Success/."
     And I am logged in as a user with the "administrator" role
 
     # Check article are replicated
@@ -195,7 +195,7 @@ Feature: Contentpool media replication basically works.
     # Replicate
     Given I open the satellite
     When I run drush cppull
-    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated with status /Success/."
     And I am logged in as a user with the "administrator" role
 
     # Check edited media is not replicated
@@ -220,7 +220,7 @@ Feature: Contentpool media replication basically works.
     # Replicate
     Given I open the satellite
     When I run drush cppull
-    Then drush output should contain "Content of remote /Contentpool/ has been replicated successfully."
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated with status /Success/."
     And I am logged in as a user with the "administrator" role
 
     # Check article is replicated
