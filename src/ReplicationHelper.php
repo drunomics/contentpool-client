@@ -199,27 +199,36 @@ class ReplicationHelper {
    *
    * @param \Drupal\workspace\Entity\Replication|null $replication
    *   The replication to use, or if empty, the last replication is used.
+   * @param bool $include_conflicts
+   *   (optional) Whether to include conflicts.
    *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup|string
    *   The summary.
    */
-  public function getLastReplicationStatusSummary(Replication $replication = NULL) {
+  public function getLastReplicationStatusSummary(Replication $replication = NULL, $include_conflicts = TRUE) {
     $replication = $replication ?: $this->getLastReplication();
+    $conflicts_info = '';
+    if ($include_conflicts && ($upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) && $active_workspace_pointer = $this->getActiveWorkspacePointer()) {
+      if ($conflicts = $this->hasConflicts($upstream_workspace_pointer, $active_workspace_pointer, TRUE)) {
+        $conflicts_info = ', ' . $this->t('@count conflict(s)', ['@count' => $conflicts]);
+      }
+    }
+
     switch ($replication->getReplicationStatus()) {
       case Replication::FAILED:
-        return $this->t('Failed: %info', ['%info' => $replication->getReplicationFailInfo()]);
+        return $this->t('Failed: %info', ['%info' => $replication->getReplicationFailInfo()]) . $conflicts_info;
 
       case Replication::QUEUED:
-        return $this->t('Queued');
+        return $this->t('Queued') . $conflicts_info;
 
       case Replication::REPLICATING:
-        return $this->t('Replicating');
+        return $this->t('Replicating') . $conflicts_info;
 
       case Replication::REPLICATED:
-        return $this->t('Success');
+        return $this->t('Success') . $conflicts_info;
 
       default:
-        return $this->t('Unknown');
+        return $this->t('Unknown') . $conflicts_info;
     }
   }
 

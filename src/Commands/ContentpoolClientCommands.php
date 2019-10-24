@@ -143,6 +143,20 @@ class ContentpoolClientCommands extends DrushCommands {
   }
 
   /**
+   * Shows the last replication status.
+   *
+   * @usage contentpool-client:status
+   *   drush cpst
+   *
+   * @command contentpool-client:status
+   * @aliases cpst
+   */
+  public function status() {
+    $status = $this->getReplicationHelper()->getLastReplicationStatusSummary();
+    $this->logger()->notice(dt("Last replication status: %status", ['%status' => $status]));
+  }
+
+  /**
    * Resets the replication history.
    *
    * Allows to start over replication, so next replication handles all changes
