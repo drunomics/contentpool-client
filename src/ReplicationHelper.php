@@ -434,9 +434,9 @@ class ReplicationHelper {
   }
 
   /**
-   * Resets replication for currently active workspace and its upstream.
+   * Resets replication history for currently active workspace and its upstream.
    */
-  public function resetReplication() {
+  public function resetReplicationHistory() {
     // Reset flag if last replication failed.
     $this->state->set('workspace.last_replication_failed', FALSE);
 
@@ -445,12 +445,12 @@ class ReplicationHelper {
     // If no upstream is found then no replication can be queued.
     if ($upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) {
       $active_workspace_pointer = $this->getActiveWorkspacePointer();
-      $this->resetReplicationState($upstream_workspace_pointer, $active_workspace_pointer);
+      $this->resetReplicationHistoryForWorkspaces($upstream_workspace_pointer, $active_workspace_pointer);
     }
   }
 
   /**
-   * Resets the replication state.
+   * Resets the replication history for the given workspaces.
    *
    * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
    *   Source workspace pointer.
@@ -461,7 +461,7 @@ class ReplicationHelper {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function resetReplicationState(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer) {
+  public function resetReplicationHistoryForWorkspaces(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer) {
     // All the queue tasks pending in database must be vanished, since it may
     // contain outdated state (outdated replication filters) and additionally
     // its processing would update `since` argument, so we wouldn't get all

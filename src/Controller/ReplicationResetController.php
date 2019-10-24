@@ -15,15 +15,15 @@ class ReplicationResetController extends ControllerBase {
   use ReplicationHelperTrait;
 
   /**
-   * Resets the replication.
+   * Resets the replication history.
    *
    * @return \Symfony\Component\HttpFoundation\RedirectResponse
    *   Redirect back to status reports page.
    */
   public function resetReplication() {
     try {
-      $this->getReplicationHelper()->resetReplication();
-      $this->messenger()->addMessage($this->t('The replication status has been successfully reset.'));
+      $this->getReplicationHelper()->resetReplicationHistory();
+      $this->messenger()->addMessage($this->t('The replication history has been successfully reset.'));
     }
     catch (ReplicationException $e) {
       $e->printError();

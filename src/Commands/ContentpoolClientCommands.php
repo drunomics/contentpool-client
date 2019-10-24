@@ -4,6 +4,7 @@ namespace Drupal\contentpool_client\Commands;
 
 use drunomics\ServiceUtils\Core\Config\ConfigFactoryTrait;
 use drunomics\ServiceUtils\Core\Entity\EntityTypeManagerTrait;
+use drunomics\ServiceUtils\Core\State\StateTrait;
 use Drupal\contentpool_client\RemotePullManagerTrait;
 use Drupal\contentpool_client\ReplicationHelperTrait;
 use Drush\Commands\DrushCommands;
@@ -22,6 +23,7 @@ use Drush\Utils\StringUtils;
  */
 class ContentpoolClientCommands extends DrushCommands {
 
+  use StateTrait;
   use ConfigFactoryTrait;
   use EntityTypeManagerTrait;
   use RemotePullManagerTrait;
@@ -142,7 +144,10 @@ class ContentpoolClientCommands extends DrushCommands {
   }
 
   /**
-   * Resets the replication status.
+   * Resets the replication history.
+   *
+   * Allows to start over replication, so next replication handles all changes
+   * again.
    *
    * @usage contentpool-client:reset
    *   drush cpr
@@ -151,7 +156,21 @@ class ContentpoolClientCommands extends DrushCommands {
    * @aliases cpr
    */
   public function reset() {
-    $this->getReplicationHelper()->resetReplication();
+    $this->getReplicationHelper()->resetReplicationHistory();
+  }
+
+  /**
+   * Unblocks the replication.
+   *
+   * @usage contentpool-client:unblock-replication
+   *   drush cpun
+   *
+   * @command contentpool-client:unblock-replication
+   * @aliases cpun
+   */
+  public function unblockReplication() {
+    // Reset flag if last replication failed.
+    $this->getState()->set('workspace.last_replication_failed', FALSE);
   }
 
 }

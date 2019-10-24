@@ -103,7 +103,7 @@ function contentpool_client_requirements($phase) {
       ];
     }
     $requirement['description'][] = [
-      '#markup' => ' ' . t('Reset replication by following <strong><a href=":url">this</a></strong> link.', [
+      '#markup' => ' ' . t('Start over and reset the replication history by following <strong><a href=":url">this</a></strong> link.', [
         ':url' => Url::fromRoute('contentpool_client.reset_replication')->toString(),
       ]),
     ];
