@@ -502,9 +502,6 @@ class ReplicationHelper {
         ->delete($replication_log_enties);
     }
 
-    // Delete state of the replicated entities in target workspace.
-    $this->keyValue->get('multiversion.entity_index.uuid.' . $target_workspace_pointer->id())->deleteAll();
-
     // Delete outdated conflicts from conflict tracker.
     // @see \Drupal\multiversion\Workspace\ConflictTracker::getAll()
     $collection = 'workspace.conflicts.' . $target_workspace_pointer->getWorkspaceId();
