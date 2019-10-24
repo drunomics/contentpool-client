@@ -7,6 +7,7 @@ use drunomics\ServiceUtils\Core\Entity\EntityTypeManagerTrait;
 use drunomics\ServiceUtils\Core\State\StateTrait;
 use Drupal\contentpool_client\RemotePullManagerTrait;
 use Drupal\contentpool_client\ReplicationHelperTrait;
+use Drupal\multiversion\Entity\Workspace;
 use Drush\Commands\DrushCommands;
 use Drush\Utils\StringUtils;
 
@@ -154,6 +155,44 @@ class ContentpoolClientCommands extends DrushCommands {
   public function status() {
     $status = $this->getReplicationHelper()->getLastReplicationStatusSummary();
     $this->logger()->notice(dt("Last replication status: %status", ['%status' => $status]));
+  }
+
+  /**
+   * Shows the last replication status.
+   *
+   * @command contentpool-client:remove-conflicts
+   */
+  public function removeConflictingRevisions() {
+    $revision_index =  \Drupal::service('multiversion.entity_index.rev');
+    $workspace = $this->getReplicationHelper()->getActiveWorkspacePointer()
+      ->getWorkspace();
+
+    $conflicts = \Drupal::service('workspace.conflict_tracker')
+      ->useWorkspace($workspace)
+      ->getAll();
+
+    $entity_revisions = [];
+    foreach ($conflicts as $uuid => $conflict) {
+      // @todo figure out why this is an array and what to do if there is more than 1
+      // @todo what happens when the conflict value is not "available"? what does this mean?
+      $conflict_keys = array_keys($conflict);
+      $rev = reset($conflict_keys);
+      $rev_info = $revision_index
+        ->useWorkspace($workspace->id())
+        ->get("$uuid:$rev");
+
+      if (!empty($rev_info['revision_id'])) {
+        $entity_revisions[] = $this->getEntityTypeManager()
+          ->getStorage($rev_info['entity_type_id'])
+          ->useWorkspace($workspace->id())
+          ->deleteRevision($rev_info['revision_id']);
+        echo $rev_info['revision_id'];
+        echo "$uuid removed one";
+        $conflicts = \Drupal::service('workspace.conflict_tracker')
+          ->useWorkspace($workspace)
+          ->resolveAll($uuid);
+      }
+    }
   }
 
   /**
