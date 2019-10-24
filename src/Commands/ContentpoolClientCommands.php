@@ -157,6 +157,7 @@ class ContentpoolClientCommands extends DrushCommands {
    */
   public function reset() {
     $this->getReplicationHelper()->resetReplicationHistory();
+    $this->logger()->notice(dt("The replication history has been reset."));
   }
 
   /**
@@ -171,6 +172,7 @@ class ContentpoolClientCommands extends DrushCommands {
   public function unblockReplication() {
     // Reset flag if last replication failed.
     $this->getState()->set('workspace.last_replication_failed', FALSE);
+    $this->logger()->notice(dt("The replication has been unblocked."));
   }
 
 }

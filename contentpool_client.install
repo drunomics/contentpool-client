@@ -55,33 +55,15 @@ function contentpool_client_requirements($phase) {
       // Attach the date the replication was triggered on.
       $requirement['value'][] = [
         '#suffix' => '<br/>',
-        '#markup' => t('Triggered on @datetime', ['@datetime' => $date_format->format($replication->changed->value, 'short')]),
+        '#markup' => t('Last replication at @datetime', ['@datetime' => $date_format->format($replication->changed->value, 'short')]),
       ];
 
-      switch ($replication->replication_status->value) {
-        case Replication::FAILED:
-          $value = t('Failed');
-          $requirement['severity'] = REQUIREMENT_ERROR;
-          break;
-
-        case Replication::QUEUED:
-          $value = t('Queued');
-          break;
-
-        case Replication::REPLICATING:
-          $value = t('Replicating');
-          break;
-
-        case Replication::REPLICATED:
-          $value = t('Replicated');
-          break;
-
-        default:
-          $value = t('Unknown');
-          break;
+      if ($replication->replication_status->value == Replication::FAILED) {
+        $requirement['severity'] = REQUIREMENT_ERROR;
       }
+
       $requirement['value'][] = [
-        '#markup' => $value,
+        '#markup' => t('Last status: %status', ['%status' => $replication_helper->getLastReplicationStatusSummary($replication)]),
       ];
       // Attach conflicts information if there are any.
       if ($conflicts = $replication_helper->hasConflicts($upstream_workspace_pointer, $active_workspace_pointer, TRUE)) {
@@ -94,7 +76,7 @@ function contentpool_client_requirements($phase) {
             '@count' => $conflicts,
           ]),
         ];
-        $requirement['severity'] = REQUIREMENT_ERROR;
+        $requirement['severity'] = REQUIREMENT_WARNING;
       }
     }
     else {
