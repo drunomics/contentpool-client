@@ -4,14 +4,12 @@ namespace Drupal\contentpool_client;
 
 use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\contentpool_client\Exception\ReplicationException;
-use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\Url;
 use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\relaxed\CouchdbReplicator;
