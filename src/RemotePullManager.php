@@ -110,13 +110,14 @@ class RemotePullManager implements RemotePullManagerInterface {
       if ($process_immediately) {
         $this->processReplicationQueue();
         $this->messenger()
-          ->addMessage($this->t('Content of remote %remote has been replicated successfully.', [
+          ->addMessage($this->t('Content of remote %remote has been replicated with status %status.', [
             '%remote' => $remote->label(),
+            '%status' => $this->replicationHelper->getLastReplicationStatusSummary(),
           ]));
       }
       else {
         $this->messenger()
-          ->addMessage($this->t('Replicating content of remote %remote has been queued successfully.', [
+          ->addMessage($this->t('Replicating content of remote %remote has been queued.', [
             '%remote' => $remote->label(),
           ]));
       }

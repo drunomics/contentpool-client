@@ -193,6 +193,37 @@ class ReplicationHelper {
   }
 
   /**
+   * Gets the summary of an replication status.
+   *
+   * Shows the replication status, and if failed the fail info.
+   *
+   * @param \Drupal\workspace\Entity\Replication|null $replication
+   *   The replication to use, or if empty, the last replication is used.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   The summary.
+   */
+  public function getLastReplicationStatusSummary(Replication $replication = NULL) {
+    $replication = $replication ?: $this->getLastReplication();
+    switch ($replication->getReplicationStatus()) {
+      case Replication::FAILED:
+        return $this->t('Failed: %info', ['%info' => $replication->getReplicationFailInfo()]);
+
+      case Replication::QUEUED:
+        return $this->t('Queued');
+
+      case Replication::REPLICATING:
+        return $this->t('Replicating');
+
+      case Replication::REPLICATED:
+        return $this->t('Success');
+
+      default:
+        return $this->t('Unknown');
+    }
+  }
+
+  /**
    * Checks if given upstream has conflicts against given workspace.
    *
    * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
