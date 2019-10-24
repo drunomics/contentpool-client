@@ -4,6 +4,7 @@ namespace Drupal\contentpool_client;
 
 use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\contentpool_client\Exception\ReplicationException;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
@@ -216,7 +217,7 @@ class ReplicationHelper {
 
     switch ($replication->getReplicationStatus()) {
       case Replication::FAILED:
-        return $this->t('Failed: %info', ['%info' => $replication->getReplicationFailInfo()]) . $conflicts_info;
+        return $this->t('Failed: @info', ['@info' => strip_tags($replication->getReplicationFailInfo())]) . $conflicts_info;
 
       case Replication::QUEUED:
         return $this->t('Queued') . $conflicts_info;
@@ -498,8 +499,13 @@ class ReplicationHelper {
     $replication_log_enties = $this->entityTypeManager->getStorage('replication_log')
       ->loadByProperties(['workspace' => $target_workspace_pointer->getWorkspaceId()]);
     if ($replication_log_enties) {
+      // @todo: Add and use database trait.
+      \Drupal::database()
+        ->update('replication_log')
+        ->fields(['source_last_seq' => 0])
+        ->execute();
       $this->entityTypeManager->getStorage('replication_log')
-        ->delete($replication_log_enties);
+        ->resetCache();
     }
 
     // Delete outdated conflicts from conflict tracker.
