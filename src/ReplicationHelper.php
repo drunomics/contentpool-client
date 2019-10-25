@@ -15,7 +15,7 @@ use Drupal\multiversion\Workspace\WorkspaceManagerInterface;
 use Drupal\relaxed\CouchdbReplicator;
 use Drupal\replication\Entity\ReplicationLog;
 use Drupal\replication\Entity\ReplicationLogInterface;
-use Drupal\replication\ReplicationTask\ReplicationTask;
+use Drupal\replication\ReplicationTask\ReplicationTaskInterface;
 use Drupal\workspace\Entity\Replication;
 use Drupal\workspace\Entity\WorkspacePointer;
 use Drupal\workspace\ReplicatorInterface;
@@ -270,13 +270,13 @@ class ReplicationHelper {
    *
    * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
    *   The workspace pointer.
-   * @param \Drupal\replication\ReplicationTask\ReplicationTask $task
+   * @param \Drupal\replication\ReplicationTask\ReplicationTaskInterface $task
    *   Replication task.
    *
    * @return string
    *   Replication id.
    */
-  protected function getReplicationId(WorkspacePointer $source_workspace_pointer, ReplicationTask $task) {
+  protected function getReplicationId(WorkspacePointer $source_workspace_pointer, ReplicationTaskInterface $task) {
     /** @var \Doctrine\CouchDB\CouchDBClient $source */
     $source = $this->replicator->setupEndpoint($source_workspace_pointer);
     /** @var \Doctrine\CouchDB\HTTP\SocketClient $http_client */
@@ -416,6 +416,24 @@ class ReplicationHelper {
   }
 
   /**
+   * Gets the replication log.
+   *
+   * @return \Drupal\replication\Entity\ReplicationLog|null
+   *   The replication log.
+   *
+   * @throws \Drupal\contentpool_client\Exception\ReplicationException
+   */
+  protected function getReplicationLog() {
+    $source_workspace_pointer = $this->getUpstreamWorkspacePointer();
+    $active_workspace_pointer = $this->getActiveWorkspacePointer();
+    /** @var \Relaxed\Replicator\ReplicationTask $task */
+    $task = $this->replicatorManager->getTask($active_workspace_pointer->getWorkspace(), 'pull_replication_settings');
+    // Try to obtain since from replication log entity.
+    $replication_id = $this->getReplicationId($source_workspace_pointer, $task);
+    return $this->getReplicationLogByReplicationId($replication_id);
+  }
+
+  /**
    * Checks if there are changes between remote and current active workspace.
    *
    * @return bool
@@ -425,6 +443,8 @@ class ReplicationHelper {
    * @throws \Drupal\contentpool_client\Exception\ReplicationException
    */
   public function checkReplication() {
+    $log = $this->getReplicationLog();
+    $since = $log ? $log->getSourceLastSeq() : 0;
     $source_workspace_pointer = $this->getUpstreamWorkspacePointer();
     $active_workspace_pointer = $this->getActiveWorkspacePointer();
     /** @var \Doctrine\CouchDB\CouchDBClient $source */
@@ -432,13 +452,6 @@ class ReplicationHelper {
     $target = $this->replicator->setupEndpoint($active_workspace_pointer);
     /** @var \Relaxed\Replicator\ReplicationTask $task */
     $task = $this->replicatorManager->getTask($active_workspace_pointer->getWorkspace(), 'pull_replication_settings');
-    $since = 0;
-    // Try to obtain since from replication log entity.
-    if ($replication_id = $this->getReplicationId($source_workspace_pointer, $task)) {
-      if ($replication_log = $this->getReplicationLogByReplicationId($replication_id)) {
-        $since = $replication_log->getSourceLastSeq();
-      }
-    }
 
     $changes = $source->getChanges([
       'feed' => 'normal',
@@ -466,46 +479,31 @@ class ReplicationHelper {
     // Reset flag if last replication failed.
     $this->state->set('workspace.last_replication_failed', FALSE);
 
-    // Reset replication state, so the next replication will include all the
-    // changes.
-    // If no upstream is found then no replication can be queued.
-    if ($upstream_workspace_pointer = $this->getUpstreamWorkspacePointer()) {
-      $active_workspace_pointer = $this->getActiveWorkspacePointer();
-      $this->resetReplicationHistoryForWorkspaces($upstream_workspace_pointer, $active_workspace_pointer);
-    }
-  }
-
-  /**
-   * Resets the replication history for the given workspaces.
-   *
-   * @param \Drupal\workspace\Entity\WorkspacePointer $source_workspace_pointer
-   *   Source workspace pointer.
-   * @param \Drupal\workspace\Entity\WorkspacePointer $target_workspace_pointer
-   *   Target workspace pointer.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   */
-  public function resetReplicationHistoryForWorkspaces(WorkspacePointer $source_workspace_pointer, WorkspacePointer $target_workspace_pointer) {
     // All the queue tasks pending in database must be vanished, since it may
     // contain outdated state (outdated replication filters) and additionally
     // its processing would update `since` argument, so we wouldn't get all
     // the changes.
     $this->cleanUpQueue();
 
-    $replication_log_enties = $this->entityTypeManager->getStorage('replication_log')
-      ->loadByProperties(['workspace' => $target_workspace_pointer->getWorkspaceId()]);
-    if ($replication_log_enties) {
-      // @todo: Add and use database trait.
-      \Drupal::database()
-        ->update('replication_log')
-        ->fields(['source_last_seq' => 0])
-        ->execute();
-      $this->entityTypeManager->getStorage('replication_log')
-        ->resetCache();
+    // Make the last replication log "session_id" invalid, such that it does
+    // not match the source session any more and the replication will start over
+    // from since=0.
+    // @see \Relaxed\Replicator\Replication::compareReplicationLogs().
+    $log = $this->getReplicationLog();
+    $log->setSourceLastSeq(0);
+    // Update history also, since that is applied in the end.
+    foreach ($log->history as $item) {
+      if ($item->session_id == $log->getSessionId()) {
+        $item->session_id = 'invalid';
+      }
     }
+    $log->setSessionId('invalid');
+    $log->save();
 
+    // Reset replication state, so the next replication will include all the
+    // changes.
+    // If no upstream is found then no replication can be queued.
+    $target_workspace_pointer = $this->getActiveWorkspacePointer();
     // Delete outdated conflicts from conflict tracker.
     // @see \Drupal\multiversion\Workspace\ConflictTracker::getAll()
     $collection = 'workspace.conflicts.' . $target_workspace_pointer->getWorkspaceId();
