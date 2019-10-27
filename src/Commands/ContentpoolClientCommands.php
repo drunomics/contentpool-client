@@ -7,7 +7,9 @@ use drunomics\ServiceUtils\Core\Entity\EntityTypeManagerTrait;
 use drunomics\ServiceUtils\Core\State\StateTrait;
 use Drupal\contentpool_client\RemotePullManagerTrait;
 use Drupal\contentpool_client\ReplicationHelperTrait;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\multiversion\Entity\Workspace;
+use Drupal\multiversion\Entity\WorkspaceInterface;
 use Drush\Commands\DrushCommands;
 use Drush\Utils\StringUtils;
 
@@ -158,41 +160,74 @@ class ContentpoolClientCommands extends DrushCommands {
   }
 
   /**
-   * Shows the last replication status.
+   * Removes conflicting revisions.
+   *
+   * Since there is no easy way to delete a revision, we purge the whole entity
+   * having conflicting revisions.
+   *
+   * @usage contentpool-client:remove-conflicts
+   *   drush cpconf
    *
    * @command contentpool-client:remove-conflicts
+   * @aliases cpconf
    */
   public function removeConflictingRevisions() {
-    $revision_index =  \Drupal::service('multiversion.entity_index.rev');
-    $workspace = $this->getReplicationHelper()->getActiveWorkspacePointer()
+    $revision_index = \Drupal::service('multiversion.entity_index.rev');
+    $workspace = $this->getReplicationHelper()
+      ->getActiveWorkspacePointer()
       ->getWorkspace();
 
     $conflicts = \Drupal::service('workspace.conflict_tracker')
       ->useWorkspace($workspace)
       ->getAll();
 
-    $entity_revisions = [];
     foreach ($conflicts as $uuid => $conflict) {
-      // @todo figure out why this is an array and what to do if there is more than 1
-      // @todo what happens when the conflict value is not "available"? what does this mean?
       $conflict_keys = array_keys($conflict);
       $rev = reset($conflict_keys);
       $rev_info = $revision_index
         ->useWorkspace($workspace->id())
         ->get("$uuid:$rev");
 
-      if (!empty($rev_info['revision_id'])) {
-        $entity_revisions[] = $this->getEntityTypeManager()
-          ->getStorage($rev_info['entity_type_id'])
-          ->useWorkspace($workspace->id())
-          ->deleteRevision($rev_info['revision_id']);
-        echo $rev_info['revision_id'];
-        echo "$uuid removed one";
-        $conflicts = \Drupal::service('workspace.conflict_tracker')
-          ->useWorkspace($workspace)
-          ->resolveAll($uuid);
+      $storage = $this->getEntityTypeManager()
+        ->getStorage($rev_info['entity_type_id']);
+
+      if (!empty($rev_info['revision_id']) && $entity = $storage->loadRevision($rev_info['revision_id'])) {
+        // Make sure there is no lock preventing us to delete the entity.
+        if ($lock_service = \Drupal::service('content_lock')) {
+          if ($lock_service->isLockable($entity) && $data = $lock_service->fetchLock($entity->id(), NULL, $entity->language()->getId(), $entity->getEntityTypeId())) {
+            $lock_service->release($entity->id(), $entity->language(), NULL, NULL, $entity->getEntityTypeId());
+          }
+        }
+        // Remove the revision from the index, so it will be ignored when
+        // building the revision tree again on next replication of the entity.
+        // This ensures the conflict does not popup again.
+        $this->removeFromRevisionIndex($workspace, $entity);
+        // Mark the conflicting revision as deleted.
+        $storage->delete([$entity]);
+
+        $this->logger->notice(dt('Deleted conflicting revision of entity %type %id with label %label.', [
+          '%type' => $entity->getEntityTypeId(),
+          '%id' => $entity->id(),
+          '%label' => $entity->label(),
+        ]));
       }
+      \Drupal::service('workspace.conflict_tracker')
+        ->useWorkspace($workspace)
+        ->resolveAll($uuid);
     }
+  }
+
+  /**
+   * Removes the revision from the index.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   *   The workspace.
+   *
+   * @see \Drupal\multiversion\Entity\Index\RevisionIndex
+   */
+  protected function removeFromRevisionIndex(WorkspaceInterface $workspace, EntityInterface $entity) {
+    \Drupal::keyValue('ultiversion.entity_index.rev.' . $workspace->id())
+      ->delete($entity->uuid() . ':' . $entity->_rev->value);
   }
 
   /**
