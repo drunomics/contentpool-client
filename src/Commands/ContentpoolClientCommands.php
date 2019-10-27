@@ -7,8 +7,14 @@ use drunomics\ServiceUtils\Core\Entity\EntityTypeManagerTrait;
 use drunomics\ServiceUtils\Core\State\StateTrait;
 use Drupal\contentpool_client\RemotePullManagerTrait;
 use Drupal\contentpool_client\ReplicationHelperTrait;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
+use Drupal\multiversion\Entity\Index\RevisionIndexInterface;
+use Drupal\multiversion\Entity\WorkspaceInterface;
+use Drupal\multiversion\Workspace\ConflictTrackerInterface;
 use Drush\Commands\DrushCommands;
 use Drush\Utils\StringUtils;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * A Drush commandfile.
@@ -28,6 +34,52 @@ class ContentpoolClientCommands extends DrushCommands {
   use EntityTypeManagerTrait;
   use RemotePullManagerTrait;
   use ReplicationHelperTrait;
+
+  /**
+   * The content lock.
+   *
+   * @var \Drupal\content_lock\ContentLock\ContentLock
+   */
+  protected $contentLock;
+
+  /**
+   * The factory.
+   *
+   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryInterface
+   */
+  protected $keyValueFactory;
+
+  /**
+   * The conflict tracker.
+   *
+   * @var \Drupal\multiversion\Workspace\ConflictTrackerInterface
+   */
+  protected $conflictTracker;
+
+  /**
+   * The revision index.
+   *
+   * @var \Drupal\multiversion\Entity\Index\RevisionIndexInterface
+   */
+  protected $revisionIndex;
+
+  /**
+   * ContentpoolClientCommands constructor.
+   *
+   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory
+   *   The factory.
+   * @param \Drupal\multiversion\Workspace\ConflictTrackerInterface $conflictTracker
+   *   The conflict tracker.
+   * @param \Drupal\multiversion\Entity\Index\RevisionIndexInterface $revisionIndex
+   *   The revision index.
+   */
+  public function __construct(KeyValueFactoryInterface $keyValueFactory, ConflictTrackerInterface $conflictTracker, RevisionIndexInterface $revisionIndex) {
+    // phpcs:ignore
+    $this->contentLock = \Drupal::getContainer()->get('content_lock', ContainerInterface::NULL_ON_INVALID_REFERENCE);
+    $this->keyValueFactory = $keyValueFactory;
+    $this->conflictTracker = $conflictTracker;
+    $this->revisionIndex = $revisionIndex;
+  }
 
   /**
    * Checks if the remote requires a pull.
@@ -155,6 +207,79 @@ class ContentpoolClientCommands extends DrushCommands {
   public function status() {
     $status = $this->getReplicationHelper()->getLastReplicationStatusSummary();
     $this->logger()->notice(dt("Last replication status: %status", ['%status' => $status]));
+  }
+
+  /**
+   * Removes conflicting revisions.
+   *
+   * Since there is no easy way to delete a revision, we purge the whole entity
+   * having conflicting revisions.
+   *
+   * @usage contentpool-client:remove-conflicts
+   *   drush cpconf
+   *
+   * @command contentpool-client:remove-conflicts
+   * @aliases cpconf
+   */
+  public function removeConflictingRevisions() {
+    $workspace = $this->getReplicationHelper()
+      ->getActiveWorkspacePointer()
+      ->getWorkspace();
+
+    $conflicts = $this->conflictTracker
+      ->useWorkspace($workspace)
+      ->getAll();
+
+    foreach ($conflicts as $uuid => $conflict) {
+      $conflict_keys = array_keys($conflict);
+      $rev = reset($conflict_keys);
+      $rev_info = $this->revisionIndex
+        ->useWorkspace($workspace->id())
+        ->get("$uuid:$rev");
+
+      $storage = $this->getEntityTypeManager()
+        ->getStorage($rev_info['entity_type_id']);
+
+      if (!empty($rev_info['revision_id']) && $entity = $storage->loadRevision($rev_info['revision_id'])) {
+        // Make sure there is no lock preventing us to delete the entity.
+        if ($lock_service = $this->contentLock) {
+          if ($lock_service->isLockable($entity) && $lock_service->fetchLock($entity->id(), NULL, $entity->language()->getId(), $entity->getEntityTypeId())) {
+            $lock_service->release($entity->id(), $entity->language(), NULL, NULL, $entity->getEntityTypeId());
+          }
+        }
+        // Remove the revision from the index, so it will be ignored when
+        // building the revision tree again on next replication of the entity.
+        // This ensures the conflict does not popup again.
+        $this->removeFromRevisionIndex($workspace, $entity);
+        // Mark the conflicting revision as deleted.
+        $storage->delete([$entity]);
+
+        $this->logger->notice(dt('Deleted conflicting revision of entity %type %id with label %label and uuid %uuid.', [
+          '%type' => $entity->getEntityTypeId(),
+          '%id' => $entity->id(),
+          '%label' => $entity->label(),
+          '%uuid' => $entity->uuid(),
+        ]));
+      }
+      $this->conflictTracker
+        ->useWorkspace($workspace)
+        ->resolveAll($uuid);
+    }
+  }
+
+  /**
+   * Removes the revision from the index.
+   *
+   * @param \Drupal\multiversion\Entity\WorkspaceInterface $workspace
+   *   The workspace.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity revision.
+   *
+   * @see \Drupal\multiversion\Entity\Index\RevisionIndex
+   */
+  protected function removeFromRevisionIndex(WorkspaceInterface $workspace, EntityInterface $entity) {
+    $this->keyValueFactory->get('multiversion.entity_index.rev.' . $workspace->id())
+      ->delete($entity->uuid() . ':' . $entity->_rev->value);
   }
 
   /**
