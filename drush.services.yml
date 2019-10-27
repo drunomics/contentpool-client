@@ -1,5 +1,6 @@
 services:
   contentpool_client.commands:
     class: \Drupal\contentpool_client\Commands\ContentpoolClientCommands
+    arguments: ['@keyvalue', '@workspace.conflict_tracker', '@multiversion.entity_index.rev']
     tags:
       - { name: drush.command }
