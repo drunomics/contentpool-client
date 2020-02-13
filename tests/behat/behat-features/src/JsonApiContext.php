@@ -76,14 +76,11 @@ class JsonApiContext extends RawDrupalContext {
    */
   public function iRequestAnArticleWithTheUuid($uuid) {
     // Instantiate an empty PSR-7 request.
-    $request = new Request("", "");
+    $request = new Request("GET", "{$this->contentpoolBaseUrl}/jsonapi/node/article/$uuid");
 
     $requestBuilder = new JsonApiRequestBuilder($request);
 
     $requestBuilder
-      ->setProtocolVersion("1.1")
-      ->setMethod("GET")
-      ->setUri("{$this->contentpoolBaseUrl}/jsonapi/node/article/$uuid")
       ->setHeader("Accept-Charset", "utf-8");
 
     $request = $requestBuilder->getRequest();
