@@ -17,11 +17,17 @@
       "services": {
         "drush.services.yml": "^9"
       }
+    },
+    "patches": {
+      "drupal/multiversion": {
+        "#3090566: Make Multiversion compatible with the latest changes related to url aliases in Drupal 8.8.x": "https://www.drupal.org/files/issues/2020-01-20/3090566-15.patch"
+      }
     }
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
+    "cweagans/composer-patches": "~1.0",
     "drunomics/contentpool_data_model": "^1.1.2",
     "drunomics/contentpool_replication": "^2.0",
     "drunomics/service-utils": "*",

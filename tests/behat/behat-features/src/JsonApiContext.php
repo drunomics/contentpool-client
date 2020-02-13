@@ -76,7 +76,7 @@ class JsonApiContext extends RawDrupalContext {
    */
   public function iRequestAnArticleWithTheUuid($uuid) {
     // Instantiate an empty PSR-7 request.
-    $request = new Request("", "");
+    $request = new Request("GET", "");
 
     $requestBuilder = new JsonApiRequestBuilder($request);
 
@@ -142,7 +142,7 @@ class JsonApiContext extends RawDrupalContext {
    */
   public function iRequestAnArticleWithTheUuidAndIncludedFields($uuid, $fields) {
     // Instantiate an empty PSR-7 request.
-    $request = new Request("", "");
+    $request = new Request("GET", "");
 
     $requestBuilder = new JsonApiRequestBuilder($request);
 
@@ -163,7 +163,7 @@ class JsonApiContext extends RawDrupalContext {
   public function iCreateAnArticleWithTheTitle($title) {
     $oauth_access_token = $this->getOauthAccessToken();
     // Instantiate an empty PSR-7 request.
-    $request = new Request("", "");
+    $request = new Request("POST", "");
 
     $requestBuilder = new JsonApiRequestBuilder($request);
 
