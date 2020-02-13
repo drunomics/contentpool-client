@@ -76,10 +76,14 @@ class JsonApiContext extends RawDrupalContext {
    */
   public function iRequestAnArticleWithTheUuid($uuid) {
     // Instantiate an empty PSR-7 request.
-    $request = new Request("GET", "{$this->contentpoolBaseUrl}/jsonapi/node/article/$uuid");
+    $request = new Request("GET", "");
+
     $requestBuilder = new JsonApiRequestBuilder($request);
 
     $requestBuilder
+      ->setProtocolVersion("1.1")
+      ->setMethod("GET")
+      ->setUri("{$this->contentpoolBaseUrl}/jsonapi/node/article/$uuid")
       ->setHeader("Accept-Charset", "utf-8");
 
     $request = $requestBuilder->getRequest();
@@ -138,10 +142,14 @@ class JsonApiContext extends RawDrupalContext {
    */
   public function iRequestAnArticleWithTheUuidAndIncludedFields($uuid, $fields) {
     // Instantiate an empty PSR-7 request.
-    $request = new Request("GET", "{$this->contentpoolBaseUrl}/jsonapi/node/article/$uuid?include=$fields");
+    $request = new Request("GET", "");
+
     $requestBuilder = new JsonApiRequestBuilder($request);
 
     $requestBuilder
+      ->setProtocolVersion("1.1")
+      ->setMethod("GET")
+      ->setUri("{$this->contentpoolBaseUrl}/jsonapi/node/article/$uuid?include=$fields")
       ->setHeader("Accept-Charset", "utf-8");
 
     $request = $requestBuilder->getRequest();
@@ -154,10 +162,15 @@ class JsonApiContext extends RawDrupalContext {
    */
   public function iCreateAnArticleWithTheTitle($title) {
     $oauth_access_token = $this->getOauthAccessToken();
-    $request = new Request("POST", "{$this->contentpoolBaseUrl}/jsonapi/node/article");
+    // Instantiate an empty PSR-7 request.
+    $request = new Request("POST", "");
+
     $requestBuilder = new JsonApiRequestBuilder($request);
 
     $requestBuilder
+      ->setProtocolVersion("1.1")
+      ->setMethod("POST")
+      ->setUri("{$this->contentpoolBaseUrl}/jsonapi/node/article")
       ->setHeader("Accept-Charset", "utf-8")
       ->setHeader("Authorization", "Bearer $oauth_access_token");
 
