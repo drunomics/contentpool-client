@@ -188,6 +188,9 @@ class ContentpoolClientCommands extends DrushCommands {
     // Part three setup entity edit redirect.
     $remote_url_parts = parse_url($remote_url);
     $config = $this->getConfigFactory()->getEditable('entity_edit_redirect.settings');
+    $config->set('append_destination', 1);
+    $config->set('destination_querystring', 'trusted_destination');
+    $config->set('base_redirect_url', $remote_url_parts['scheme'] . '://' . $remote_url_parts['host']);
     $path_patterns = $config->get('entity_edit_path_patterns');
     $path_patterns['node']['article'] = '/entity/{uuid}/edit';
     $config->set('entity_edit_path_patterns', $path_patterns);
