@@ -191,7 +191,9 @@ class ContentpoolClientCommands extends DrushCommands {
     $config->set('append_destination', 1);
     $config->set('destination_querystring', 'trusted_destination');
     $config->set('base_redirect_url', $remote_url_parts['scheme'] . '://' . $remote_url_parts['host']);
-    $config->set('entity_edit_path_patterns', ['node' => ['article' => '/entity/{uuid}/edit']]);
+    $path_patterns = $config->get('entity_edit_path_patterns');
+    $path_patterns['node']['article'] = '/entity/{uuid}/edit';
+    $config->set('entity_edit_path_patterns', $path_patterns);
     $config->save();
   }
 
