@@ -122,9 +122,15 @@ When there are replication problems, be sure to:
  
 * check status report. If there is an connection issues with the contentpool or
   replication errors it will be reported there.
-* to clear the flood history on the contentpool when you have
-  authentication troubles; e.g. run the query `DELETE FROM flood;`.
 * check the recent log messages (watchdog) for replication errors.
+* if there are API connection or authentication issues, check whether the
+  replicator users has sucessfully logged in by checking the last-login date
+  of the user at the admin/people screen of both sites.
+* check the contentpool webserver access logs for the API URLs being accessed
+  and try accessing them manually via curl while provided the replicator user
+  access credenitials as HTTP auth
+* clear the flood history on the contentpool when you have
+  authentication troubles; e.g. run the query `DELETE FROM flood;`.
 
 ## Development
 
