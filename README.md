@@ -115,6 +115,27 @@ command. It will pull from all remote servers that are marked as a Contentpool.
 For example:
 
     drush cppull
+    
+### Provided drush commands
+
+    # Pull content from contentpool:
+    drush cppull
+
+    # Show last replication status:
+    drush cpst
+    
+    # Unblock replication status:
+    drush cpun
+    
+    # Check whether somethings needs to be pulled:
+    drush contentpool-client:check
+    
+    # Reset replication history, i.e. re-replicate everything:
+    drush cpr
+    
+    # Remove conflicting revisions:
+    drush contentpool-client:remove-conflicts
+    
 
 ### Troubleshooting
 
