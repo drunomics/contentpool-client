@@ -38,7 +38,7 @@ Feature: Content is rendered correctly via custom elements
 
     And I add a paragraph "Gallery" at slot number "7"
     And I wait for AJAX to finish
-    And I fill in "Media name" with "BEHAT: Gallery; Moon or meat?" in paragraph number "7"
+    And I fill in "Name" with "BEHAT: Gallery; Moon or meat?" in paragraph number "7"
     And I press "Select images" in paragraph number "7"
     Then I wait for AJAX to finish
     Then I wait for ".views-row:nth-of-type(1)" in entity browser "multiple_image_browser"
