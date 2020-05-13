@@ -37,12 +37,12 @@
     "drupal/scheduler": "*",
     "drupal/vuejs": "^1.0@beta",
     "drupal/workspace": "^1.0@beta",
-    "drupal/uuid_url": "^1.0"
+    "drupal/uuid_url": "^1.0",
+    "drupal/coder": "8.3.8"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
     "drunomics/behat-drupal-utils": "^2.2.0",
-    "drupal/coder": "8.3.8",
     "woohoolabs/yang": "^1.2",
     "php-http/guzzle6-adapter": "^2.0"
   },
