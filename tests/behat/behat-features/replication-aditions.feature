@@ -190,7 +190,7 @@ Feature: Contentpool media replication basically works.
     And I should see the text "Revision information"
     And I click on the element "#edit-revision-information"
     And I check the box "Create new revision"
-    And I press "Save and keep published"
+    And I press "Save"
 
     # Replicate
     Given I open the satellite
