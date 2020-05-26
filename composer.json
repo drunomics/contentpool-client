@@ -29,7 +29,7 @@
   "prefer-stable": true,
   "require": {
     "cweagans/composer-patches": "~1.0",
-    "drunomics/contentpool_data_model": "dev-feature/WV-3831 as 1.1.2",
+    "drunomics/contentpool_data_model": "^2.0",
     "drunomics/contentpool_replication": "^2.0",
     "drunomics/service-utils": "*",
     "drupal/entity_edit_redirect": "^1.5",
