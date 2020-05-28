@@ -11,22 +11,22 @@ Feature: Contentpool media replication basically works.
     And I visit path "media/add/image" on contentpool
     And I fill in "name[0][value]" with "BEHAT: Media image 1"
     When I attach the file "core/profiles/demo_umami/modules/demo_umami_content/default_content/images/chili-sauce-umami.jpg" to "files[field_image_0]"
-    And I press "Save and publish"
+    And I press "Save"
 
     And I visit path "media/add/image" on contentpool
     And I fill in "name[0][value]" with "BEHAT: Media image 2"
     When I attach the file "core/profiles/demo_umami/modules/demo_umami_content/default_content/images/chili-sauce-umami.jpg" to "files[field_image_0]"
-    And I press "Save and publish"
+    And I press "Save"
 
     And I visit path "media/add/image" on contentpool
     And I fill in "name[0][value]" with "BEHAT: Media image 3"
     When I attach the file "core/profiles/demo_umami/modules/demo_umami_content/default_content/images/chili-sauce-umami.jpg" to "files[field_image_0]"
-    And I press "Save and publish"
+    And I press "Save"
 
     And I visit path "media/add/image" on contentpool
     And I fill in "name[0][value]" with "BEHAT: Media image 4"
     When I attach the file "core/profiles/demo_umami/modules/demo_umami_content/default_content/images/chili-sauce-umami.jpg" to "files[field_image_0]"
-    And I press "Save and publish"
+    And I press "Save"
 
   @javascript @replication-aditions-default
   Scenario: Media attached to replicated entities is replicated
@@ -190,7 +190,7 @@ Feature: Contentpool media replication basically works.
     And I should see the text "Revision information"
     And I click on the element "#edit-revision-information"
     And I check the box "Create new revision"
-    And I press "Save and keep published"
+    And I press "Save"
 
     # Replicate
     Given I open the satellite

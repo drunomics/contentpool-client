@@ -38,7 +38,7 @@ Feature: Content is rendered correctly via custom elements
 
     And I add a paragraph "Gallery" at slot number "7"
     And I wait for AJAX to finish
-    And I fill in "Media name" with "BEHAT: Gallery; Moon or meat?" in paragraph number "7"
+    And I fill in "Name" with "BEHAT: Gallery; Moon or meat?" in paragraph number "7"
     And I press "Select images" in paragraph number "7"
     Then I wait for AJAX to finish
     Then I wait for ".views-row:nth-of-type(1)" in entity browser "multiple_image_browser"
@@ -103,8 +103,9 @@ Feature: Content is rendered correctly via custom elements
     And I press "Save as"
     And I wait for the page to be loaded
 
-    Given I run drush cppull
-    And I open the satellite
+    Given I open the satellite
+    When I run drush cppull
+    Then drush output should contain "Content of remote /Contentpool/ has been replicated with status /Success/."
     And I am logged in as a user with the "administrator" role
     # First wait a bit so replication is finished.
     And I wait for "1000" ms

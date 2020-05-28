@@ -20,7 +20,8 @@
     },
     "patches": {
       "drupal/multiversion": {
-        "#3090566: Make Multiversion compatible with the latest changes related to url aliases in Drupal 8.8.x": "https://www.drupal.org/files/issues/2020-01-20/3090566-15.patch"
+        "#3090566: Make Multiversion compatible with the latest changes related to url aliases in Drupal 8.8.x": "https://www.drupal.org/files/issues/2020-01-20/3090566-15.patch",
+        "#3101924: Argument 1 passed to ..\\RedirectRepository::__construct() must be an instance of Drupal\\Core\\Entity\\EntityManagerInterface": "https://www.drupal.org/files/issues/2019-12-18/fix-constructor-argument-3101924-2.patch"
       }
     }
   },
@@ -28,7 +29,7 @@
   "prefer-stable": true,
   "require": {
     "cweagans/composer-patches": "~1.0",
-    "drunomics/contentpool_data_model": "^1.1.2",
+    "drunomics/contentpool_data_model": "^2.0",
     "drunomics/contentpool_replication": "^2.0",
     "drunomics/service-utils": "*",
     "drupal/entity_edit_redirect": "^1.5",
@@ -42,7 +43,7 @@
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^0.4.4",
     "drunomics/behat-drupal-utils": "^2.2.0",
-    "drupal/coder": "^8.2",
+    "drupal/coder": "8.3.8",
     "woohoolabs/yang": "^1.2",
     "php-http/guzzle6-adapter": "^2.0"
   },
