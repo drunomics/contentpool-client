@@ -147,7 +147,7 @@ class ContentPoolContext extends RawDrupalContext {
     }
     $submit->click();
     // Quick check that user was logged in successfully.
-    $this->assertSession()->pageTextContains("Member for");
+    $this->assertSession()->pageTextContains("Mitglied seit");
   }
 
   /**
