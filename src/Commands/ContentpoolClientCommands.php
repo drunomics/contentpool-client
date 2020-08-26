@@ -122,11 +122,15 @@ class ContentpoolClientCommands extends DrushCommands {
    *
    * @usage contentpool-client:setup
    *   drush cps https://replicator:PASS@example.com/relaxed
+   * @usage drush cps https://replicator:PASS@example.com/relaxed --replicator_pass=PASS
+   *   Use specific password for replicator user configuration.
+   *
+   * @option replicator_pass Use given pass for replicator user instead of generated one.
    *
    * @command contentpool-client:setup
    * @aliases cps
    */
-  public function setupModule($remote_url) {
+  public function setupModule($remote_url, $options = ['replicator_pass' => NULL]) {
     // Part one, setup the remote and workspace.
     $storage = $this->getEntityTypeManager()->getStorage('remote');
     $remote = $storage->load('contentpool');
@@ -165,7 +169,7 @@ class ContentpoolClientCommands extends DrushCommands {
     $storage = $this->getEntityTypeManager()->getStorage('user');
     $users = $storage->loadByProperties(['name' => $user_name]);
     if (empty($users)) {
-      $pass = StringUtils::generatePassword();
+      $pass = $options['replicator_pass'] ?? StringUtils::generatePassword();
       $user = $storage->create([
         'name' => 'replicator',
         'roles' => ['replicator'],
