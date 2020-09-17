@@ -8,7 +8,7 @@ source scripts/util/per-branch-env.sh
 
 [ ! -d ../satellite-project ] || (echo "Old project is still existing, please remove ../satellite-project." && exit 1)
 
-composer create-project drunomics/drupal-project:4.* --no-install --no-interaction ../satellite-project
+composer create-project drunomics/drupal-project:5.* --no-install --no-interaction ../satellite-project
 
 MODULE_DIR=`basename $PWD`
 source scripts/util/get-branch.sh
