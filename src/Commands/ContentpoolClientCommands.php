@@ -111,7 +111,7 @@ class ContentpoolClientCommands extends DrushCommands {
    * @aliases cppull
    */
   public function pullContent($options = ['queue' => FALSE]) {
-    $this->getRemotePullManager()->pullAllRemotes(!$options['queue']);;
+    $this->getRemotePullManager()->pullAllRemotes(!$options['queue']);
   }
 
   /**
@@ -154,7 +154,10 @@ class ContentpoolClientCommands extends DrushCommands {
     $workspace = reset($workspaces);
 
     $storage = $this->getEntityTypeManager()->getStorage('workspace_pointer');
-    $pointers = $storage->loadByProperties(['remote_pointer' => 'contentpool', 'remote_database' => 'live']);
+    $pointers = $storage->loadByProperties([
+      'remote_pointer' => 'contentpool',
+      'remote_database' => 'live',
+    ]);
     if (empty($pointers)) {
       $this->io()->error(dt('Missing pointer to contentpool live workspace, aborting configuration!'));
       return;
