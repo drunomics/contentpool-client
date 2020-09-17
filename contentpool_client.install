@@ -55,7 +55,9 @@ function contentpool_client_requirements($phase) {
       // Attach the date the replication was triggered on.
       $requirement['value'][] = [
         '#suffix' => '<br/>',
-        '#markup' => t('Last replication at @datetime', ['@datetime' => $date_format->format($replication->changed->value, 'short')]),
+        '#markup' => t('Last replication at @datetime', [
+          '@datetime' => $date_format->format($replication->changed->value, 'short'),
+        ]),
       ];
 
       if ($replication->replication_status->value == Replication::FAILED) {
@@ -63,7 +65,9 @@ function contentpool_client_requirements($phase) {
       }
 
       $requirement['value'][] = [
-        '#markup' => t('Last status: %status', ['%status' => $replication_helper->getLastReplicationStatusSummary($replication, FALSE)]),
+        '#markup' => t('Last status: %status', [
+          '%status' => $replication_helper->getLastReplicationStatusSummary($replication, FALSE),
+        ]),
       ];
       // Attach conflicts information if there are any.
       if ($conflicts = $replication_helper->hasConflicts($upstream_workspace_pointer, $active_workspace_pointer, TRUE)) {
