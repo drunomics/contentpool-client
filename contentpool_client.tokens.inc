@@ -40,7 +40,9 @@ function contentpool_client_tokens($type, $tokens, array $data, array $options, 
           // then we generate the canonical URL as usual.
           if (isset($node->field_canonical_url) && $node->field_canonical_url->uri) {
             $canonical_url = $node->field_canonical_url->uri;
-            $base_url = Url::fromUri('base:/', $url_options)->toString();
+            if (!$base_url = getenv('PHAPP_BASE_URL')) {
+              $base_url = Url::fromUri('base:/', $url_options)->toString();
+            }
             if (strpos($canonical_url, $base_url) !== 0) {
               $url = $canonical_url;
             }
