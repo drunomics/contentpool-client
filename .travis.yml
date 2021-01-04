@@ -35,6 +35,7 @@ cache:
 
 # Setup the environment.
 before_install:
+  - composer self-update --rollback
   # Be sure no mails are going out by disabling sendmail.
   - echo sendmail_path=`which true` >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
