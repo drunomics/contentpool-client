@@ -26,15 +26,15 @@ Feature: Content is rendered correctly via custom elements
 
     And I add a paragraph "Twitter" at slot number "4"
     And I wait for AJAX to finish
-    And I fill in "Twitter url" with "https://twitter.com/SplashAwards_de/status/972088668788854792" in paragraph number "5"
+    And I fill in "Twitter url" with "https://twitter.com/SplashAwards_de/status/972088668788854792" in paragraph number "4"
 
     And I add a paragraph "Pinterest" at slot number "5"
     And I wait for AJAX to finish
-    And I fill in "Pinterest url" with "https://www.pinterest.de/pin/562879653408840422/" in paragraph number "6"
+    And I fill in "Pinterest url" with "https://www.pinterest.de/pin/562879653408840422/" in paragraph number "5"
 
     And I add a paragraph "Gallery" at slot number "6"
     And I wait for AJAX to finish
-    And I fill in "Name" with "BEHAT: Gallery; Moon or meat?" in paragraph number "7"
+    And I fill in "Name" with "BEHAT: Gallery; Moon or meat?" in paragraph number "6"
     And I press "Select images" in paragraph number "6"
     Then I wait for AJAX to finish
     Then I wait for ".views-row:nth-of-type(1)" in entity browser "multiple_image_browser"
