@@ -84,9 +84,9 @@ Feature: Content is rendered correctly via custom elements
     Then I click "Edit" in local tasks
     And I wait for the page to be loaded
     Then I am on contentpool
-    And I add a paragraph "Image" at slot number "8"
+    And I add a paragraph "Image" at slot number "7"
     And I wait for AJAX to finish
-    And I press "Select image" in paragraph number "8"
+    And I press "Select image" in paragraph number "7"
     And I wait for AJAX to finish
     And I click on ".views-row:nth-of-type(1)" in entity browser "image_browser"
     Then ".views-row:nth-of-type(1)" in entity browser "image_browser" should have the class "checked"
