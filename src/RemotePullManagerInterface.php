@@ -35,12 +35,19 @@ interface RemotePullManagerInterface {
   public function checkAndDoAutopulls();
 
   /**
-   * Checks the remote if an autopull is needed.
+   * Checks whether an automatic pull should be issued for the given remote.
+   *
+   * The internally used stated for tracking whether an auto-pull is needed,
+   * gets updated when TRUE is returned. Enable dry-run to avoid this.
    *
    * @param \Drupal\relaxed\Entity\Remote $remote
-   *   The remote on the contentpool server.
+   *   The remote of the contentpool server.
    * @param bool $dry_run
-   *   (optional) If it's a dry run so no pull happens.
+   *   (optional) If enabeld, do not update internal state tracking when an
+   *   auto-pull is needed.
+   *
+   * @return bool
+   *   Whether an automatic pull should be issued.
    */
   public function isAutopullNeeded(Remote $remote, $dry_run = FALSE);
 
