@@ -4,6 +4,7 @@ namespace Drupal\contentpool_client;
 
 use Drupal\contentpool_client\Exception\ReplicationException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\Queue\QueueWorkerManagerInterface;
@@ -57,6 +58,13 @@ class RemotePullManager implements RemotePullManagerInterface {
   protected $queueManager;
 
   /**
+   * The logger service.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  protected $logger;
+
+  /**
    * Constructs a RemoteAutopullManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -69,13 +77,16 @@ class RemotePullManager implements RemotePullManagerInterface {
    *   The queue factory.
    * @param \Drupal\Core\Queue\QueueWorkerManagerInterface $queue_manager
    *   The queue manager.
+   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
+   *   The logger service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicationHelper $replication_helper, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicationHelper $replication_helper, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager, LoggerChannelInterface $logger) {
     $this->entityTypeManager = $entity_type_manager;
     $this->state = $state;
     $this->queueFactory = $queue_factory;
     $this->queueManager = $queue_manager;
     $this->replicationHelper = $replication_helper;
+    $this->logger = $logger;
   }
 
   /**
@@ -109,20 +120,28 @@ class RemotePullManager implements RemotePullManagerInterface {
 
       if ($process_immediately) {
         $this->processReplicationQueue();
-        $this->messenger()
-          ->addMessage($this->t('Content of remote %remote has been replicated with status %status.', [
-            '%remote' => $remote->label(),
-            '%status' => $this->replicationHelper->getLastReplicationStatusSummary(),
-          ]));
+        $message = $this->t('Content of remote %remote has been replicated with status %status.', [
+          '%remote' => $remote->label(),
+          '%status' => $this->replicationHelper->getLastReplicationStatusSummary(),
+        ]);
+        $this->logger->notice('Content of remote %remote has been replicated with status %status.', [
+          '%remote' => $remote->label(),
+          '%status' => $this->replicationHelper->getLastReplicationStatusSummary(),
+        ]);
+        $this->messenger()->addMessage($message);
       }
       else {
-        $this->messenger()
-          ->addMessage($this->t('Replicating content of remote %remote has been queued.', [
-            '%remote' => $remote->label(),
-          ]));
+        $message = $this->t('Replicating content of remote %remote has been queued.', [
+          '%remote' => $remote->label(),
+        ]);
+        $this->logger->notice('Replicating content of remote %remote has been queued.', [
+          '%remote' => $remote->label(),
+        ]);
+        $this->messenger()->addMessage($message);
       }
     }
     catch (ReplicationException $exception) {
+      $this->logger->error('Unable to write replication logs. Exception: @message', ['@message' => $exception->getMessage()]);
       $exception->printError();
     }
   }
