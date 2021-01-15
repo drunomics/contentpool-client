@@ -182,6 +182,7 @@ class RemotePullManager implements RemotePullManagerInterface {
       if (!$dry_run) {
         // Set the curent time as last pull time.
         $this->state->set($remote_state_id, time());
+        $this->logger->notice('Last autopull time set to @date', ['@date' => date('m/d/Y H:i:s', time())]);
       }
       return TRUE;
     }
