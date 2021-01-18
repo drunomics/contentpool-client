@@ -364,7 +364,7 @@ class ReplicationHelper {
       $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer);
     }
     else {
-      $this->logger->error('Upstream worker pointer not found');
+      $this->logger->error('Unable to queue replication task - the upstream worker pointer has not been found.');
     }
   }
 
