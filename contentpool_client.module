@@ -71,11 +71,11 @@ function contentpool_client_cron() {
   $autopull_count = $remote_pull_manager->checkAndDoAutopulls();
 
   if ($autopull_count) {
-    \Drupal::logger('contentpool client')
+    \Drupal::logger('contentpool_client')
       ->info('Autopull for @count remotes triggered.', ['@count' => $autopull_count]);
   }
   else {
-    \Drupal::logger('contentpool client')->info('No autopulls triggered.');
+    \Drupal::logger('contentpool_client')->info('No autopulls triggered.');
   }
 }
 
