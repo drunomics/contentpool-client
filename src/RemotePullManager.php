@@ -186,6 +186,7 @@ class RemotePullManager implements RemotePullManagerInterface {
 
     $remote_state_id = 'remote_last_autopull_' . $remote->id();
     $autopull_interval = $remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 3600);
+    $autopull_interval -= 60;
     $last_autopull = $this->state->get($remote_state_id);
 
     // If autopull was never run or the intervals has been reached, we pull.
