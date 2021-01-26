@@ -151,7 +151,7 @@ class RemotePullManager implements RemotePullManagerInterface {
       $exception->printError();
     }
     finally {
-      $this->state->set('contentpool_client.remote_' . $remote->id() . '_is_active_pull', TRUE);
+      $this->state->set('contentpool_client.remote_' . $remote->id() . '_is_active_pull', FALSE);
     }
   }
 
