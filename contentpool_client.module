@@ -36,6 +36,10 @@ function contentpool_client_form_remote_edit_form_alter(&$form, FormStateInterfa
     '#default_value' => $remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 3600),
     '#options' => [
       'never' => t('Never (manual)'),
+      300 => t('Every 5min'),
+      600 => t('Every 10min'),
+      900 => t('Every 15min'),
+      1800 => t('Every 30min'),
       3600 => t('Hourly'),
       86400 => t('Daily'),
       604800 => t('Weekly'),
