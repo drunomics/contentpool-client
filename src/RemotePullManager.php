@@ -2,8 +2,9 @@
 
 namespace Drupal\contentpool_client;
 
-use Drupal\contentpool_client\Exception\ReplicationException;
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\Queue\QueueWorkerManagerInterface;
@@ -11,6 +12,7 @@ use Drupal\Core\Queue\RequeueException;
 use Drupal\Core\Queue\SuspendQueueException;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\contentpool_client\Exception\ReplicationException;
 use Drupal\relaxed\Entity\Remote;
 
 /**
@@ -57,6 +59,20 @@ class RemotePullManager implements RemotePullManagerInterface {
   protected $queueManager;
 
   /**
+   * The logger service.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  protected $logger;
+
+  /**
+   * Datetime service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
    * Constructs a RemoteAutopullManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -69,13 +85,19 @@ class RemotePullManager implements RemotePullManagerInterface {
    *   The queue factory.
    * @param \Drupal\Core\Queue\QueueWorkerManagerInterface $queue_manager
    *   The queue manager.
+   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
+   *   The logger service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicationHelper $replication_helper, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicationHelper $replication_helper, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager, LoggerChannelInterface $logger, TimeInterface $time) {
     $this->entityTypeManager = $entity_type_manager;
     $this->state = $state;
     $this->queueFactory = $queue_factory;
     $this->queueManager = $queue_manager;
     $this->replicationHelper = $replication_helper;
+    $this->logger = $logger;
+    $this->time = $time;
   }
 
   /**
@@ -109,20 +131,28 @@ class RemotePullManager implements RemotePullManagerInterface {
 
       if ($process_immediately) {
         $this->processReplicationQueue();
-        $this->messenger()
-          ->addMessage($this->t('Content of remote %remote has been replicated with status %status.', [
-            '%remote' => $remote->label(),
-            '%status' => $this->replicationHelper->getLastReplicationStatusSummary(),
-          ]));
+        $message = $this->t('Content of remote %remote has been replicated with status %status.', [
+          '%remote' => $remote->label(),
+          '%status' => $this->replicationHelper->getLastReplicationStatusSummary(),
+        ]);
+        $this->logger->notice('Content of remote %remote has been replicated with status %status.', [
+          '%remote' => $remote->label(),
+          '%status' => $this->replicationHelper->getLastReplicationStatusSummary(),
+        ]);
+        $this->messenger()->addMessage($message);
       }
       else {
-        $this->messenger()
-          ->addMessage($this->t('Replicating content of remote %remote has been queued.', [
-            '%remote' => $remote->label(),
-          ]));
+        $message = $this->t('Replicating content of remote %remote has been queued.', [
+          '%remote' => $remote->label(),
+        ]);
+        $this->logger->notice('Replicating content of remote %remote has been queued.', [
+          '%remote' => $remote->label(),
+        ]);
+        $this->messenger()->addMessage($message);
       }
     }
     catch (ReplicationException $exception) {
+      $this->logger->error('Unable to write replication logs. Exception: @message', ['@message' => $exception->getMessage()]);
       $exception->printError();
     }
   }
@@ -135,7 +165,7 @@ class RemotePullManager implements RemotePullManagerInterface {
 
     $counter = 0;
     foreach ($remotes as $remote) {
-      // We check if an autopull is needed based on settings and interval.
+      // We check if an auto-pull is needed based on settings and interval.
       if ($this->isAutopullNeeded($remote)) {
         $this->doPull($remote);
         $counter++;
@@ -150,29 +180,27 @@ class RemotePullManager implements RemotePullManagerInterface {
    */
   public function isAutopullNeeded(Remote $remote, $dry_run = FALSE) {
     // Never needed if autopull is disabled.
-    if ($remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 'never') == 'never') {
+    if ($remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 3600) == 'never') {
       return;
     }
 
     $remote_state_id = 'remote_last_autopull_' . $remote->id();
     $autopull_interval = $remote->getThirdPartySetting('contentpool_client', 'autopull_interval', 3600);
+    $autopull_interval -= 60;
     $last_autopull = $this->state->get($remote_state_id);
 
     // If autopull was never run or the intervals has been reached, we pull.
-    if (!$last_autopull || ($last_autopull + $autopull_interval) < time()) {
-      // Don't process the pull on dry run.
-      if ($dry_run) {
-        return TRUE;
+    $request_time = $this->time->getRequestTime();
+    if (!$last_autopull || ($last_autopull + $autopull_interval) < $request_time) {
+      if (!$dry_run) {
+        // Set the current time as last pull time.
+        $this->state->set($remote_state_id, $request_time);
       }
-      $this->doPull($remote);
+      return TRUE;
     }
-
-    // Don't update the state on dry run.
-    if ($dry_run) {
+    else {
       return FALSE;
     }
-    // Set the curent time as last pull time.
-    $this->state->set($remote_state_id, time());
   }
 
   /**
@@ -183,11 +211,11 @@ class RemotePullManager implements RemotePullManagerInterface {
     $this->queueFactory->get('workspace_replication')->createQueue();
     $queue_worker = $this->queueManager->createInstance('workspace_replication');
 
-    $end = time() + (isset($info['cron']['time']) ? $info['cron']['time'] : 15);
+    $end = $this->time->getRequestTime() + (isset($info['cron']['time']) ? $info['cron']['time'] : 15);
     $queue = $this->queueFactory->get('workspace_replication');
     $lease_time = isset($info['cron']['time']) ?: NULL;
 
-    while (time() < $end && ($item = $queue->claimItem($lease_time))) {
+    while ($this->time->getRequestTime() < $end && ($item = $queue->claimItem($lease_time))) {
       try {
         $queue_worker->processItem($item->data);
         $queue->deleteItem($item);
