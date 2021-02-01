@@ -40,8 +40,11 @@ function contentpool_client_tokens($type, $tokens, array $data, array $options, 
           // then we generate the canonical URL as usual.
           if (isset($node->field_canonical_url) && $node->field_canonical_url->uri) {
             $canonical_url = $node->field_canonical_url->uri;
-            $base_url = Url::fromUri('base:/', $url_options)->toString();
-            if (strpos($canonical_url, $base_url) !== 0) {
+            if (!$base_url = getenv('SITE_MAIN_HOST')) {
+              $base_url = Url::fromUri('base:/', $url_options)->toString();
+            }
+            if (strpos($canonical_url, $base_url) === FALSE) {
+              // This is foreign url and we use value of a field_canonical_url.
               $url = $canonical_url;
             }
           }

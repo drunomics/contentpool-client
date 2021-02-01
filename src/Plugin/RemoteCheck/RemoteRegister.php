@@ -163,7 +163,10 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     if (isset($url_parts['user']) && isset($url_parts['pass'])) {
       $credentials = $url_parts['user'] . ':' . $url_parts['pass'] . '@';
     }
-    $base_url = $url_parts['scheme'] . '://' . $credentials . $url_parts['host'];
+    if (!$main_host = getenv('SITE_MAIN_HOST')) {
+      $main_host = $url_parts['host'];
+    }
+    $base_url = $url_parts['scheme'] . '://' . $credentials . $main_host;
 
     if ($url_parts['scheme'] != 'https') {
       $this->messenger->addWarning($this->t('Warning: Insecure connection used for remote.'));
