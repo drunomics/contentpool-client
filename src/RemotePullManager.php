@@ -139,20 +139,18 @@ class RemotePullManager implements RemotePullManagerInterface {
     // Just define lock key.
     $lock_key = 'contentpool_client.remote_' . $remote->id() . '_is_active_pull';
     try {
-      // First check if pull wasn't triggered already.
-      $is_locked = $this->lock->lockMayBeAvailable($lock_key);
+      // First check if pull wasn't triggered already and acquire lock.
+      $is_locked = !$this->lock->acquire($lock_key);
       if ($is_locked) {
-        $message = $this->t('Skipped simultaneous pulls for remote %remote', [
+        $message = $this->t('Skipped simultaneous pull for remote %remote', [
           '%remote' => $remote->label(),
         ]);
-        $this->logger->notice('Skipped simultaneous pulls for remote %remote', [
+        $this->logger->notice('Skipped simultaneous pull for remote %remote', [
           '%remote' => $remote->label(),
         ]);
         $this->messenger()->addMessage($message);
         return;
       }
-      // Lock to prevent simulation replications.
-      $this->lock->acquire($lock_key);
       // Queue replication for currently active workspace.
       $this->replicationHelper->queueReplicationTaskWithCurrentActiveWorkspace();
 
@@ -182,9 +180,7 @@ class RemotePullManager implements RemotePullManagerInterface {
       $this->logger->error('Unable to write replication logs. Exception: @message', ['@message' => $exception->getMessage()]);
       $exception->printError();
     }
-    finally {
-      $this->lock->release($lock_key);
-    }
+    $this->lock->release($lock_key);
   }
 
   /**
