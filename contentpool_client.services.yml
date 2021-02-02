@@ -9,4 +9,4 @@ services:
 
   contentpool_client.remote_pull_manager:
     class: Drupal\contentpool_client\RemotePullManager
-    arguments: ['@entity_type.manager', '@state', '@contentpool_client.replication_helper', '@queue', '@plugin.manager.queue_worker', '@contentpool_client.logger', '@datetime.time' ]
+    arguments: ['@entity_type.manager', '@state', '@contentpool_client.replication_helper', '@queue', '@plugin.manager.queue_worker', '@contentpool_client.logger', '@datetime.time', '@lock']
