@@ -7,6 +7,7 @@ use Drupal\contentpool_client\Exception\ReplicationException;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -84,6 +85,13 @@ class ReplicationHelper {
   protected $queueFactory;
 
   /**
+   * The logger service.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  protected $logger;
+
+  /**
    * Constructs a RemoteAutopullManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -102,8 +110,10 @@ class ReplicationHelper {
    *   The key value factory.
    * @param \Drupal\Core\Queue\QueueFactory $queue_factory
    *   The queue factory.
+   * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
+   *   The logger service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, WorkspaceManagerInterface $workspace_manager, ConflictTrackerInterface $conflict_tracker, CouchdbReplicator $replicator, KeyValueFactoryInterface $key_value, QueueFactory $queue_factory) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicatorInterface $replicator_manager, WorkspaceManagerInterface $workspace_manager, ConflictTrackerInterface $conflict_tracker, CouchdbReplicator $replicator, KeyValueFactoryInterface $key_value, QueueFactory $queue_factory, LoggerChannelInterface $logger) {
     $this->entityTypeManager = $entity_type_manager;
     $this->state = $state;
     $this->replicatorManager = $replicator_manager;
@@ -112,6 +122,7 @@ class ReplicationHelper {
     $this->replicator = $replicator;
     $this->keyValue = $key_value;
     $this->queueFactory = $queue_factory;
+    $this->logger = $logger;
   }
 
   /**
@@ -352,6 +363,9 @@ class ReplicationHelper {
       $active_workspace_pointer = $this->getActiveWorkspacePointer();
       $this->queueReplicationTask($upstream_workspace_pointer, $active_workspace_pointer);
     }
+    else {
+      $this->logger->error('Unable to queue replication task - the upstream worker pointer has not been found.');
+    }
   }
 
   /**
@@ -378,6 +392,10 @@ class ReplicationHelper {
         $response = $this->replicatorManager->update($source_workspace_pointer, $target_workspace_pointer, $task);
 
         if (($response instanceof ReplicationLogInterface) && !($response->get('ok')->value)) {
+          $this->logger->error('Error updating %workspace from %upstream.', [
+            '%upstream' => $source_workspace_pointer->label(),
+            '%workspace' => $target_workspace_pointer->label(),
+          ]);
           throw new ReplicationException('Error updating %workspace from %upstream.', [
             '%upstream' => $source_workspace_pointer->label(),
             '%workspace' => $target_workspace_pointer->label(),
@@ -386,6 +404,7 @@ class ReplicationHelper {
       }
     }
     catch (EntityStorageException $e) {
+      $this->logger->error('Unable to write replication logs. Exception: ' . $e->getMessage());
       throw new ReplicationException('Unable to write replication logs. Exception: ' . $e->getMessage());
     }
   }

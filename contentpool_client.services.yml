@@ -5,8 +5,8 @@ services:
 
   contentpool_client.replication_helper:
     class: Drupal\contentpool_client\ReplicationHelper
-    arguments: ['@entity_type.manager', '@state', '@workspace.replicator_manager', '@workspace.manager', '@workspace.conflict_tracker', '@relaxed.couchdb_replicator', '@keyvalue', '@queue']
+    arguments: ['@entity_type.manager', '@state', '@workspace.replicator_manager', '@workspace.manager', '@workspace.conflict_tracker', '@relaxed.couchdb_replicator', '@keyvalue', '@queue', '@contentpool_client.logger' ]
 
   contentpool_client.remote_pull_manager:
     class: Drupal\contentpool_client\RemotePullManager
-    arguments: ['@entity_type.manager', '@state', '@contentpool_client.replication_helper', '@queue', '@plugin.manager.queue_worker', '@contentpool_client.logger' ]
+    arguments: ['@entity_type.manager', '@state', '@contentpool_client.replication_helper', '@queue', '@plugin.manager.queue_worker', '@contentpool_client.logger', '@datetime.time' ]
