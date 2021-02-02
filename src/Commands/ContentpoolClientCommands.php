@@ -320,13 +320,6 @@ class ContentpoolClientCommands extends DrushCommands {
   public function unblockReplication() {
     // Reset flag if last replication failed.
     $this->getState()->set('workspace.last_replication_failed', FALSE);
-
-    // Reset all simultaneous pulls indicators too.
-    $remotes = $this->getEntityTypeManager()->getStorage('remote')->loadMultiple();
-    foreach ($remotes as $remote) {
-      $this->state->delete('contentpool_client.remote_' . $remote->id() . '_is_active_pull');
-    }
-
     $this->logger()->notice(dt("The replication has been unblocked."));
   }
 

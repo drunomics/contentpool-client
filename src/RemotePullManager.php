@@ -4,6 +4,7 @@ namespace Drupal\contentpool_client;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Lock\LockBackendInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\Messenger\MessengerTrait;
 use Drupal\Core\Queue\QueueFactory;
@@ -73,6 +74,13 @@ class RemotePullManager implements RemotePullManagerInterface {
   protected $time;
 
   /**
+   * The lock backend.
+   *
+   * @var \Drupal\Core\Lock\LockBackendInterface
+   */
+  protected $lock;
+
+  /**
    * Constructs a RemoteAutopullManager object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -89,8 +97,10 @@ class RemotePullManager implements RemotePullManagerInterface {
    *   The logger service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
+   * @param \Drupal\Core\Lock\LockBackendInterface $lock
+   *   The lock backend.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicationHelper $replication_helper, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager, LoggerChannelInterface $logger, TimeInterface $time) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state, ReplicationHelper $replication_helper, QueueFactory $queue_factory, QueueWorkerManagerInterface $queue_manager, LoggerChannelInterface $logger, TimeInterface $time, LockBackendInterface $lock) {
     $this->entityTypeManager = $entity_type_manager;
     $this->state = $state;
     $this->queueFactory = $queue_factory;
@@ -98,6 +108,7 @@ class RemotePullManager implements RemotePullManagerInterface {
     $this->replicationHelper = $replication_helper;
     $this->logger = $logger;
     $this->time = $time;
+    $this->lock = $lock;
   }
 
   /**
@@ -125,11 +136,12 @@ class RemotePullManager implements RemotePullManagerInterface {
    * {@inheritdoc}
    */
   public function doPull(Remote $remote, $process_immediately = FALSE) {
+    // Just define lock key.
+    $lock_key = 'contentpool_client.remote_' . $remote->id() . '_is_active_pull';
     try {
-      // First check if pull wasn't triggered already. We need to prevent
-      // simultaneous replications for sure.
-      $is_active_pull = $this->state->get('contentpool_client.remote_' . $remote->id() . '_is_active_pull', FALSE);
-      if ($is_active_pull) {
+      // First check if pull wasn't triggered already.
+      $is_locked = $this->lock->lockMayBeAvailable($lock_key);
+      if ($is_locked) {
         $message = $this->t('Skipped simultaneous pulls for remote %remote', [
           '%remote' => $remote->label(),
         ]);
@@ -139,7 +151,8 @@ class RemotePullManager implements RemotePullManagerInterface {
         $this->messenger()->addMessage($message);
         return;
       }
-      $this->state->set('contentpool_client.remote_' . $remote->id() . '_is_active_pull', TRUE);
+      // Lock to prevent simulation replications.
+      $this->lock->acquire($lock_key);
       // Queue replication for currently active workspace.
       $this->replicationHelper->queueReplicationTaskWithCurrentActiveWorkspace();
 
@@ -170,7 +183,7 @@ class RemotePullManager implements RemotePullManagerInterface {
       $exception->printError();
     }
     finally {
-      $this->state->set('contentpool_client.remote_' . $remote->id() . '_is_active_pull', FALSE);
+      $this->lock->release($lock_key);
     }
   }
 
