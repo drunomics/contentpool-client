@@ -38,16 +38,7 @@ function contentpool_client_tokens($type, $tokens, array $data, array $options, 
           }
           // Display the canonical URL unless it points to the current site,
           // then we generate the canonical URL as usual.
-          if (isset($node->field_canonical_url) && $node->field_canonical_url->uri) {
-            $canonical_url = $node->field_canonical_url->uri;
-            $base_url = Url::fromUri('base:/', $url_options)->toString();
-            if (strpos($canonical_url, $base_url) !== 0) {
-              $url = $canonical_url;
-            }
-          }
-          if (empty($url)) {
-            $url = $node->toUrl('canonical', $url_options)->toString();
-          }
+          $url = $node->toUrl('canonical', $url_options)->toString();
           $replacements[$original] = !empty($options['sanitize']) ? new HtmlEscapedText($url) : $url;
           break;
       }
