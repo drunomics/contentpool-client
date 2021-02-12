@@ -40,8 +40,13 @@ function contentpool_client_tokens($type, $tokens, array $data, array $options, 
           // then we generate the canonical URL as usual.
           if (isset($node->field_canonical_url) && $node->field_canonical_url->uri) {
             $canonical_url = $node->field_canonical_url->uri;
-            $base_url = Url::fromUri('base:/', $url_options)->toString();
-            if (strpos($canonical_url, $base_url) !== 0) {
+            if (!$base_url = getenv('PHAPP_BASE_URL')) {
+              $base_url = Url::fromUri('base:/', $url_options)->toString();
+            }
+            // Use the passed URL if it's pointing to another site.
+            // Bugfix: Treat ADMIN-SITE urls as current site as well.
+            $admin_url = getenv('SITE_ADMIN_BASE_URL');
+            if (strpos($canonical_url, $base_url) !== 0 && (!$admin_url || strpos($canonical_url, $admin_url) !== 0)) {
               $url = $canonical_url;
             }
           }
