@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
 use Drupal\relaxed\Entity\RemoteInterface;
 use Drupal\relaxed\Plugin\RemoteCheckBase;
 use Drupal\relaxed\SensitiveDataTransformer;
@@ -198,7 +199,10 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     $config = $this->configFactory->get('system.site');
     $site_name = $config->get('name');
     $site_uuid = $config->get('uuid');
-    $site_host = $this->requestStack->getCurrentRequest()->getSchemeAndHttpHost();
+
+    if (!$base_url = getenv('PHAPP_BASE_URL')) {
+      $base_url = Url::fromUri('base:/')->toString();
+    }
     $replication_settings = $this->getReplicationSettings($remote);
     $replication_filters = [
       'filter_id' => $replication_settings->getFilterId(),
@@ -207,7 +211,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
 
     $body = [
       'site_name' => $site_name,
-      'site_domain' => $site_host,
+      'site_domain' => $base_url,
       'site_uuid' => $site_uuid,
       'replication_filters' => $replication_filters,
     ];
@@ -218,7 +222,7 @@ class RemoteRegister extends RemoteCheckBase implements ContainerFactoryPluginIn
     $relaxed_password = $this->sensitiveDataTransformer->get($relaxed_config->get('password'));
 
     // We create an encoded uri for this site.
-    $uri = new Uri($site_host . $relaxed_root);
+    $uri = new Uri($base_url . $relaxed_root);
     $uri = $uri->withUserInfo(
       $relaxed_config->get('username'),
       $relaxed_password
