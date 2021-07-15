@@ -7,6 +7,11 @@
 
  [![Build Status](https://travis-ci.org/drunomics/contentpool-client.svg?branch=8.x-1.x)](https://travis-ci.org/drunomics/contentpool-client)
 
+## Status
+
+The distribution proved itself very valuable, but it turned out that replication via multiversion is too complex for our use-case - so we switched to a simpler approach.
+
+If you like to continue maintaining the distribution, please get in touch!
 
 ## Overview
 
